@@ -12,15 +12,12 @@ Server runtime。它复用 Remote 已有的账号授权、Host 选择、端到�
 - 线上使用独立 capability / RPC：`cursor.acp.v1`、`cursor.app.*`
 - Session / 流式更新 / 权限请求留在 ACP 进程内；Remote 只做展示与受限转发
 
-当前仓库已完成 **Host 领域骨架 + 协议接线 + client-core 客户端**。Desktop
-Virtual Harness 与 Android UI 投影尚未接入（下一步）。
-
-## 用户界面（规划）
+## 用户界面
 
 目标与 Codex 相同：不新增独立 Cursor 页面。
 
-- Desktop：内存载体复用原生 Workspace / Session / Composer（待实现）
-- Android：`backend: 'cursor'` 合并进现有列表（待实现）
+- Desktop：设置页提供 `cursor.enabled` 开关（Virtual Harness Workspace 投影仍待实现）
+- Android：`backend: 'cursor'` 合并进现有 Workspace / Chat；连接期内内存维护 cwd 与 session
 
 ## 操作白名单
 
@@ -46,7 +43,7 @@ Virtual Harness 与 Android UI 投影尚未接入（下一步）。
 ## 配置
 
 Cursor 默认**关闭**。开启前请在 Host 本机完成 `agent login`，或配置
-`CURSOR_API_KEY`。
+`CURSOR_API_KEY`。也可在 Desktop 插件设置中切换开关（需重启 DSH）。
 
 ```yaml
 ds-harness-remote:
@@ -67,12 +64,15 @@ ds-harness-remote:
 | `packages/plugin/src/cursor/domain.ts` | 领域生命周期 / 审批 / 路径校验 |
 | `packages/plugin/src/cursor/peer-bridge.ts` | 每连接 stream / transfer |
 | `packages/client-core/src/cursor-client.ts` | 共享 Client |
+| `apps/android/src/services/cursor.ts` | Android 投影辅助 |
+| `apps/android/src/state/store.ts` | Workspace / Session / Chat 操作 |
 
 ## 验证状态
 
 - [x] Host 配置、capability、RPC 路由
 - [x] ACP client initialize + authenticate
 - [x] 方法策略单测
+- [x] Desktop 设置开关 `settings.cursor.set`
+- [x] Android Workspace/Chat 投影（文本 Prompt + 审批 + 流式更新）
 - [ ] Desktop Virtual Harness
-- [ ] Android Workspace/Chat 投影
 - [ ] 真机跨机 E2E

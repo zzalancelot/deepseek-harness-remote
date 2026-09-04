@@ -1,4 +1,4 @@
-import { CodexRemoteClient, HarnessAlphaClient, RemoteClientCore, probeRemoteHostFeatures } from '@dsh-remote/client-core'
+import { CodexRemoteClient, CursorRemoteClient, HarnessAlphaClient, RemoteClientCore, probeRemoteHostFeatures } from '@dsh-remote/client-core'
 import { AdaptiveTransport, type RtcIceServer } from '@dsh-remote/webrtc'
 import { websocketUrl } from '../lib/server-url'
 import { strings } from '../locales/i18n'
@@ -22,6 +22,7 @@ export class AndroidRemoteConnection {
   private core?: RemoteClientCore
   private proxy?: RemoteHarnessClient
   private codex?: CodexRemoteClient
+  private cursor?: CursorRemoteClient
   private closeMux?: (notifyRemote?: boolean) => Promise<void>
   private unsubscribeClose?: () => void
   private muxHandler?: MuxFrameHandler
@@ -87,6 +88,7 @@ export class AndroidRemoteConnection {
         this.core = undefined
         this.proxy = undefined
         this.codex = undefined
+        this.cursor = undefined
         if (!replacingFallback) options.onClose?.()
       })
       await core.connect()
@@ -112,6 +114,9 @@ export class AndroidRemoteConnection {
       const capabilities = new Set(features.capabilities)
       if (capabilities.has('codex.appserver.v1') && capabilities.has('codex.appserver.transfer.v1')) {
         this.codex = new CodexRemoteClient(core)
+      }
+      if (capabilities.has('cursor.acp.v1') && capabilities.has('cursor.acp.transfer.v1')) {
+        this.cursor = new CursorRemoteClient(core)
       }
       if (features.remoteGateway) {
         const alpha = new HarnessAlphaClient(
@@ -151,6 +156,16 @@ export class AndroidRemoteConnection {
     return this.codex !== undefined
   }
 
+  /** Optional Cursor ACP client; available only when the Host advertises both domain capabilities. */
+  requireCursor(): CursorRemoteClient {
+    if (this.cursor === undefined) throw new Error(strings.runtime.cursorUnavailable)
+    return this.cursor
+  }
+
+  hasCursor(): boolean {
+    return this.cursor !== undefined
+  }
+
   getStats() {
     return this.core?.getStats()
   }
@@ -169,6 +184,7 @@ export class AndroidRemoteConnection {
     this.core = undefined
     this.proxy = undefined
     this.codex = undefined
+    this.cursor = undefined
     if (core !== undefined) await core.close()
   }
 }

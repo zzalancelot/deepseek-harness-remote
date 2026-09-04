@@ -1,7 +1,7 @@
 import type { TransportStats } from '@dsh-remote/protocol'
 import { strings as zhCN } from './locales/i18n'
 
-export type AgentBackend = 'harness' | 'codex'
+export type AgentBackend = 'harness' | 'codex' | 'cursor'
 
 export type ConnectionPhase =
   | 'disconnected'

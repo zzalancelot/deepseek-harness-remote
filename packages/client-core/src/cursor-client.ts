@@ -11,6 +11,8 @@ import {
 import type { RemoteClientCore } from './index.js'
 import { createRemoteId, RemoteGatewayError } from './remote-gateway.js'
 
+export type { CursorAppFrameData } from '@dsh-remote/protocol'
+
 export type CursorAgentBackend = 'cursor'
 
 export interface CursorRemoteSession {

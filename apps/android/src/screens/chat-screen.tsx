@@ -22,7 +22,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { Bot, Check, ChevronDown, ChevronLeft, ChevronRight, CircleStop, Code2, ImagePlus, Images, RefreshCw, Send, ShieldAlert, Sparkles, User, X } from 'lucide-react-native'
 import { useAppStore } from '../state/store'
 import { hasVisibleMessageText } from '../state/event-reducer'
-import type { ApprovalActivity, ChatImage, ChatItem, ChatMessage, ImageAttachmentLimits, ImageMediaType, ModelCatalogModel, ModelProviderGroup, PermissionSelect, PromptImage, QuestionActivity, RemoteSession, ToolActivity, ToolDisplayDetail } from '../types'
+import type { AgentBackend, ApprovalActivity, ChatImage, ChatItem, ChatMessage, ImageAttachmentLimits, ImageMediaType, ModelCatalogModel, ModelProviderGroup, PermissionSelect, PromptImage, QuestionActivity, RemoteSession, ToolActivity, ToolDisplayDetail } from '../types'
 import { Button, IconButton, TopBar } from '../ui/components'
 import { NativeMarkdown } from '../ui/markdown'
 import { radius, spacing, type } from '../ui/theme'
@@ -329,7 +329,7 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
           </ScrollView>
         )}
         <View style={styles.composer}>
-          <Pressable
+          {session.backend !== 'cursor' && <Pressable
             accessibilityRole="button"
             accessibilityLabel={zhCN.chat.addImages}
             accessibilityState={{ disabled: !connected || pickingImages || busy === 'send-message' }}
@@ -340,13 +340,21 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
             {pickingImages
               ? <ActivityIndicator size="small" color={colors.primary} />
               : <ImagePlus size={20} color={connected ? colors.primary : colors.disabled} />}
-          </Pressable>
+          </Pressable>}
           <TextInput
-            accessibilityLabel={session.backend === 'codex' ? zhCN.chat.codexMessageLabel : zhCN.chat.messageLabel}
+            accessibilityLabel={session.backend === 'codex'
+              ? zhCN.chat.codexMessageLabel
+              : session.backend === 'cursor'
+                ? zhCN.chat.cursorMessageLabel
+                : zhCN.chat.messageLabel}
             style={styles.composerInput}
             value={draft}
             onChangeText={setDraft}
-            placeholder={session.backend === 'codex' ? zhCN.chat.codexPlaceholder : zhCN.chat.placeholder}
+            placeholder={session.backend === 'codex'
+              ? zhCN.chat.codexPlaceholder
+              : session.backend === 'cursor'
+                ? zhCN.chat.cursorPlaceholder
+                : zhCN.chat.placeholder}
             placeholderTextColor={colors.muted}
             multiline
             maxLength={12_000}
@@ -378,7 +386,11 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
               </Pressable>}
         </View>
         <Text style={styles.composerHint}>
-          {session.backend === 'codex' ? zhCN.chat.codexPolicyHint : zhCN.chat.policyHint}
+          {session.backend === 'codex'
+            ? zhCN.chat.codexPolicyHint
+            : session.backend === 'cursor'
+              ? zhCN.chat.cursorPolicyHint
+              : zhCN.chat.policyHint}
         </Text>
       </View>
 
@@ -953,14 +965,24 @@ function QuestionCard({ item, busy, onRespond }: {
   )
 }
 
-function WelcomeMessage({ backend }: { backend?: 'harness' | 'codex' }) {
+function WelcomeMessage({ backend }: { backend?: AgentBackend }) {
   const { colors } = useTheme()
   const styles = useThemedStyles(createStyles)
+  const title = backend === 'codex'
+    ? zhCN.chat.codexWelcomeTitle
+    : backend === 'cursor'
+      ? zhCN.chat.cursorWelcomeTitle
+      : zhCN.chat.welcomeTitle
+  const body = backend === 'codex'
+    ? zhCN.chat.codexWelcomeBody
+    : backend === 'cursor'
+      ? zhCN.chat.cursorWelcomeBody
+      : zhCN.chat.welcomeBody
   return (
     <View style={styles.welcome}>
       <View style={styles.welcomeIcon}><Bot size={25} color={colors.primary} /></View>
-      <Text style={styles.welcomeTitle}>{backend === 'codex' ? zhCN.chat.codexWelcomeTitle : zhCN.chat.welcomeTitle}</Text>
-      <Text style={styles.welcomeBody}>{backend === 'codex' ? zhCN.chat.codexWelcomeBody : zhCN.chat.welcomeBody}</Text>
+      <Text style={styles.welcomeTitle}>{title}</Text>
+      <Text style={styles.welcomeBody}>{body}</Text>
     </View>
   )
 }

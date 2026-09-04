@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, CirclePlus, Code2, Eye, EyeOff, Folder, FolderOpen, Laptop, MessageSquareText, MoreVertical, Pencil, Search, Trash2, X } from 'lucide-react-native'
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, CirclePlus, Code2, Eye, EyeOff, Folder, FolderOpen, Laptop, MessageSquareText, MoreVertical, Pencil, Search, Sparkles, Trash2, X } from 'lucide-react-native'
 import { useAppStore } from '../state/store'
-import type { DirectoryListing, RemoteSession, WorkspaceView } from '../types'
+import type { AgentBackend, DirectoryListing, RemoteSession, WorkspaceView } from '../types'
 import { Button, EmptyState, IconButton, Screen, TopBar } from '../ui/components'
 import { radius, spacing, type } from '../ui/theme'
 import { useTheme, type ThemeColors } from '../ui/theme-context'
@@ -18,6 +18,7 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
 }) {
   const selectedDevice = useAppStore(state => state.selectedDevice)
   const codexAvailable = useAppStore(state => state.codexAvailable)
+  const cursorAvailable = useAppStore(state => state.cursorAvailable)
   const workspaces = useAppStore(state => state.workspaces)
   const sessions = useAppStore(state => state.sessions)
   const busy = useAppStore(state => state.busyAction)
@@ -30,7 +31,9 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
   const openSession = useAppStore(state => state.openSession)
   const [refreshing, setRefreshing] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
-  const [activeBackend, setActiveBackend] = useState<'harness' | 'codex'>(() => initialWorkspaceBackend(workspaces, codexAvailable))
+  const [activeBackend, setActiveBackend] = useState<AgentBackend>(() => (
+    initialWorkspaceBackend(workspaces, codexAvailable, cursorAvailable)
+  ))
   const [searchQuery, setSearchQuery] = useState('')
   const [renameTarget, setRenameTarget] = useState<WorkspaceView | undefined>(undefined)
   const [actionsTarget, setActionsTarget] = useState<WorkspaceView | undefined>(undefined)
@@ -41,7 +44,7 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
   useEffect(() => {
     const deviceId = selectedDevice?.deviceId
     let cancelled = false
-    setActiveBackend(initialWorkspaceBackend(workspaces, codexAvailable))
+    setActiveBackend(initialWorkspaceBackend(workspaces, codexAvailable, cursorAvailable))
     setSearchQuery('')
     setCollapsedWorkspaceIds(new Set())
     if (deviceId === undefined) return () => { cancelled = true }
@@ -52,8 +55,9 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
   }, [selectedDevice?.deviceId])
 
   useEffect(() => {
-    if (!codexAvailable) setActiveBackend('harness')
-  }, [codexAvailable])
+    if (activeBackend === 'codex' && !codexAvailable) setActiveBackend('harness')
+    if (activeBackend === 'cursor' && !cursorAvailable) setActiveBackend('harness')
+  }, [activeBackend, codexAvailable, cursorAvailable])
 
   const toggleWorkspace = (workspaceId: string) => setCollapsedWorkspaceIds(current => {
     const next = new Set(current)
@@ -93,10 +97,9 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
     ],
   )
 
-  const manageableWorkspaces = workspaces.filter(workspace => workspace.backend !== 'codex')
-  const backendWorkspaces = workspaces.filter(workspace => activeBackend === 'codex'
-    ? workspace.backend === 'codex'
-    : workspace.backend !== 'codex')
+  const backendWorkspaces = workspaces.filter(workspace => matchesWorkspaceBackend(workspace, activeBackend))
+  const manageableWorkspaces = activeBackend === 'codex' ? [] : backendWorkspaces
+  const showBackendTabs = codexAvailable || cursorAvailable
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase()
   const filteredWorkspaces = normalizedSearchQuery.length === 0
     ? backendWorkspaces
@@ -139,7 +142,7 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
             onPress={() => setCreateOpen(true)}
           />
         </View>
-        {codexAvailable && <View style={styles.backendTabs} accessibilityRole="tablist">
+        {showBackendTabs && <View style={styles.backendTabs} accessibilityRole="tablist">
           <Pressable
             accessibilityRole="tab"
             accessibilityState={{ selected: activeBackend === 'harness' }}
@@ -152,7 +155,7 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
           >
             <Text style={[styles.backendTabText, activeBackend === 'harness' && styles.backendTabTextActive]}>{zhCN.workspaces.dsh}</Text>
           </Pressable>
-          <Pressable
+          {codexAvailable && <Pressable
             accessibilityRole="tab"
             accessibilityState={{ selected: activeBackend === 'codex' }}
             onPress={() => setActiveBackend('codex')}
@@ -163,7 +166,19 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
             ]}
           >
             <Text style={[styles.backendTabText, activeBackend === 'codex' && styles.backendTabTextActive]}>{zhCN.workspaces.codex}</Text>
-          </Pressable>
+          </Pressable>}
+          {cursorAvailable && <Pressable
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeBackend === 'cursor' }}
+            onPress={() => setActiveBackend('cursor')}
+            style={({ pressed }) => [
+              styles.backendTab,
+              activeBackend === 'cursor' && styles.backendTabActive,
+              pressed && styles.workspaceRowPressed,
+            ]}
+          >
+            <Text style={[styles.backendTabText, activeBackend === 'cursor' && styles.backendTabTextActive]}>{zhCN.workspaces.cursor}</Text>
+          </Pressable>}
         </View>}
         {backendWorkspaces.length > 0 && <View style={styles.searchField}>
           <Search size={18} color={colors.muted} />
@@ -221,9 +236,11 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
                       <View style={styles.workspaceIcon}>
                         {workspace.backend === 'codex'
                           ? <Code2 size={18} color={colors.primary} />
-                          : collapsed
-                            ? <Folder size={18} color={colors.primary} />
-                            : <FolderOpen size={18} color={colors.primary} />}
+                          : workspace.backend === 'cursor'
+                            ? <Sparkles size={18} color={colors.primary} />
+                            : collapsed
+                              ? <Folder size={18} color={colors.primary} />
+                              : <FolderOpen size={18} color={colors.primary} />}
                       </View>
                       <View style={styles.workspaceCopy}>
                         <Text style={styles.workspaceTitle} numberOfLines={1}>{workspace.title}</Text>
@@ -254,7 +271,9 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
                             ? <ActivityIndicator size="small" color={colors.primary} />
                             : session.backend === 'codex'
                               ? <Code2 size={17} color={colors.muted} />
-                              : <MessageSquareText size={17} color={colors.muted} />}
+                              : session.backend === 'cursor'
+                                ? <Sparkles size={17} color={colors.muted} />
+                                : <MessageSquareText size={17} color={colors.muted} />}
                           <View style={styles.sessionCopy}>
                           <Text style={styles.sessionTitle} numberOfLines={1}>{resolveSessionTitle(session)}</Text>
                             <Text style={styles.sessionMeta}>{session.running ? zhCN.status.running : relativeTime(session.updatedAt)}</Text>
@@ -270,8 +289,9 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo }: {
       <CreateWorkspaceModal
         visible={createOpen}
         codexAvailable={codexAvailable}
+        cursorAvailable={cursorAvailable}
         initialBackend={activeBackend}
-        busy={busy === 'create-workspace' || busy === 'create-codex-workspace'}
+        busy={busy === 'create-workspace' || busy === 'create-codex-workspace' || busy === 'create-cursor-workspace'}
         onClose={() => setCreateOpen(false)}
         onCreate={workspaceCreate}
         onCreated={workspace => void createInWorkspace(workspace.workspaceId)}
@@ -370,31 +390,47 @@ function relativeTime(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString(zhCN.time.locale)
 }
 
-function initialWorkspaceBackend(workspaces: readonly WorkspaceView[], codexAvailable: boolean): 'harness' | 'codex' {
-  if (!codexAvailable) return 'harness'
-  const hasHarnessWorkspace = workspaces.some(workspace => workspace.backend !== 'codex')
-  const hasCodexWorkspace = workspaces.some(workspace => workspace.backend === 'codex')
-  return !hasHarnessWorkspace && hasCodexWorkspace ? 'codex' : 'harness'
+function matchesWorkspaceBackend(workspace: WorkspaceView, backend: AgentBackend): boolean {
+  if (backend === 'codex') return workspace.backend === 'codex'
+  if (backend === 'cursor') return workspace.backend === 'cursor'
+  return workspace.backend !== 'codex' && workspace.backend !== 'cursor'
 }
 
-function CreateWorkspaceModal({ visible, codexAvailable, initialBackend, busy, onClose, onCreate, onCreated }: {
+function initialWorkspaceBackend(
+  workspaces: readonly WorkspaceView[],
+  codexAvailable: boolean,
+  cursorAvailable: boolean,
+): AgentBackend {
+  const hasHarnessWorkspace = workspaces.some(workspace => matchesWorkspaceBackend(workspace, 'harness'))
+  const hasCodexWorkspace = workspaces.some(workspace => workspace.backend === 'codex')
+  const hasCursorWorkspace = workspaces.some(workspace => workspace.backend === 'cursor')
+  if (!hasHarnessWorkspace && hasCodexWorkspace && codexAvailable) return 'codex'
+  if (!hasHarnessWorkspace && !hasCodexWorkspace && hasCursorWorkspace && cursorAvailable) return 'cursor'
+  return 'harness'
+}
+
+function CreateWorkspaceModal({ visible, codexAvailable, cursorAvailable, initialBackend, busy, onClose, onCreate, onCreated }: {
   visible: boolean
   codexAvailable: boolean
-  initialBackend: 'harness' | 'codex'
+  cursorAvailable: boolean
+  initialBackend: AgentBackend
   busy: boolean
   onClose: () => void
-  onCreate: (path: string, backend: 'harness' | 'codex') => Promise<WorkspaceView | undefined>
+  onCreate: (path: string, backend: AgentBackend) => Promise<WorkspaceView | undefined>
   onCreated: (workspace: WorkspaceView) => void
 }) {
-  const [backend, setBackend] = useState<'harness' | 'codex'>('harness')
+  const [backend, setBackend] = useState<AgentBackend>('harness')
   const [path, setPath] = useState('')
   const [browseOpen, setBrowseOpen] = useState(false)
   const { colors } = useTheme()
   const styles = useThemedStyles(createStyles)
 
   useEffect(() => {
-    if (visible) setBackend(codexAvailable ? initialBackend : 'harness')
-  }, [codexAvailable, initialBackend, visible])
+    if (!visible) return
+    if (initialBackend === 'codex' && codexAvailable) setBackend('codex')
+    else if (initialBackend === 'cursor' && cursorAvailable) setBackend('cursor')
+    else setBackend('harness')
+  }, [codexAvailable, cursorAvailable, initialBackend, visible])
 
   const create = async () => {
     const trimmed = path.trim()
@@ -405,6 +441,12 @@ function CreateWorkspaceModal({ visible, codexAvailable, initialBackend, busy, o
     onClose()
     onCreated(workspace)
   }
+
+  const directoryHint = backend === 'codex'
+    ? zhCN.workspaces.codexDirectoryHint
+    : backend === 'cursor'
+      ? zhCN.workspaces.cursorDirectoryHint
+      : zhCN.workspaces.directoryHint
 
   return (
     <>
@@ -451,6 +493,23 @@ function CreateWorkspaceModal({ visible, codexAvailable, initialBackend, busy, o
                 </View>
                 <Text style={[styles.backendOptionText, backend === 'codex' && styles.backendOptionTextSelected]}>{zhCN.workspaces.codex}</Text>
               </Pressable>}
+              {cursorAvailable && <Pressable
+                accessibilityRole="radio"
+                accessibilityState={{ selected: backend === 'cursor', disabled: busy }}
+                disabled={busy}
+                onPress={() => setBackend('cursor')}
+                style={({ pressed }) => [
+                  styles.backendOption,
+                  backend === 'cursor' && styles.backendOptionSelected,
+                  pressed && !busy && styles.workspaceRowPressed,
+                  busy && styles.disabled,
+                ]}
+              >
+                <View style={[styles.radioIndicator, backend === 'cursor' && styles.radioIndicatorSelected]}>
+                  {backend === 'cursor' && <View style={styles.radioIndicatorDot} />}
+                </View>
+                <Text style={[styles.backendOptionText, backend === 'cursor' && styles.backendOptionTextSelected]}>{zhCN.workspaces.cursor}</Text>
+              </Pressable>}
             </View>
             <Text style={styles.fieldLabel}>{zhCN.workspaces.deviceDirectory}</Text>
             <View style={styles.pathRow}>
@@ -466,7 +525,7 @@ function CreateWorkspaceModal({ visible, codexAvailable, initialBackend, busy, o
               />
               <Button label={zhCN.workspaces.browse} variant="secondary" onPress={() => setBrowseOpen(true)} disabled={busy} />
             </View>
-            <Text style={styles.fieldHint}>{backend === 'codex' ? zhCN.workspaces.codexDirectoryHint : zhCN.workspaces.directoryHint}</Text>
+            <Text style={styles.fieldHint}>{directoryHint}</Text>
             <Button label={zhCN.workspaces.create} onPress={() => void create()} loading={busy} disabled={path.trim().length === 0} />
           </Pressable>
         </Pressable>
