@@ -16,7 +16,7 @@ Server runtime。它复用 Remote 已有的账号授权、Host 选择、端到�
 
 目标与 Codex 相同：不新增独立 Cursor 页面。
 
-- Desktop：设置页提供 `cursor.enabled` 开关（Virtual Harness Workspace 投影仍待实现）
+- Desktop：设置页提供 `cursor.enabled` 开关；Virtual Harness 将 cwd workspace 投影为原生 Workspace / Session / Composer
 - Android：`backend: 'cursor'` 合并进现有 Workspace / Chat；连接期内内存维护 cwd 与 session
 
 ## 操作白名单
@@ -63,6 +63,7 @@ ds-harness-remote:
 | `packages/plugin/src/cursor/method-policy.ts` | allowlist |
 | `packages/plugin/src/cursor/domain.ts` | 领域生命周期 / 审批 / 路径校验 |
 | `packages/plugin/src/cursor/peer-bridge.ts` | 每连接 stream / transfer |
+| `packages/plugin/src/cursor/virtual-harness.ts` | Desktop Virtual Harness 投影 |
 | `packages/client-core/src/cursor-client.ts` | 共享 Client |
 | `apps/android/src/services/cursor.ts` | Android 投影辅助 |
 | `apps/android/src/state/store.ts` | Workspace / Session / Chat 操作 |
@@ -74,5 +75,5 @@ ds-harness-remote:
 - [x] 方法策略单测
 - [x] Desktop 设置开关 `settings.cursor.set`
 - [x] Android Workspace/Chat 投影（文本 Prompt + 审批 + 流式更新）
-- [ ] Desktop Virtual Harness
+- [x] Desktop Virtual Harness（cwd workspace + session/prompt/stream/approval）
 - [ ] 真机跨机 E2E

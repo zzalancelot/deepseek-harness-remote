@@ -1,6 +1,6 @@
 import type { ApiProxy, RpcResult } from '@deepseek-ai/dsh-host-apiproxy/api'
 import type { CodexAppFrameData, CodexAppStreamClosedData } from '@dsh-remote/protocol'
-import { CodexRemoteClient, RemoteClientCore } from '@dsh-remote/client-core'
+import { CodexRemoteClient, CursorRemoteClient, RemoteClientCore } from '@dsh-remote/client-core'
 import {
   AdaptiveTransport,
   stunOnlyIceServers,
@@ -24,6 +24,11 @@ import {
   discoverCodexVirtualWorkspaces,
   type CodexVirtualWorkspaceView,
 } from './codex/virtual-harness.js'
+import {
+  CursorVirtualHarness,
+  discoverCursorVirtualWorkspaces,
+  type CursorVirtualWorkspaceView,
+} from './cursor/virtual-harness.js'
 import {
   ClientServerApi,
   ServerApiError,
@@ -50,6 +55,7 @@ export interface RemoteHostFeatures {
   apiProxy: boolean
   remoteGateway: boolean
   codex: boolean
+  cursor: boolean
 }
 
 interface CodexLoopbackStream {
@@ -97,7 +103,7 @@ export interface RemoteWorkspaceView {
 interface RemoteWorkspaceSelection {
   targetDeviceId: string
   workspaceId: string
-  backend?: 'harness' | 'codex'
+  backend?: 'harness' | 'codex' | 'cursor'
   sessionId?: string
 }
 
@@ -155,6 +161,7 @@ export class ClientModeRuntime {
   private connected?: ConnectedRemote
   private pendingWorkspaceSelection?: RemoteWorkspaceSelection
   private codexVirtual?: CodexVirtualHarness
+  private cursorVirtual?: CursorVirtualHarness
   private readonly proxySwitch?: ApiProxySwitch
   private readonly gatewaySwitch: TypertGatewaySwitch
   private readonly codexStreams = new Map<string, CodexLoopbackStream>()
@@ -222,7 +229,9 @@ export class ClientModeRuntime {
       ...(this.pendingWorkspaceSelection === undefined
         ? {}
         : { workspaceSelection: { ...this.pendingWorkspaceSelection } }),
-      backend: this.codexVirtual === undefined ? 'harness' : 'codex',
+      backend: this.cursorVirtual !== undefined
+        ? 'cursor'
+        : this.codexVirtual === undefined ? 'harness' : 'codex',
       hostAuthorizationAvailable: this.host !== undefined,
       ...(this.host === undefined ? {} : { host: this.host.hostStatus() }),
     }
@@ -297,6 +306,7 @@ export class ClientModeRuntime {
     this.connectionProgress = undefined
     this.pendingWorkspaceSelection = undefined
     await this.closeCodexVirtual()
+    await this.closeCursorVirtual()
     this.proxySwitch?.selectLocal()
     this.gatewaySwitch.selectLocal()
     await this.closeCodexStreams(previous?.client)
@@ -320,6 +330,7 @@ export class ClientModeRuntime {
   async setMode(mode: HarnessMode, targetDeviceId?: string, signal?: AbortSignal): Promise<Record<string, unknown>> {
     if (mode === 'local') {
       await this.closeCodexVirtual()
+      await this.closeCursorVirtual()
       this.proxySwitch?.selectLocal()
       this.gatewaySwitch.selectLocal()
       const previous = this.connected
@@ -347,6 +358,7 @@ export class ClientModeRuntime {
     this.clearConnectionProgress(next.progressRunId)
     this.pendingWorkspaceSelection = undefined
     await this.closeCodexVirtual()
+    await this.closeCursorVirtual()
     this.selectRemoteTarget(next)
     await this.closeCodexStreams(previous?.client)
     await previous?.client.close().catch(() => undefined)
@@ -408,6 +420,7 @@ export class ClientModeRuntime {
       workspace = unwrapNativeResult<{ workspace: unknown; created: boolean }>(response)
     }
     await this.closeCodexVirtual()
+    await this.closeCursorVirtual()
     this.selectRemoteTarget(remote)
     const workspaceId = workspaceRecordId(workspace.workspace)
     this.pendingWorkspaceSelection = { targetDeviceId: remote.target.deviceId, workspaceId }
@@ -447,6 +460,7 @@ export class ClientModeRuntime {
       throw new ClientModeError('WORKSPACE_NOT_FOUND', 'The selected CodeX workspace is no longer available.')
     }
     await this.closeCodexVirtual()
+    await this.closeCursorVirtual()
     this.codexVirtual = virtual
     this.selectCodexTarget(virtual, remote)
     const preferredSessionId = await virtual.preferredSessionId(signal)
@@ -485,6 +499,86 @@ export class ClientModeRuntime {
     return this.openCodexWorkspace(targetDeviceId, codexProjectWorkspaceId(project.id), signal)
   }
 
+  async listCursorWorkspaces(targetDeviceId: string, signal?: AbortSignal): Promise<CursorVirtualWorkspaceView[]> {
+    const remote = await this.ensureConnected(targetDeviceId, signal)
+    remote.features = await probeRemoteHostFeatures(remote.client, remote.clientVersion)
+    if (!remote.features.cursor) {
+      throw new ClientModeError('FEATURE_NOT_SUPPORTED', 'The selected Host does not provide Cursor workspaces.')
+    }
+    if (this.cursorVirtual !== undefined && this.connected?.target.deviceId === targetDeviceId) {
+      return this.cursorVirtual.workspaces()
+    }
+    return discoverCursorVirtualWorkspaces(new CursorRemoteClient(remote.client), signal)
+  }
+
+  async openCursorWorkspace(
+    targetDeviceId: string,
+    workspaceId: string,
+    signal?: AbortSignal,
+  ): Promise<Record<string, unknown>> {
+    const remote = await this.ensureConnected(targetDeviceId, signal)
+    remote.features = await probeRemoteHostFeatures(remote.client, remote.clientVersion)
+    if (!remote.features.cursor) {
+      throw new ClientModeError('FEATURE_NOT_SUPPORTED', 'The selected Host does not provide Cursor workspaces.')
+    }
+    this.assertRemoteCompatible(remote)
+    const virtual = CursorVirtualHarness.remote(remote.client, {
+      deviceId: remote.target.deviceId,
+      name: remote.target.name,
+    })
+    let workspace: CursorVirtualWorkspaceView
+    try {
+      workspace = await virtual.selectWorkspace(workspaceId)
+    } catch {
+      await virtual.close()
+      throw new ClientModeError('WORKSPACE_NOT_FOUND', 'The selected Cursor workspace is no longer available.')
+    }
+    await this.closeCodexVirtual()
+    await this.closeCursorVirtual()
+    this.cursorVirtual = virtual
+    this.selectCursorTarget(virtual, remote)
+    const preferredSessionId = await virtual.preferredSessionId()
+    this.pendingWorkspaceSelection = {
+      targetDeviceId: remote.target.deviceId,
+      workspaceId: workspace.workspaceId,
+      backend: 'cursor',
+      ...(preferredSessionId === undefined ? {} : { sessionId: preferredSessionId }),
+    }
+    this.logger.info('Cursor virtual workspace opened', { targetDeviceId: shortId(remote.target.deviceId) })
+    return { ...this.status(), workspace }
+  }
+
+  async createCursorWorkspace(
+    targetDeviceId: string,
+    path: string,
+    signal?: AbortSignal,
+  ): Promise<Record<string, unknown>> {
+    const trimmedPath = path.trim()
+    if (trimmedPath === '') throw new ClientModeError('INVALID_MESSAGE', 'A Cursor project directory is required.')
+    const remote = await this.ensureConnected(targetDeviceId, signal)
+    remote.features = await probeRemoteHostFeatures(remote.client, remote.clientVersion)
+    if (!remote.features.cursor) {
+      throw new ClientModeError('FEATURE_NOT_SUPPORTED', 'The selected Host does not provide Cursor workspaces.')
+    }
+    this.assertRemoteCompatible(remote)
+    const virtual = CursorVirtualHarness.remote(remote.client, {
+      deviceId: remote.target.deviceId,
+      name: remote.target.name,
+    })
+    const workspace = await virtual.selectOrCreateWorkspace(trimmedPath)
+    await this.closeCodexVirtual()
+    await this.closeCursorVirtual()
+    this.cursorVirtual = virtual
+    this.selectCursorTarget(virtual, remote)
+    this.pendingWorkspaceSelection = {
+      targetDeviceId: remote.target.deviceId,
+      workspaceId: workspace.workspaceId,
+      backend: 'cursor',
+    }
+    this.logger.info('Cursor virtual workspace created', { targetDeviceId: shortId(remote.target.deviceId) })
+    return { ...this.status(), workspace }
+  }
+
   private consumeWorkspaceSelection(selection: RemoteWorkspaceSelection): Record<string, unknown> {
     const pending = this.pendingWorkspaceSelection
     if (pending?.targetDeviceId === selection.targetDeviceId
@@ -502,6 +596,7 @@ export class ClientModeRuntime {
     this.gatewaySwitch.selectLocal()
     this.pendingWorkspaceSelection = undefined
     await this.closeCodexVirtual()
+    await this.closeCursorVirtual()
     await this.closeCodexStreams(this.connected?.client)
     await this.connected?.client.close().catch(() => undefined)
     this.connected = undefined
@@ -704,9 +799,25 @@ export class ClientModeRuntime {
     this.gatewaySwitch.selectRemote(request => virtual.invoke(request), { execute: true, list: true }, target)
   }
 
+  private selectCursorTarget(virtual: CursorVirtualHarness, remote: ConnectedRemote): void {
+    const target = { deviceId: remote.target.deviceId, name: remote.target.name }
+    if (this.gatewaySwitch.supportsCarrier()) {
+      this.gatewaySwitch.selectRemote(virtual, undefined, target)
+      return
+    }
+    this.proxySwitch!.selectRemote(virtual.api, target)
+    this.gatewaySwitch.selectRemote(request => virtual.invoke(request), { execute: true, list: true }, target)
+  }
+
   private async closeCodexVirtual(): Promise<void> {
     const virtual = this.codexVirtual
     this.codexVirtual = undefined
+    await virtual?.close()
+  }
+
+  private async closeCursorVirtual(): Promise<void> {
+    const virtual = this.cursorVirtual
+    this.cursorVirtual = undefined
     await virtual?.close()
   }
 
@@ -817,6 +928,7 @@ export class ClientModeRuntime {
         this.connectionProgress = undefined
         this.pendingWorkspaceSelection = undefined
         void this.closeCodexVirtual()
+        void this.closeCursorVirtual()
         this.proxySwitch?.selectLocal()
         this.gatewaySwitch.selectLocal()
         void connectedClient.close().catch(() => undefined)
@@ -958,9 +1070,28 @@ export class ClientModeRuntime {
         return ok(this.consumeWorkspaceSelection({
           targetDeviceId: value.targetDeviceId,
           workspaceId: value.workspaceId,
-          ...(value.backend === 'codex' ? { backend: 'codex' } : {}),
+          ...(value.backend === 'codex' || value.backend === 'cursor' ? { backend: value.backend } : {}),
           ...(typeof value.sessionId === 'string' ? { sessionId: value.sessionId } : {}),
         }))
+      }
+      if (endpoint === 'cursor.workspaces.list') {
+        const value = record(payload)
+        if (typeof value.targetDeviceId !== 'string') throw new ClientModeError('INVALID_MESSAGE', 'A Host is required.')
+        return ok(await this.listCursorWorkspaces(value.targetDeviceId, signal))
+      }
+      if (endpoint === 'cursor.workspace.open') {
+        const value = record(payload)
+        if (typeof value.targetDeviceId !== 'string' || typeof value.workspaceId !== 'string') {
+          throw new ClientModeError('INVALID_MESSAGE', 'A Host and Cursor Workspace are required.')
+        }
+        return ok(await this.openCursorWorkspace(value.targetDeviceId, value.workspaceId, signal))
+      }
+      if (endpoint === 'cursor.workspace.create') {
+        const value = record(payload)
+        if (typeof value.targetDeviceId !== 'string' || typeof value.path !== 'string') {
+          throw new ClientModeError('INVALID_MESSAGE', 'A Host and Cursor project directory are required.')
+        }
+        return ok(await this.createCursorWorkspace(value.targetDeviceId, value.path, signal))
       }
       if (endpoint === 'fileviewer.stat' || endpoint === 'fileviewer.readRange' || endpoint === 'fileviewer.list') {
         const method = endpoint === 'fileviewer.stat'
@@ -1211,6 +1342,7 @@ export function remoteHostFeatures(clientVersion?: string): RemoteHostFeatures {
     apiProxy: true,
     remoteGateway: false,
     codex: false,
+    cursor: false,
   }
 }
 
@@ -1242,6 +1374,7 @@ export async function probeRemoteHostFeatures(
     apiProxy,
     remoteGateway,
     codex: capabilities.has('codex.appserver.v1'),
+    cursor: capabilities.has('cursor.acp.v1'),
   }
 }
 
