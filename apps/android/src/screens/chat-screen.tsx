@@ -7,6 +7,7 @@ import {
   Image,
   Keyboard,
   Modal,
+  Platform,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Pressable,
@@ -19,11 +20,11 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
-import { Bot, Check, ChevronDown, ChevronLeft, ChevronRight, CircleStop, Code2, ImagePlus, Images, RefreshCw, Send, ShieldAlert, Sparkles, User, X } from 'lucide-react-native'
+import { Bot, Check, ChevronDown, ChevronLeft, ChevronRight, CirclePlus, CircleStop, Code2, ImagePlus, Images, MoreVertical, RefreshCw, Send, ShieldAlert, Sparkles, User, X } from 'lucide-react-native'
 import { useAppStore } from '../state/store'
 import { hasVisibleMessageText } from '../state/event-reducer'
 import type { ApprovalActivity, ChatImage, ChatItem, ChatMessage, ImageAttachmentLimits, ImageMediaType, ModelCatalogModel, ModelProviderGroup, PermissionSelect, PromptImage, QuestionActivity, RemoteSession, ToolActivity, ToolDisplayDetail } from '../types'
-import { Button, IconButton, TopBar } from '../ui/components'
+import { Button, ConnectionDrawerButton, IconButton, TopBar } from '../ui/components'
 import { NativeMarkdown } from '../ui/markdown'
 import { radius, spacing, type } from '../ui/theme'
 import { useTheme, type ThemeColors } from '../ui/theme-context'
@@ -33,7 +34,19 @@ import { resolveSessionDisplayTitle } from './session-title'
 
 const EMPTY_CHAT_ITEMS: ChatItem[] = []
 
-export function ChatScreen({ onBack }: { onBack: () => void }) {
+export function ChatScreen({
+  onBack,
+  homeMode = false,
+  onOpenDrawer,
+  onMore,
+  onNewChat,
+}: {
+  onBack?: () => void
+  homeMode?: boolean
+  onOpenDrawer?: () => void
+  onMore?: () => void
+  onNewChat?: () => void
+}) {
   const session = useAppStore(state => state.selectedSession)
   const messages = useAppStore(state => session === undefined ? EMPTY_CHAT_ITEMS : state.messages[session.sessionId] ?? EMPTY_CHAT_ITEMS)
   const busy = useAppStore(state => state.busyAction)
@@ -64,6 +77,7 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
   const pinToBottomRef = useRef(true)
   /** Re-pin while the first session layout (markdown / images) is still settling. */
   const initialPinRef = useRef(true)
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const visibleMessages = useMemo(() => messages.filter(item =>
     item.kind !== 'message'
       || hasVisibleMessageText(item.text)
@@ -86,6 +100,7 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     pinToBottomRef.current = true
     initialPinRef.current = true
+    setShowScrollToBottom(false)
   }, [sessionId])
 
   // Loading older history prepends above the viewport — do not yank to the end.
@@ -93,6 +108,7 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
     if (!historyLoadingOlder) return
     pinToBottomRef.current = false
     initialPinRef.current = false
+    setShowScrollToBottom(true)
   }, [historyLoadingOlder])
 
   // Scroll when a brand-new item is appended. Streaming deltas keep the same
@@ -130,7 +146,15 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
     const atBottom = distanceFromEnd <= 80
     pinToBottomRef.current = atBottom
     if (!atBottom) initialPinRef.current = false
+    setShowScrollToBottom(previous => previous === !atBottom ? previous : !atBottom)
   }, [])
+
+  const jumpToBottom = useCallback(() => {
+    pinToBottomRef.current = true
+    initialPinRef.current = false
+    setShowScrollToBottom(false)
+    scrollToBottom(true)
+  }, [scrollToBottom])
 
   // Stable renderItem keeps FlatList rows from re-rendering on every streaming
   // delta; ChatItemView is memoized so only the changing row re-renders.
@@ -154,7 +178,7 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
 
   const pickImages = async () => {
     const limits = sessionImageLimits(session)
-    const remaining = limits === undefined ? 0 : Math.max(0, limits.maxImagesPerMessage - images.length)
+    const remaining = limits === undefined ? undefined : Math.max(0, limits.maxImagesPerMessage - images.length)
     if (limits !== undefined && remaining === 0) {
       Alert.alert(zhCN.chat.imageLimitTitle, zhCN.chat.tooManyImages(limits.maxImagesPerMessage))
       return
@@ -164,11 +188,13 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsMultipleSelection: true,
-        selectionLimit: remaining,
-        orderedSelection: true,
+        ...(remaining === undefined ? {} : { selectionLimit: remaining }),
         allowsEditing: false,
         quality: 1,
         base64: true,
+        // Xiaomi/HyperOS Photo Picker often opens then immediately cancels.
+        // ACTION_GET_CONTENT is the documented Android fallback.
+        ...(Platform.OS === 'android' ? { legacy: true } : { orderedSelection: true }),
       })
       if (result.canceled) return
       const picked = result.assets.map(promptImageFromAsset)
@@ -248,12 +274,29 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
     <ChatKeyboardInset>
       <TopBar
         title={sessionTitle(session)}
-        onBack={onBack}
-        action={!connected
-          ? <IconButton label={zhCN.chat.reconnect} icon={RefreshCw} onPress={() => void reconnectCurrentSession()} disabled={connectionRetrying} />
-          : canStop
-            ? <IconButton label={zhCN.chat.stop} icon={CircleStop} onPress={() => void stopSession()} disabled={stopping} />
-            : undefined}
+        onBack={homeMode ? undefined : onBack}
+        leading={homeMode && onOpenDrawer !== undefined
+          ? (
+            <ConnectionDrawerButton
+              connected={connected}
+              onPress={onOpenDrawer}
+            />
+          )
+          : undefined}
+        action={(
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {homeMode && onNewChat !== undefined && connected && !canStop && (
+              <IconButton label={zhCN.sessions.new} icon={CirclePlus} onPress={onNewChat} />
+            )}
+            {!connected
+              ? <IconButton label={zhCN.chat.reconnect} icon={RefreshCw} onPress={() => void reconnectCurrentSession()} disabled={connectionRetrying} />
+              : canStop
+                ? <IconButton label={zhCN.chat.stop} icon={CircleStop} onPress={() => void stopSession()} disabled={stopping} />
+                : homeMode && onMore !== undefined
+                  ? <IconButton label={zhCN.settings.more} icon={MoreVertical} onPress={onMore} />
+                  : undefined}
+          </View>
+        )}
       />
 
       <View style={styles.sessionControls}>
@@ -280,37 +323,50 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
         </View>
       )}
 
-      <FlatList
-        ref={listRef}
-        style={styles.list}
-        contentContainerStyle={[styles.listContent, visibleMessages.length === 0 && styles.emptyList]}
-        data={visibleMessages}
-        keyExtractor={item => item.id}
-        renderItem={renderChatItem}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
-        onContentSizeChange={onListContentSizeChange}
-        onScroll={onListScroll}
-        scrollEventThrottle={16}
-        onScrollBeginDrag={() => {
-          initialPinRef.current = false
-        }}
-        ListEmptyComponent={<WelcomeMessage backend={session.backend} />}
-        ListHeaderComponent={historyHasMore ? (
+      <View style={styles.listArea}>
+        <FlatList
+          ref={listRef}
+          style={styles.list}
+          contentContainerStyle={[styles.listContent, visibleMessages.length === 0 && styles.emptyList]}
+          data={visibleMessages}
+          keyExtractor={item => item.id}
+          renderItem={renderChatItem}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          onContentSizeChange={onListContentSizeChange}
+          onScroll={onListScroll}
+          scrollEventThrottle={16}
+          onScrollBeginDrag={() => {
+            initialPinRef.current = false
+          }}
+          ListEmptyComponent={<WelcomeMessage backend={session.backend} />}
+          ListHeaderComponent={historyHasMore ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={zhCN.chat.older}
+              disabled={historyLoadingOlder}
+              onPress={() => void loadOlderHistory()}
+              style={styles.olderButton}
+            >
+              {historyLoadingOlder
+                ? <ActivityIndicator size="small" color={colors.primary} />
+                : <Text style={styles.olderText}>{zhCN.chat.older}</Text>}
+            </Pressable>
+          ) : undefined}
+          ListFooterComponent={showGenerating ? <GeneratingIndicator /> : undefined}
+        />
+        {showScrollToBottom && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={zhCN.chat.older}
-            disabled={historyLoadingOlder}
-            onPress={() => void loadOlderHistory()}
-            style={styles.olderButton}
+            accessibilityLabel={zhCN.chat.scrollToBottom}
+            hitSlop={8}
+            onPress={jumpToBottom}
+            style={({ pressed }) => [styles.scrollToBottomButton, pressed && styles.scrollToBottomPressed]}
           >
-            {historyLoadingOlder
-              ? <ActivityIndicator size="small" color={colors.primary} />
-              : <Text style={styles.olderText}>{zhCN.chat.older}</Text>}
+            <ChevronDown size={20} color={colors.ink} strokeWidth={2.25} />
           </Pressable>
-        ) : undefined}
-        ListFooterComponent={showGenerating ? <GeneratingIndicator /> : undefined}
-      />
+        )}
+      </View>
 
       <View style={styles.composerWrap}>
         {session.backend === 'codex' && <ScrollView
@@ -365,6 +421,7 @@ export function ChatScreen({ onBack }: { onBack: () => void }) {
             accessibilityLabel={zhCN.chat.addImages}
             accessibilityState={{ disabled: !connected || pickingImages || busy === 'send-message' || permissionSelecting }}
             disabled={!connected || pickingImages || busy === 'send-message' || permissionSelecting}
+            hitSlop={8}
             onPress={() => void pickImages()}
             style={({ pressed }) => [styles.attachButton, pressed && styles.attachPressed]}
           >
@@ -1084,9 +1141,34 @@ function createStyles(colors: ThemeColors) {
   connectionBanner: { minHeight: 40, paddingHorizontal: spacing.lg, paddingVertical: spacing.xs, backgroundColor: colors.warningSoft, flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   connectionDot: { width: 8, height: 8, borderRadius: radius.pill, backgroundColor: colors.warning },
   connectionBannerText: { ...type.small, color: colors.ink, flex: 1 },
+  listArea: { flex: 1 },
   list: { flex: 1 },
   listContent: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.xxl, gap: spacing.xxs },
   emptyList: { flexGrow: 1, justifyContent: 'center' },
+  scrollToBottomButton: {
+    position: 'absolute',
+    right: spacing.md,
+    bottom: spacing.sm,
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.14,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: { elevation: 3 },
+      default: {},
+    }),
+  },
+  scrollToBottomPressed: { backgroundColor: colors.surfaceStrong },
   messageRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginVertical: spacing.xs },
   messageRowUser: { flexDirection: 'row-reverse' },
   assistantBlock: { alignSelf: 'stretch', gap: spacing.xxs, marginVertical: spacing.xs },

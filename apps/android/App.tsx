@@ -4,10 +4,9 @@ import NetInfo from '@react-native-community/netinfo'
 import { useLocales } from 'expo-localization'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
-import { ChatScreen } from './src/screens/chat-screen'
-import { ConnectionScreen, DeviceDetailScreen, DevicesScreen, SessionsScreen } from './src/screens/device-screens'
+import { ConnectionScreen, DeviceDetailScreen, DevicesScreen } from './src/screens/device-screens'
+import { HomeScreen } from './src/screens/home-screen'
 import { AboutScreen, HomeActionsMenu, ServerSetupScreen, SettingsScreen } from './src/screens/setup-screens'
-import { WorkspacesScreen } from './src/screens/workspaces-screen'
 import { useAppStore } from './src/state/store'
 import {
   networkRouteForNativeType,
@@ -23,11 +22,9 @@ import { strings as zhCN } from './src/locales/i18n'
 type Route =
   | { name: 'server' }
   | { name: 'devices' }
-  | { name: 'device'; deviceId: string; source?: 'workspaces' }
+  | { name: 'device'; deviceId: string; source?: 'home' }
   | { name: 'connecting'; deviceId: string }
-  | { name: 'workspaces' }
-  | { name: 'sessions' }
-  | { name: 'chat' }
+  | { name: 'home' }
   | { name: 'settings' }
   | { name: 'about' }
 
@@ -95,7 +92,7 @@ function AppNavigator() {
 
   const openDevice = (device: (typeof devices)[number]) => {
     if (selectedDevice?.deviceId === device.deviceId && useAppStore.getState().connection.phase === 'connected') {
-      reset({ name: 'workspaces' })
+      reset({ name: 'home' })
       return
     }
     push(device.trusted && device.online
@@ -103,7 +100,9 @@ function AppNavigator() {
       : { name: 'device', deviceId: device.deviceId })
   }
 
-  const goHomeWorkspaces = () => reset({ name: 'workspaces' })
+  const goHome = () => {
+    reset({ name: 'home' })
+  }
   const openHomeMenu = () => setHomeMenuOpen(true)
 
   useEffect(() => { void bootstrap() }, [bootstrap])
@@ -152,7 +151,7 @@ function AppNavigator() {
       reset({ name: 'connecting', deviceId: autoConnectDeviceId })
       return
     }
-    // Not yet connected — pick a host first; workspaces becomes home after connect.
+    // Not yet connected — pick a host first; home becomes the post-connect root.
     reset({ name: 'devices' })
   }, [bootPhase, config, consumePendingAutoConnect, reauthRequired])
 
@@ -215,7 +214,7 @@ function AppNavigator() {
     ? devices.find(device => device.deviceId === route.deviceId) ?? selectedDevice
     : undefined
   const devicesIsRoot = route.name === 'devices' && routes.length === 1
-  const homeMenuVisible = homeMenuOpen && route.name === 'workspaces'
+  const homeMenuVisible = homeMenuOpen && route.name === 'home'
 
   return (
     <View style={styles.flex}>
@@ -234,7 +233,7 @@ function AppNavigator() {
             if (routes.length > 1) pop()
             else reset({ name: 'devices' })
           }}
-          onConnected={goHomeWorkspaces}
+          onConnected={goHome}
         />
       )}
       {route.name === 'connecting' && deviceForRoute === undefined && <MissingRoute onBack={() => reset({ name: 'devices' })} />}
@@ -242,29 +241,23 @@ function AppNavigator() {
         device={deviceForRoute}
         onBack={pop}
         onConnect={() => replace({ name: 'connecting', deviceId: deviceForRoute.deviceId })}
-        onWorkspaces={route.source === 'workspaces' ? undefined : goHomeWorkspaces}
+        onWorkspaces={route.source === 'home' ? undefined : goHome}
       />}
       {route.name === 'device' && deviceForRoute === undefined && <MissingRoute onBack={() => reset({ name: 'devices' })} />}
-      {route.name === 'workspaces' && <WorkspacesScreen
-        onSession={() => push({ name: 'chat' })}
-        onMore={openHomeMenu}
-        onDeviceInfo={() => {
-          if (selectedDevice !== undefined) push({ name: 'device', deviceId: selectedDevice.deviceId, source: 'workspaces' })
-        }}
-      />}
-      {route.name === 'sessions' && <SessionsScreen onBack={pop} onSession={() => push({ name: 'chat' })} />}
-      {route.name === 'chat' && <ChatScreen onBack={pop} />}
+      {route.name === 'home' && (
+        <HomeScreen
+          onMore={openHomeMenu}
+          onDevices={() => push({ name: 'devices' })}
+          onDeviceInfo={() => {
+            if (selectedDevice !== undefined) push({ name: 'device', deviceId: selectedDevice.deviceId, source: 'home' })
+          }}
+        />
+      )}
       {route.name === 'settings' && <SettingsScreen onBack={pop} onReset={() => reset({ name: 'server' })} />}
       {route.name === 'about' && <AboutScreen onBack={pop} />}
       <HomeActionsMenu
         visible={homeMenuVisible}
         onClose={() => setHomeMenuOpen(false)}
-        onDevices={route.name === 'workspaces'
-          ? () => {
-              setHomeMenuOpen(false)
-              push({ name: 'devices' })
-            }
-          : undefined}
         onSettings={() => {
           setHomeMenuOpen(false)
           push({ name: 'settings' })

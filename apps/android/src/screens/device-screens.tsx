@@ -29,7 +29,14 @@ export function DevicesScreen({ onDevice, onBack }: {
   const devices = useAppStore(state => state.devices)
   const refreshing = useAppStore(state => state.refreshing)
   const refresh = useAppStore(state => state.refreshDevices)
+  const clearError = useAppStore(state => state.clearError)
   const styles = useThemedStyles(createStyles)
+
+  // Connect failures belong on ConnectionScreen (`connection.error`). A leftover
+  // global banner here contradicts live presence badges on the device list.
+  useEffect(() => {
+    clearError()
+  }, [clearError])
 
   return (
     <View style={styles.flex}>
@@ -67,7 +74,7 @@ export function DevicesScreen({ onDevice, onBack }: {
                   key={device.deviceId}
                   title={device.name}
                   subtitle={deviceSubtitle(device)}
-                  meta={lastSeenText(device.lastSeenAt)}
+                  meta={lastSeenText(device)}
                   metaInline
                   icon={Laptop}
                   status={<StatusBadge status={device.online ? 'online' : 'offline'} />}
@@ -471,7 +478,10 @@ function updatedText(timestamp?: number): string {
   return `${new Date(timestamp).toLocaleDateString(zhCN.time.locale)} ${zhCN.time.updatedSuffix}`
 }
 
-function lastSeenText(value?: number): string {
+function lastSeenText(device: Pick<RemoteDevice, 'online' | 'lastSeenAt'>): string {
+  // Presence "online" wins over a stale lastSeenAt from membership/cache.
+  if (device.online) return zhCN.time.lastActive(zhCN.time.now)
+  const value = device.lastSeenAt
   if (value === undefined) return zhCN.time.lastSeenUnavailable
   if (!Number.isFinite(value)) return zhCN.time.lastSeenUnavailable
   const delta = Math.max(0, Date.now() - value)

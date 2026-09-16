@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Tex
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, CirclePlus, Code2, Eye, EyeOff, Folder, FolderOpen, MessageSquareText, MoreVertical, Pencil, Search, Trash2, X } from 'lucide-react-native'
 import { useAppStore } from '../state/store'
 import type { ConnectionPhase, DirectoryListing, RemoteSession, WorkspaceView } from '../types'
-import { Button, EmptyState, IconButton, Screen, TopBar } from '../ui/components'
+import { Button, EmptyState, IconButton, Screen } from '../ui/components'
 import { radius, spacing, type } from '../ui/theme'
 import { useTheme, type ThemeColors } from '../ui/theme-context'
 import { useThemedStyles } from '../ui/use-themed-styles'
@@ -11,14 +11,18 @@ import { strings as zhCN } from '../locales/i18n'
 import { loadCollapsedWorkspaceIds, loadWorkspaceBackend, saveCollapsedWorkspaceIds, saveWorkspaceBackend } from '../services/storage'
 import { resolveSessionDisplayTitle } from './session-title'
 
-export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
-  onBack?: () => void
+export function WorkspacesScreen({
+  onSession,
+  onDeviceInfo,
+  drawerTitle,
+  drawerSubtitle,
+}: {
   onSession: (session: RemoteSession) => void
   onDeviceInfo: () => void
-  onMore?: () => void
+  drawerTitle?: string
+  drawerSubtitle?: string
 }) {
   const selectedDevice = useAppStore(state => state.selectedDevice)
-  const connection = useAppStore(state => state.connection)
   const codexAvailable = useAppStore(state => state.codexAvailable)
   const workspaces = useAppStore(state => state.workspaces)
   const sessions = useAppStore(state => state.sessions)
@@ -136,27 +140,26 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
     void workspaceMove(actionsTarget.workspaceId, beforeWorkspaceId)
   }
 
-  const connectionStatusLabel = workspaceConnectionStatus(connection.phase, connection.stats.mode)
-  const deviceSubtitle = selectedDevice === undefined
-    ? zhCN.workspaces.noDevice
-    : zhCN.workspaces.deviceSubtitle(selectedDevice.name, connectionStatusLabel)
-
   return (
     <View style={styles.flex}>
-      <TopBar
-        title={zhCN.workspaces.title}
-        subtitle={deviceSubtitle}
-        onSubtitlePress={onDeviceInfo}
-        onBack={onBack}
-        action={(
-          <View style={styles.topBarActions}>
-            <IconButton label={zhCN.workspaces.create} icon={CirclePlus} onPress={() => setCreateOpen(true)} />
-            {onMore !== undefined && (
-              <IconButton label={zhCN.settings.more} icon={MoreVertical} onPress={onMore} />
-            )}
-          </View>
-        )}
-      />
+      <View style={styles.drawerHeader}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={drawerSubtitle === undefined
+            ? (drawerTitle ?? zhCN.workspaces.title)
+            : `${drawerTitle ?? zhCN.workspaces.title} · ${drawerSubtitle}`}
+          onPress={onDeviceInfo}
+          style={({ pressed }) => [styles.drawerHeaderCopy, pressed && styles.workspaceRowPressed]}
+        >
+          <Text style={styles.drawerTitle} numberOfLines={1}>
+            {drawerTitle ?? zhCN.workspaces.title}
+          </Text>
+          {drawerSubtitle !== undefined && (
+            <Text style={styles.drawerSubtitle} numberOfLines={1}>{drawerSubtitle}</Text>
+          )}
+        </Pressable>
+        <IconButton label={zhCN.workspaces.create} icon={CirclePlus} onPress={() => setCreateOpen(true)} />
+      </View>
       <Screen refreshing={refreshing} onRefresh={() => void refresh()}>
         {codexAvailable && <View style={[styles.backendTabs, styles.contentTop]} accessibilityRole="tablist">
           <Pressable
@@ -186,7 +189,7 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
         </View>}
         {backendWorkspaces.length > 0 && (
           <View style={[styles.searchField, !codexAvailable && styles.contentTop]}>
-            <Search size={18} color={colors.muted} />
+            <Search size={15} color={colors.muted} />
             <TextInput
               accessibilityLabel={zhCN.workspaces.search}
               style={styles.searchInput}
@@ -206,7 +209,7 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
                 onPress={() => setSearchQuery('')}
                 style={({ pressed }) => [styles.clearSearch, pressed && styles.workspaceRowPressed]}
               >
-                <X size={17} color={colors.muted} />
+                <X size={15} color={colors.muted} />
               </Pressable>
             )}
           </View>
@@ -234,6 +237,7 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
               })
               const collapseKey = workspaceCollapseKey(workspace, selectedDevice?.platform)
               const collapsed = collapsedWorkspaceIds.has(collapseKey) || collapsedWorkspaceIds.has(workspace.workspaceId)
+              const iconSize = 15
               return (
                 <View key={workspace.workspaceId} style={styles.workspaceGroup}>
                   <View style={styles.workspaceRow}>
@@ -246,10 +250,10 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
                     >
                       <View style={styles.workspaceIcon}>
                         {workspace.backend === 'codex'
-                          ? <Code2 size={18} color={colors.primary} />
+                          ? <Code2 size={iconSize} color={colors.primary} />
                           : collapsed
-                            ? <Folder size={18} color={colors.primary} />
-                            : <FolderOpen size={18} color={colors.primary} />}
+                            ? <Folder size={iconSize} color={colors.primary} />
+                            : <FolderOpen size={iconSize} color={colors.primary} />}
                       </View>
                       <View style={styles.workspaceCopy}>
                         <Text style={styles.workspaceTitle} numberOfLines={1}>{workspace.title}</Text>
@@ -258,11 +262,31 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
                         </Text>
                       </View>
                       {collapsed
-                        ? <ChevronRight size={18} color={colors.subtle} />
-                        : <ChevronDown size={18} color={colors.subtle} />}
+                        ? <ChevronRight size={15} color={colors.subtle} />
+                        : <ChevronDown size={15} color={colors.subtle} />}
                     </Pressable>
-                    <IconButton label={zhCN.workspaces.newSessionIn(workspace.title)} icon={CirclePlus} onPress={() => void createInWorkspace(workspace.workspaceId)} />
-                    {workspace.backend !== 'codex' && <IconButton label={zhCN.workspaces.options} icon={MoreVertical} onPress={() => setActionsTarget(workspace)} />}
+                    <View style={styles.workspaceActions}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={zhCN.workspaces.newSessionIn(workspace.title)}
+                        hitSlop={6}
+                        onPress={() => void createInWorkspace(workspace.workspaceId)}
+                        style={({ pressed }) => [styles.workspaceAction, pressed && styles.workspaceRowPressed]}
+                      >
+                        <CirclePlus size={17} color={colors.ink} />
+                      </Pressable>
+                      {workspace.backend !== 'codex' && (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={zhCN.workspaces.options}
+                          hitSlop={6}
+                          onPress={() => setActionsTarget(workspace)}
+                          style={({ pressed }) => [styles.workspaceAction, pressed && styles.workspaceRowPressed]}
+                        >
+                          <MoreVertical size={17} color={colors.ink} />
+                        </Pressable>
+                      )}
+                    </View>
                   </View>
                   {!collapsed && (workspaceSessions.length === 0
                     ? <Pressable onPress={() => void createInWorkspace(workspace.workspaceId)} style={styles.noSessions}><Text style={styles.noSessionsText}>{zhCN.workspaces.noSessions}</Text></Pressable>
@@ -274,18 +298,22 @@ export function WorkspacesScreen({ onBack, onSession, onDeviceInfo, onMore }: {
                           accessibilityState={{ busy: opening, disabled: busy !== undefined && !opening }}
                           disabled={busy !== undefined}
                           onPress={() => void open(session)}
-                          style={({ pressed }) => [styles.sessionRow, pressed && styles.workspaceRowPressed, busy !== undefined && !opening && styles.disabled]}
+                          style={({ pressed }) => [
+                            styles.sessionRow,
+                            pressed && styles.workspaceRowPressed,
+                            busy !== undefined && !opening && styles.disabled,
+                          ]}
                         >
                           {opening
                             ? <ActivityIndicator size="small" color={colors.primary} />
                             : session.backend === 'codex'
-                              ? <Code2 size={17} color={colors.muted} />
-                              : <MessageSquareText size={17} color={colors.muted} />}
+                              ? <Code2 size={14} color={colors.muted} />
+                              : <MessageSquareText size={14} color={colors.muted} />}
                           <View style={styles.sessionCopy}>
                           <Text style={styles.sessionTitle} numberOfLines={1}>{resolveSessionTitle(session)}</Text>
                             <Text style={styles.sessionMeta}>{session.running ? zhCN.status.running : relativeTime(session.updatedAt)}</Text>
                           </View>
-                          <ChevronRight size={17} color={colors.subtle} />
+                          <ChevronRight size={14} color={colors.subtle} />
                         </Pressable>
                       }))}
                 </View>
@@ -420,6 +448,8 @@ function workspaceConnectionStatus(phase: ConnectionPhase, mode: string | undefi
   if (mode === 'Relay') return zhCN.status.relay
   return zhCN.status.online
 }
+
+export { workspaceConnectionStatus }
 
 function CreateWorkspaceModal({ visible, codexAvailable, initialBackend, busy, onClose, onCreate, onCreated }: {
   visible: boolean
@@ -666,31 +696,48 @@ function DirectoryBrowserModal({ visible, onClose, onChoose }: {
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
-  topBarActions: { flexDirection: 'row', alignItems: 'center' },
+  drawerHeader: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    paddingLeft: spacing.md,
+    paddingRight: spacing.xs,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.separator,
+    backgroundColor: colors.background,
+  },
+  drawerHeaderCopy: { flex: 1, minWidth: 0, gap: 2 },
+  drawerTitle: { ...type.bodyStrong, color: colors.ink },
+  drawerSubtitle: { ...type.caption, color: colors.muted },
   contentTop: { marginTop: spacing.md },
-  backendTabs: { flexDirection: 'row', padding: spacing.xxs, borderRadius: radius.md, backgroundColor: colors.surfaceStrong, marginBottom: spacing.md },
-  backendTab: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm, paddingHorizontal: spacing.xs },
+  backendTabs: { flexDirection: 'row', padding: spacing.xxs, borderRadius: radius.md, backgroundColor: colors.surfaceStrong, marginBottom: spacing.sm },
+  backendTab: { flex: 1, minHeight: 36, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm, paddingHorizontal: spacing.xs },
   backendTabActive: { backgroundColor: colors.surface },
   backendTabText: { ...type.smallStrong, color: colors.muted, textAlign: 'center' },
   backendTabTextActive: { color: colors.primary },
-  searchField: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: spacing.xs, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: spacing.sm, marginBottom: spacing.lg },
-  searchInput: { flex: 1, ...type.body, color: colors.ink, paddingVertical: spacing.sm },
+  searchField: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: spacing.xs, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: spacing.sm, marginBottom: spacing.md },
+  searchInput: { flex: 1, ...type.small, color: colors.ink, paddingVertical: spacing.xs },
   clearSearch: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill },
-  workspaceRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.separator },
+  workspaceRow: { flexDirection: 'row', alignItems: 'center', gap: 0, paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.separator },
   workspaceToggle: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  workspaceActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 0, marginLeft: 0 },
+  workspaceAction: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill },
   workspaceRowPressed: { opacity: 0.7 },
   disabled: { opacity: 0.55 },
-  workspaceIcon: { width: 38, height: 38, borderRadius: radius.md, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  workspaceIcon: { width: 28, height: 28, borderRadius: radius.sm, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   workspaceCopy: { flex: 1, gap: 2 },
-  workspaceTitle: { ...type.bodyStrong, color: colors.ink },
-  workspacePath: { ...type.caption, color: colors.muted, fontFamily: 'monospace', writingDirection: 'ltr' },
+  workspaceTitle: { ...type.smallStrong, color: colors.ink },
+  workspacePath: { ...type.caption, color: colors.muted, fontFamily: 'monospace', writingDirection: 'ltr', fontSize: 11, lineHeight: 14 },
   workspaceMeta: { ...type.caption, color: colors.muted },
-  workspaceGroup: { marginBottom: spacing.lg, backgroundColor: colors.surface, borderRadius: radius.lg, paddingHorizontal: spacing.sm },
-  sessionRow: { minHeight: 58, marginLeft: 50, paddingVertical: spacing.sm, paddingRight: spacing.xs, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
+  workspaceGroup: { marginBottom: spacing.md, backgroundColor: colors.surface, borderRadius: radius.md, paddingHorizontal: spacing.xs },
+  sessionRow: { minHeight: 44, marginLeft: 36, paddingVertical: spacing.xs, paddingRight: spacing.xs, flexDirection: 'row', alignItems: 'center', gap: spacing.xs, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
   sessionCopy: { flex: 1 },
-  sessionTitle: { ...type.smallStrong, color: colors.ink },
+  sessionTitle: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.ink },
   sessionMeta: { ...type.caption, color: colors.muted, marginTop: 2 },
-  noSessions: { minHeight: 48, marginLeft: 50, justifyContent: 'center', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
+  noSessions: { minHeight: 40, marginLeft: 36, justifyContent: 'center', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.separator },
   noSessionsText: { ...type.small, color: colors.primary },
   primaryArea: { marginTop: spacing.xxl },
   backdrop: { flex: 1, backgroundColor: colors.modalBackdrop, justifyContent: 'flex-end' },

@@ -10,7 +10,7 @@ import {
   type TextInputProps,
   View,
 } from 'react-native'
-import { AlertCircle, ArrowLeft, ChevronRight, CircleCheck, RefreshCw, WifiOff, type LucideIcon } from 'lucide-react-native'
+import { AlertCircle, ArrowLeft, ChevronRight, RefreshCw, WifiOff, type LucideIcon } from 'lucide-react-native'
 import { radius, spacing, type } from './theme'
 import { useTheme, type ThemeColors } from './theme-context'
 import { useThemedStyles } from './use-themed-styles'
@@ -48,11 +48,12 @@ export function Screen({ children, scroll = true, refreshing = false, onRefresh 
   )
 }
 
-export function TopBar({ title, subtitle, onSubtitlePress, onBack, action }: {
+export function TopBar({ title, subtitle, onSubtitlePress, onBack, leading, action }: {
   title: string
   subtitle?: string
   onSubtitlePress?: () => void
   onBack?: () => void
+  leading?: ReactNode
   action?: ReactNode
 }) {
   const { colors } = useTheme()
@@ -61,9 +62,11 @@ export function TopBar({ title, subtitle, onSubtitlePress, onBack, action }: {
   return (
     <View style={[styles.topBar, hasSubtitle && styles.topBarWithSubtitle]}>
       <View style={styles.topBarSide}>
-        {onBack !== undefined && (
-          <IconButton label={zhCN.common.back} icon={ArrowLeft} onPress={onBack} />
-        )}
+        {leading !== undefined
+          ? leading
+          : onBack !== undefined && (
+            <IconButton label={zhCN.common.back} icon={ArrowLeft} onPress={onBack} />
+          )}
       </View>
       <View style={styles.topBarTitles}>
         <Text style={styles.topBarTitle} numberOfLines={1}>{title}</Text>
@@ -107,6 +110,35 @@ export function IconButton({ label, icon: Icon, onPress, disabled = false }: {
       style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed, disabled && styles.disabled]}
     >
       <Icon size={21} color={colors.ink} strokeWidth={2} />
+    </Pressable>
+  )
+}
+
+/** TopBar leading control: concentric status dots that open the workspace drawer. */
+export function ConnectionDrawerButton({
+  connected,
+  onPress,
+}: {
+  connected: boolean
+  onPress: () => void
+}) {
+  const { colors } = useTheme()
+  const styles = useThemedStyles(createStyles)
+  const fill = connected ? colors.success : colors.danger
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={zhCN.home.openWorkspaces}
+      accessibilityHint={connected ? zhCN.status.online : zhCN.status.disconnected}
+      accessibilityState={{ checked: connected }}
+      hitSlop={8}
+      onPress={onPress}
+      style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+    >
+      <View style={styles.connectionGlyph}>
+        <View style={[styles.connectionRing, { backgroundColor: fill }]} />
+        <View style={[styles.connectionCore, { backgroundColor: fill }]} />
+      </View>
     </Pressable>
   )
 }
@@ -279,12 +311,6 @@ export function RefreshAction({ refreshing, onPress }: { refreshing: boolean; on
   return <IconButton label={zhCN.common.refresh} icon={RefreshCw} onPress={onPress} disabled={refreshing} />
 }
 
-export function SuccessNotice({ children }: { children: ReactNode }) {
-  const { colors } = useTheme()
-  const styles = useThemedStyles(createStyles)
-  return <View style={styles.successNotice}><CircleCheck size={19} color={colors.success} /><Text style={styles.successNoticeText}>{children}</Text></View>
-}
-
 function createButtonStyles(colors: ThemeColors) {
   return StyleSheet.create({
     primary: { backgroundColor: colors.primary },
@@ -321,6 +347,24 @@ function createStyles(colors: ThemeColors) {
     topBarSubtitle: { ...type.caption, color: colors.muted, textAlign: 'center', flexShrink: 1 },
     iconButton: { width: 48, height: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
     iconButtonPressed: { backgroundColor: colors.surfaceStrong },
+    connectionGlyph: {
+      width: type.heading.fontSize,
+      height: type.heading.fontSize,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    connectionRing: {
+      position: 'absolute',
+      width: type.heading.fontSize,
+      height: type.heading.fontSize,
+      borderRadius: radius.pill,
+      opacity: 0.35,
+    },
+    connectionCore: {
+      width: Math.round(type.heading.fontSize * 0.55),
+      height: Math.round(type.heading.fontSize * 0.55),
+      borderRadius: radius.pill,
+    },
     button: { minHeight: 50, paddingHorizontal: spacing.lg, borderRadius: radius.md, flexDirection: 'row', gap: spacing.xs, alignItems: 'center', justifyContent: 'center' },
     buttonPressed: { opacity: 0.82 },
     buttonText: { ...type.bodyStrong, color: colors.ink },
@@ -368,7 +412,5 @@ function createStyles(colors: ThemeColors) {
     skeletonCopy: { flex: 1, gap: spacing.xs },
     skeletonTitle: { width: '54%', height: 14, borderRadius: 4, backgroundColor: colors.surfaceStrong },
     skeletonText: { width: '78%', height: 11, borderRadius: 4, backgroundColor: colors.surface },
-    successNotice: { padding: spacing.sm, borderRadius: radius.md, backgroundColor: colors.successSoft, flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    successNoticeText: { ...type.small, color: colors.ink, flex: 1 },
   })
 }

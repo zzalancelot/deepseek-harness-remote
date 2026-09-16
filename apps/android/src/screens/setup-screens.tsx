@@ -4,7 +4,7 @@ import { File, Paths } from 'expo-file-system'
 import { getContentUriAsync } from 'expo-file-system/legacy'
 import * as IntentLauncher from 'expo-intent-launcher'
 import { ActivityIndicator, Alert, Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native'
-import { Check, ChevronRight, Download, ExternalLink, Info, KeyRound, Laptop, LockKeyhole, RotateCcw, Settings, type LucideIcon } from 'lucide-react-native'
+import { Check, ChevronRight, Download, ExternalLink, Info, KeyRound, LockKeyhole, RotateCcw, Settings, type LucideIcon } from 'lucide-react-native'
 import { useAppStore } from '../state/store'
 import { SOURCE_CODE_URL } from '../lib/links'
 import { Button, Field, KeyValue, Screen, TopBar } from '../ui/components'
@@ -245,12 +245,11 @@ export function SettingsScreen({ onBack, onReset }: { onBack: () => void; onRese
   )
 }
 
-export function HomeActionsMenu({ visible, onClose, onSettings, onAbout, onDevices }: {
+export function HomeActionsMenu({ visible, onClose, onSettings, onAbout }: {
   visible: boolean
   onClose: () => void
   onSettings: () => void
   onAbout: () => void
-  onDevices?: () => void
 }) {
   const { colors } = useTheme()
   const styles = useThemedStyles(createStyles)
@@ -267,9 +266,6 @@ export function HomeActionsMenu({ visible, onClose, onSettings, onAbout, onDevic
         style={styles.homeMenuDismiss}
       />
       <View accessibilityRole="menu" style={styles.homeMenuCard}>
-        {onDevices !== undefined && (
-          <HomeMenuRow icon={Laptop} label={zhCN.devices.myDevices} onPress={onDevices} />
-        )}
         <HomeMenuRow icon={Settings} label={zhCN.settings.title} onPress={onSettings} />
         <HomeMenuRow icon={Info} label={zhCN.settings.about} onPress={onAbout} />
         <HomeMenuRow

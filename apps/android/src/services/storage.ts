@@ -17,6 +17,7 @@ const KEYS = {
   languagePreference: 'dshremote.language-preference.v1',
   themePreference: 'dshremote.theme-preference.v1',
   collapsedWorkspaces: 'dshremote.collapsed-workspaces.v1',
+  lastActiveWorkspaces: 'dshremote.last-active-workspaces.v1',
   workspaceBackends: 'dshremote.workspace-backends.v1',
   codexPermissionPresets: 'dshremote.codex-permission-presets.v1',
 } as const
@@ -86,6 +87,7 @@ export async function forgetHost(deviceId: string): Promise<void> {
   await writeJson(KEYS.trustedHosts, hosts.filter(host => host.deviceId !== deviceId))
   const lastConnectedDeviceId = await loadLastConnectedDeviceId()
   if (lastConnectedDeviceId === deviceId) await clearLastConnectedDeviceId()
+  await clearLastActiveWorkspaceId(deviceId)
 }
 
 export async function loadLastConnectedDeviceId(): Promise<string | undefined> {
@@ -131,6 +133,38 @@ export async function loadThemePreference(): Promise<ThemePreference> {
 
 export async function saveThemePreference(value: ThemePreference): Promise<void> {
   await writeJson(KEYS.themePreference, { value })
+}
+
+export async function loadLastActiveWorkspaceId(deviceId: string): Promise<string | undefined> {
+  const stored = await readJson<{ byDevice?: Record<string, unknown> }>(KEYS.lastActiveWorkspaces)
+  const value = stored?.byDevice?.[deviceId]
+  return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined
+}
+
+let lastActiveWorkspacesWrite = Promise.resolve()
+
+export function saveLastActiveWorkspaceId(deviceId: string, workspaceId: string): Promise<void> {
+  const trimmed = workspaceId.trim()
+  if (trimmed === '') return Promise.resolve()
+  lastActiveWorkspacesWrite = lastActiveWorkspacesWrite.catch(() => undefined).then(async () => {
+    const stored = await readJson<{ byDevice?: Record<string, unknown> }>(KEYS.lastActiveWorkspaces)
+    await writeJson(KEYS.lastActiveWorkspaces, {
+      byDevice: { ...stored?.byDevice, [deviceId]: trimmed },
+    })
+  })
+  return lastActiveWorkspacesWrite
+}
+
+export async function clearLastActiveWorkspaceId(deviceId: string): Promise<void> {
+  const stored = await readJson<{ byDevice?: Record<string, unknown> }>(KEYS.lastActiveWorkspaces)
+  const byDevice = { ...stored?.byDevice }
+  if (!(deviceId in byDevice)) return
+  delete byDevice[deviceId]
+  if (Object.keys(byDevice).length === 0) {
+    await SecureStore.deleteItemAsync(KEYS.lastActiveWorkspaces, secureOptions)
+    return
+  }
+  await writeJson(KEYS.lastActiveWorkspaces, { byDevice })
 }
 
 export async function loadCollapsedWorkspaceIds(deviceId: string): Promise<string[]> {

@@ -29,6 +29,14 @@
     "plugins": [
       "expo-file-system",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow DSH Remote to attach images to encrypted remote prompts.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/splash-brand.png",

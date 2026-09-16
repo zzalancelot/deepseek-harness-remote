@@ -48,6 +48,8 @@ import { reconcileTrustedDevices } from '../services/device-directory'
 import { resolveAutomaticPreferredTransports } from '../services/network-route'
 import { serverSession } from '../services/server-session'
 import { resolveAutoConnectDevice } from '../lib/auto-connect'
+import { workspaceIdForSession } from '../lib/last-workspace'
+import { resolveLastActiveSession } from '../lib/last-session'
 import {
   clearLocalData,
   clearCodexPermissionPresets,
@@ -63,6 +65,7 @@ import {
   loadTransportPreference,
   loadTrustedHosts,
   saveLanguagePreference,
+  saveLastActiveWorkspaceId,
   saveLastConnectedDeviceId,
   saveCodexPermissionPreset,
   saveServerConfig,
@@ -154,6 +157,7 @@ interface AppState {
   reconnect(options?: { forceRelay?: boolean }): Promise<boolean>
   disconnect(): Promise<void>
   openSession(session: RemoteSession): Promise<boolean>
+  clearSelectedSession(): void
   sendMessage(text: string, images?: PromptImage[]): Promise<boolean>
   stopSession(): Promise<void>
   respondApproval(itemId: string, outcome: 'allowed-once' | 'rejected'): Promise<void>
@@ -347,7 +351,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         await forgetHost(deviceId)
         await clearCodexPermissionPresets(deviceId)
       }))
-      set({ devices: result.devices, refreshing: false })
+      set({ devices: result.devices, refreshing: false, error: undefined })
     } catch (error) {
       if (isSessionAuthError(error)) {
         await get().requireReauth(friendlyError(error))
@@ -505,6 +509,15 @@ export const useAppStore = create<AppState>((set, get) => ({
         }
       })
       await saveLastConnectedDeviceId(device.deviceId)
+      const preferredId = get().selectedSession?.sessionId
+      const resume = preferredId === undefined
+        ? undefined
+        : get().sessions.find(session => session.sessionId === preferredId)
+      const lastActive = resume ?? resolveLastActiveSession(get().sessions, get().archivedSessionIds)
+      if (lastActive !== undefined) {
+        // Best-effort: connection already succeeded even if history open fails.
+        await get().openSession(lastActive)
+      }
       return true
     } catch (error) {
       await connection.close()
@@ -513,10 +526,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         return false
       }
       const message = friendlyError(error)
+      // Keep the failure on the connection screen only. Promoting it to the
+      // global banner leaves a stale "device offline" alert on the devices
+      // list even after presence shows the host as online again.
       set({
         connection: { phase: 'offline', stats: { mode: 'Disconnected', connected: false }, error: message },
         codexAvailable: false,
-        error: message,
       })
       return false
     }
@@ -566,6 +581,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       historyHasMore: false,
       historyLoadingOlder: false,
       oldestLoadedSeq: undefined,
+      error: undefined,
     })
   },
 
@@ -641,6 +657,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
     try {
       await load()
+      rememberLastActiveWorkspace(get, session)
       return true
     } catch (error) {
       if (isRpcTimeoutError(error)) {
@@ -652,6 +669,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         if (recovered) {
           try {
             await load()
+            rememberLastActiveWorkspace(get, session)
             return true
           } catch (retryError) {
             set({ busyAction: undefined, error: friendlyError(retryError) })
@@ -664,6 +682,17 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ busyAction: undefined, error: friendlyError(error) })
       return false
     }
+  },
+
+  clearSelectedSession() {
+    void closeActiveCodexStream()
+    set({
+      selectedSession: undefined,
+      sessionModels: undefined,
+      historyHasMore: false,
+      historyLoadingOlder: false,
+      oldestLoadedSeq: undefined,
+    })
   },
 
   async createSession(workspaceId) {
@@ -687,6 +716,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             : item),
           busyAction: undefined,
         }))
+        rememberLastActiveWorkspaceId(get, workspace.workspaceId)
         return get().openSession(created)
       }
       const proxy = connection.requireProxy()
@@ -695,6 +725,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ sessions, busyAction: undefined })
       const created = sessions.find(session => session.sessionId === sessionId)
       if (created === undefined) return false
+      if (workspaceId !== undefined) rememberLastActiveWorkspaceId(get, workspaceId)
       return get().openSession(created)
     } catch (error) {
       set({ busyAction: undefined, error: friendlyError(error) })
@@ -1248,6 +1279,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     })
   },
 }))
+
+function rememberLastActiveWorkspace(
+  get: () => AppState,
+  session: RemoteSession,
+): void {
+  const workspaceId = workspaceIdForSession(get().workspaces, session.sessionId)
+  if (workspaceId === undefined) return
+  rememberLastActiveWorkspaceId(get, workspaceId)
+}
+
+function rememberLastActiveWorkspaceId(
+  get: () => AppState,
+  workspaceId: string,
+): void {
+  const deviceId = get().selectedDevice?.deviceId
+  if (deviceId === undefined) return
+  void saveLastActiveWorkspaceId(deviceId, workspaceId)
+}
 
 async function closeActiveCodexStream(notifyRemote = true): Promise<void> {
   const stream = activeCodexStream
