@@ -1,5561 +1,7 @@
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJS = (cb, mod3) => function __require() {
-  return mod3 || (0, cb[__getOwnPropNames(cb)[0]])((mod3 = { exports: {} }).exports, mod3), mod3.exports;
-};
-var __export = (target2, all) => {
-  for (var name2 in all)
-    __defProp(target2, name2, { get: all[name2], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod3, isNodeMode, target2) => (target2 = mod3 != null ? __create(__getProtoOf(mod3)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod3 || !mod3.__esModule ? __defProp(target2, "default", { value: mod3, enumerable: true }) : target2,
-  mod3
-));
-
-// node_modules/@xterm/headless/lib-headless/xterm-headless.js
-var require_xterm_headless = __commonJS({
-  "node_modules/@xterm/headless/lib-headless/xterm-headless.js"(exports) {
-    (() => {
-      "use strict";
-      var e = { 5639: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.CircularList = void 0;
-        const i2 = s3(7150), r2 = s3(802);
-        class n2 extends i2.Disposable {
-          constructor(e3) {
-            super(), this._maxLength = e3, this.onDeleteEmitter = this._register(new r2.Emitter()), this.onDelete = this.onDeleteEmitter.event, this.onInsertEmitter = this._register(new r2.Emitter()), this.onInsert = this.onInsertEmitter.event, this.onTrimEmitter = this._register(new r2.Emitter()), this.onTrim = this.onTrimEmitter.event, this._array = new Array(this._maxLength), this._startIndex = 0, this._length = 0;
-          }
-          get maxLength() {
-            return this._maxLength;
-          }
-          set maxLength(e3) {
-            if (this._maxLength === e3) return;
-            const t3 = new Array(e3);
-            for (let s4 = 0; s4 < Math.min(e3, this.length); s4++) t3[s4] = this._array[this._getCyclicIndex(s4)];
-            this._array = t3, this._maxLength = e3, this._startIndex = 0;
-          }
-          get length() {
-            return this._length;
-          }
-          set length(e3) {
-            if (e3 > this._length) for (let t3 = this._length; t3 < e3; t3++) this._array[t3] = void 0;
-            this._length = e3;
-          }
-          get(e3) {
-            return this._array[this._getCyclicIndex(e3)];
-          }
-          set(e3, t3) {
-            this._array[this._getCyclicIndex(e3)] = t3;
-          }
-          push(e3) {
-            this._array[this._getCyclicIndex(this._length)] = e3, this._length === this._maxLength ? (this._startIndex = ++this._startIndex % this._maxLength, this.onTrimEmitter.fire(1)) : this._length++;
-          }
-          recycle() {
-            if (this._length !== this._maxLength) throw new Error("Can only recycle when the buffer is full");
-            return this._startIndex = ++this._startIndex % this._maxLength, this.onTrimEmitter.fire(1), this._array[this._getCyclicIndex(this._length - 1)];
-          }
-          get isFull() {
-            return this._length === this._maxLength;
-          }
-          pop() {
-            return this._array[this._getCyclicIndex(this._length-- - 1)];
-          }
-          splice(e3, t3, ...s4) {
-            if (t3) {
-              for (let s5 = e3; s5 < this._length - t3; s5++) this._array[this._getCyclicIndex(s5)] = this._array[this._getCyclicIndex(s5 + t3)];
-              this._length -= t3, this.onDeleteEmitter.fire({ index: e3, amount: t3 });
-            }
-            for (let t4 = this._length - 1; t4 >= e3; t4--) this._array[this._getCyclicIndex(t4 + s4.length)] = this._array[this._getCyclicIndex(t4)];
-            for (let t4 = 0; t4 < s4.length; t4++) this._array[this._getCyclicIndex(e3 + t4)] = s4[t4];
-            if (s4.length && this.onInsertEmitter.fire({ index: e3, amount: s4.length }), this._length + s4.length > this._maxLength) {
-              const e4 = this._length + s4.length - this._maxLength;
-              this._startIndex += e4, this._length = this._maxLength, this.onTrimEmitter.fire(e4);
-            } else this._length += s4.length;
-          }
-          trimStart(e3) {
-            e3 > this._length && (e3 = this._length), this._startIndex += e3, this._length -= e3, this.onTrimEmitter.fire(e3);
-          }
-          shiftElements(e3, t3, s4) {
-            if (!(t3 <= 0)) {
-              if (e3 < 0 || e3 >= this._length) throw new Error("start argument out of range");
-              if (e3 + s4 < 0) throw new Error("Cannot shift elements in list beyond index 0");
-              if (s4 > 0) {
-                for (let i4 = t3 - 1; i4 >= 0; i4--) this.set(e3 + i4 + s4, this.get(e3 + i4));
-                const i3 = e3 + t3 + s4 - this._length;
-                if (i3 > 0) for (this._length += i3; this._length > this._maxLength; ) this._length--, this._startIndex++, this.onTrimEmitter.fire(1);
-              } else for (let i3 = 0; i3 < t3; i3++) this.set(e3 + i3 + s4, this.get(e3 + i3));
-            }
-          }
-          _getCyclicIndex(e3) {
-            return (this._startIndex + e3) % this._maxLength;
-          }
-        }
-        t2.CircularList = n2;
-      }, 7453: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.clone = function e3(t3, s3 = 5) {
-          if ("object" != typeof t3) return t3;
-          const i2 = Array.isArray(t3) ? [] : {};
-          for (const r2 in t3) i2[r2] = s3 <= 1 ? t3[r2] : t3[r2] && e3(t3[r2], s3 - 1);
-          return i2;
-        };
-      }, 5777: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.CoreTerminal = void 0;
-        const i2 = s3(6501), r2 = s3(6025), n2 = s3(7276), o = s3(9640), a = s3(56), h = s3(4071), c = s3(7792), l = s3(6415), u = s3(5746), d = s3(5882), f = s3(2486), _ = s3(3562), p = s3(8811), g = s3(802), v = s3(7150);
-        let m = false;
-        class b extends v.Disposable {
-          get onScroll() {
-            return this._onScrollApi || (this._onScrollApi = this._register(new g.Emitter()), this._onScroll.event(((e3) => {
-              this._onScrollApi?.fire(e3.position);
-            }))), this._onScrollApi.event;
-          }
-          get cols() {
-            return this._bufferService.cols;
-          }
-          get rows() {
-            return this._bufferService.rows;
-          }
-          get buffers() {
-            return this._bufferService.buffers;
-          }
-          get options() {
-            return this.optionsService.options;
-          }
-          set options(e3) {
-            for (const t3 in e3) this.optionsService.options[t3] = e3[t3];
-          }
-          constructor(e3) {
-            super(), this._windowsWrappingHeuristics = this._register(new v.MutableDisposable()), this._onBinary = this._register(new g.Emitter()), this.onBinary = this._onBinary.event, this._onData = this._register(new g.Emitter()), this.onData = this._onData.event, this._onLineFeed = this._register(new g.Emitter()), this.onLineFeed = this._onLineFeed.event, this._onResize = this._register(new g.Emitter()), this.onResize = this._onResize.event, this._onWriteParsed = this._register(new g.Emitter()), this.onWriteParsed = this._onWriteParsed.event, this._onScroll = this._register(new g.Emitter()), this._instantiationService = new r2.InstantiationService(), this.optionsService = this._register(new a.OptionsService(e3)), this._instantiationService.setService(i2.IOptionsService, this.optionsService), this._bufferService = this._register(this._instantiationService.createInstance(o.BufferService)), this._instantiationService.setService(i2.IBufferService, this._bufferService), this._logService = this._register(this._instantiationService.createInstance(n2.LogService)), this._instantiationService.setService(i2.ILogService, this._logService), this.coreService = this._register(this._instantiationService.createInstance(h.CoreService)), this._instantiationService.setService(i2.ICoreService, this.coreService), this.coreMouseService = this._register(this._instantiationService.createInstance(c.CoreMouseService)), this._instantiationService.setService(i2.ICoreMouseService, this.coreMouseService), this.unicodeService = this._register(this._instantiationService.createInstance(l.UnicodeService)), this._instantiationService.setService(i2.IUnicodeService, this.unicodeService), this._charsetService = this._instantiationService.createInstance(u.CharsetService), this._instantiationService.setService(i2.ICharsetService, this._charsetService), this._oscLinkService = this._instantiationService.createInstance(p.OscLinkService), this._instantiationService.setService(i2.IOscLinkService, this._oscLinkService), this._inputHandler = this._register(new f.InputHandler(this._bufferService, this._charsetService, this.coreService, this._logService, this.optionsService, this._oscLinkService, this.coreMouseService, this.unicodeService)), this._register(g.Event.forward(this._inputHandler.onLineFeed, this._onLineFeed)), this._register(this._inputHandler), this._register(g.Event.forward(this._bufferService.onResize, this._onResize)), this._register(g.Event.forward(this.coreService.onData, this._onData)), this._register(g.Event.forward(this.coreService.onBinary, this._onBinary)), this._register(this.coreService.onRequestScrollToBottom((() => this.scrollToBottom(true)))), this._register(this.coreService.onUserInput((() => this._writeBuffer.handleUserInput()))), this._register(this.optionsService.onMultipleOptionChange(["windowsMode", "windowsPty"], (() => this._handleWindowsPtyOptionChange()))), this._register(this._bufferService.onScroll((() => {
-              this._onScroll.fire({ position: this._bufferService.buffer.ydisp }), this._inputHandler.markRangeDirty(this._bufferService.buffer.scrollTop, this._bufferService.buffer.scrollBottom);
-            }))), this._writeBuffer = this._register(new _.WriteBuffer(((e4, t3) => this._inputHandler.parse(e4, t3)))), this._register(g.Event.forward(this._writeBuffer.onWriteParsed, this._onWriteParsed));
-          }
-          write(e3, t3) {
-            this._writeBuffer.write(e3, t3);
-          }
-          writeSync(e3, t3) {
-            this._logService.logLevel <= i2.LogLevelEnum.WARN && !m && (this._logService.warn("writeSync is unreliable and will be removed soon."), m = true), this._writeBuffer.writeSync(e3, t3);
-          }
-          input(e3, t3 = true) {
-            this.coreService.triggerDataEvent(e3, t3);
-          }
-          resize(e3, t3) {
-            isNaN(e3) || isNaN(t3) || (e3 = Math.max(e3, o.MINIMUM_COLS), t3 = Math.max(t3, o.MINIMUM_ROWS), this._bufferService.resize(e3, t3));
-          }
-          scroll(e3, t3 = false) {
-            this._bufferService.scroll(e3, t3);
-          }
-          scrollLines(e3, t3) {
-            this._bufferService.scrollLines(e3, t3);
-          }
-          scrollPages(e3) {
-            this.scrollLines(e3 * (this.rows - 1));
-          }
-          scrollToTop() {
-            this.scrollLines(-this._bufferService.buffer.ydisp);
-          }
-          scrollToBottom(e3) {
-            this.scrollLines(this._bufferService.buffer.ybase - this._bufferService.buffer.ydisp);
-          }
-          scrollToLine(e3) {
-            const t3 = e3 - this._bufferService.buffer.ydisp;
-            0 !== t3 && this.scrollLines(t3);
-          }
-          registerEscHandler(e3, t3) {
-            return this._inputHandler.registerEscHandler(e3, t3);
-          }
-          registerDcsHandler(e3, t3) {
-            return this._inputHandler.registerDcsHandler(e3, t3);
-          }
-          registerCsiHandler(e3, t3) {
-            return this._inputHandler.registerCsiHandler(e3, t3);
-          }
-          registerOscHandler(e3, t3) {
-            return this._inputHandler.registerOscHandler(e3, t3);
-          }
-          _setup() {
-            this._handleWindowsPtyOptionChange();
-          }
-          reset() {
-            this._inputHandler.reset(), this._bufferService.reset(), this._charsetService.reset(), this.coreService.reset(), this.coreMouseService.reset();
-          }
-          _handleWindowsPtyOptionChange() {
-            let e3 = false;
-            const t3 = this.optionsService.rawOptions.windowsPty;
-            t3 && void 0 !== t3.buildNumber && void 0 !== t3.buildNumber ? e3 = !!("conpty" === t3.backend && t3.buildNumber < 21376) : this.optionsService.rawOptions.windowsMode && (e3 = true), e3 ? this._enableWindowsWrappingHeuristics() : this._windowsWrappingHeuristics.clear();
-          }
-          _enableWindowsWrappingHeuristics() {
-            if (!this._windowsWrappingHeuristics.value) {
-              const e3 = [];
-              e3.push(this.onLineFeed(d.updateWindowsModeWrappedState.bind(null, this._bufferService))), e3.push(this.registerCsiHandler({ final: "H" }, (() => ((0, d.updateWindowsModeWrappedState)(this._bufferService), false)))), this._windowsWrappingHeuristics.value = (0, v.toDisposable)((() => {
-                for (const t3 of e3) t3.dispose();
-              }));
-            }
-          }
-        }
-        t2.CoreTerminal = b;
-      }, 2486: function(e2, t2, s3) {
-        var i2 = this && this.__decorate || function(e3, t3, s4, i3) {
-          var r3, n3 = arguments.length, o2 = n3 < 3 ? t3 : null === i3 ? i3 = Object.getOwnPropertyDescriptor(t3, s4) : i3;
-          if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) o2 = Reflect.decorate(e3, t3, s4, i3);
-          else for (var a2 = e3.length - 1; a2 >= 0; a2--) (r3 = e3[a2]) && (o2 = (n3 < 3 ? r3(o2) : n3 > 3 ? r3(t3, s4, o2) : r3(t3, s4)) || o2);
-          return n3 > 3 && o2 && Object.defineProperty(t3, s4, o2), o2;
-        }, r2 = this && this.__param || function(e3, t3) {
-          return function(s4, i3) {
-            t3(s4, i3, e3);
-          };
-        };
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.InputHandler = t2.WindowsOptionsReportType = void 0, t2.isValidColorIndex = k;
-        const n2 = s3(3534), o = s3(6760), a = s3(6717), h = s3(7150), c = s3(726), l = s3(6107), u = s3(8938), d = s3(3055), f = s3(5451), _ = s3(6501), p = s3(6415), g = s3(1346), v = s3(9823), m = s3(8693), b = s3(802), S = { "(": 0, ")": 1, "*": 2, "+": 3, "-": 1, ".": 2 }, y = 131072;
-        function C(e3, t3) {
-          if (e3 > 24) return t3.setWinLines || false;
-          switch (e3) {
-            case 1:
-              return !!t3.restoreWin;
-            case 2:
-              return !!t3.minimizeWin;
-            case 3:
-              return !!t3.setWinPosition;
-            case 4:
-              return !!t3.setWinSizePixels;
-            case 5:
-              return !!t3.raiseWin;
-            case 6:
-              return !!t3.lowerWin;
-            case 7:
-              return !!t3.refreshWin;
-            case 8:
-              return !!t3.setWinSizeChars;
-            case 9:
-              return !!t3.maximizeWin;
-            case 10:
-              return !!t3.fullscreenWin;
-            case 11:
-              return !!t3.getWinState;
-            case 13:
-              return !!t3.getWinPosition;
-            case 14:
-              return !!t3.getWinSizePixels;
-            case 15:
-              return !!t3.getScreenSizePixels;
-            case 16:
-              return !!t3.getCellSizePixels;
-            case 18:
-              return !!t3.getWinSizeChars;
-            case 19:
-              return !!t3.getScreenSizeChars;
-            case 20:
-              return !!t3.getIconTitle;
-            case 21:
-              return !!t3.getWinTitle;
-            case 22:
-              return !!t3.pushTitle;
-            case 23:
-              return !!t3.popTitle;
-            case 24:
-              return !!t3.setWinLines;
-          }
-          return false;
-        }
-        var w;
-        !(function(e3) {
-          e3[e3.GET_WIN_SIZE_PIXELS = 0] = "GET_WIN_SIZE_PIXELS", e3[e3.GET_CELL_SIZE_PIXELS = 1] = "GET_CELL_SIZE_PIXELS";
-        })(w || (t2.WindowsOptionsReportType = w = {}));
-        let E = 0;
-        class A extends h.Disposable {
-          getAttrData() {
-            return this._curAttrData;
-          }
-          constructor(e3, t3, s4, i3, r3, h2, u2, d2, f2 = new a.EscapeSequenceParser()) {
-            super(), this._bufferService = e3, this._charsetService = t3, this._coreService = s4, this._logService = i3, this._optionsService = r3, this._oscLinkService = h2, this._coreMouseService = u2, this._unicodeService = d2, this._parser = f2, this._parseBuffer = new Uint32Array(4096), this._stringDecoder = new c.StringToUtf32(), this._utf8Decoder = new c.Utf8ToUtf32(), this._windowTitle = "", this._iconName = "", this._windowTitleStack = [], this._iconNameStack = [], this._curAttrData = l.DEFAULT_ATTR_DATA.clone(), this._eraseAttrDataInternal = l.DEFAULT_ATTR_DATA.clone(), this._onRequestBell = this._register(new b.Emitter()), this.onRequestBell = this._onRequestBell.event, this._onRequestRefreshRows = this._register(new b.Emitter()), this.onRequestRefreshRows = this._onRequestRefreshRows.event, this._onRequestReset = this._register(new b.Emitter()), this.onRequestReset = this._onRequestReset.event, this._onRequestSendFocus = this._register(new b.Emitter()), this.onRequestSendFocus = this._onRequestSendFocus.event, this._onRequestSyncScrollBar = this._register(new b.Emitter()), this.onRequestSyncScrollBar = this._onRequestSyncScrollBar.event, this._onRequestWindowsOptionsReport = this._register(new b.Emitter()), this.onRequestWindowsOptionsReport = this._onRequestWindowsOptionsReport.event, this._onA11yChar = this._register(new b.Emitter()), this.onA11yChar = this._onA11yChar.event, this._onA11yTab = this._register(new b.Emitter()), this.onA11yTab = this._onA11yTab.event, this._onCursorMove = this._register(new b.Emitter()), this.onCursorMove = this._onCursorMove.event, this._onLineFeed = this._register(new b.Emitter()), this.onLineFeed = this._onLineFeed.event, this._onScroll = this._register(new b.Emitter()), this.onScroll = this._onScroll.event, this._onTitleChange = this._register(new b.Emitter()), this.onTitleChange = this._onTitleChange.event, this._onColor = this._register(new b.Emitter()), this.onColor = this._onColor.event, this._parseStack = { paused: false, cursorStartX: 0, cursorStartY: 0, decodedLength: 0, position: 0 }, this._specialColors = [256, 257, 258], this._register(this._parser), this._dirtyRowTracker = new L(this._bufferService), this._activeBuffer = this._bufferService.buffer, this._register(this._bufferService.buffers.onBufferActivate(((e4) => this._activeBuffer = e4.activeBuffer))), this._parser.setCsiHandlerFallback(((e4, t4) => {
-              this._logService.debug("Unknown CSI code: ", { identifier: this._parser.identToString(e4), params: t4.toArray() });
-            })), this._parser.setEscHandlerFallback(((e4) => {
-              this._logService.debug("Unknown ESC code: ", { identifier: this._parser.identToString(e4) });
-            })), this._parser.setExecuteHandlerFallback(((e4) => {
-              this._logService.debug("Unknown EXECUTE code: ", { code: e4 });
-            })), this._parser.setOscHandlerFallback(((e4, t4, s5) => {
-              this._logService.debug("Unknown OSC code: ", { identifier: e4, action: t4, data: s5 });
-            })), this._parser.setDcsHandlerFallback(((e4, t4, s5) => {
-              "HOOK" === t4 && (s5 = s5.toArray()), this._logService.debug("Unknown DCS code: ", { identifier: this._parser.identToString(e4), action: t4, payload: s5 });
-            })), this._parser.setPrintHandler(((e4, t4, s5) => this.print(e4, t4, s5))), this._parser.registerCsiHandler({ final: "@" }, ((e4) => this.insertChars(e4))), this._parser.registerCsiHandler({ intermediates: " ", final: "@" }, ((e4) => this.scrollLeft(e4))), this._parser.registerCsiHandler({ final: "A" }, ((e4) => this.cursorUp(e4))), this._parser.registerCsiHandler({ intermediates: " ", final: "A" }, ((e4) => this.scrollRight(e4))), this._parser.registerCsiHandler({ final: "B" }, ((e4) => this.cursorDown(e4))), this._parser.registerCsiHandler({ final: "C" }, ((e4) => this.cursorForward(e4))), this._parser.registerCsiHandler({ final: "D" }, ((e4) => this.cursorBackward(e4))), this._parser.registerCsiHandler({ final: "E" }, ((e4) => this.cursorNextLine(e4))), this._parser.registerCsiHandler({ final: "F" }, ((e4) => this.cursorPrecedingLine(e4))), this._parser.registerCsiHandler({ final: "G" }, ((e4) => this.cursorCharAbsolute(e4))), this._parser.registerCsiHandler({ final: "H" }, ((e4) => this.cursorPosition(e4))), this._parser.registerCsiHandler({ final: "I" }, ((e4) => this.cursorForwardTab(e4))), this._parser.registerCsiHandler({ final: "J" }, ((e4) => this.eraseInDisplay(e4, false))), this._parser.registerCsiHandler({ prefix: "?", final: "J" }, ((e4) => this.eraseInDisplay(e4, true))), this._parser.registerCsiHandler({ final: "K" }, ((e4) => this.eraseInLine(e4, false))), this._parser.registerCsiHandler({ prefix: "?", final: "K" }, ((e4) => this.eraseInLine(e4, true))), this._parser.registerCsiHandler({ final: "L" }, ((e4) => this.insertLines(e4))), this._parser.registerCsiHandler({ final: "M" }, ((e4) => this.deleteLines(e4))), this._parser.registerCsiHandler({ final: "P" }, ((e4) => this.deleteChars(e4))), this._parser.registerCsiHandler({ final: "S" }, ((e4) => this.scrollUp(e4))), this._parser.registerCsiHandler({ final: "T" }, ((e4) => this.scrollDown(e4))), this._parser.registerCsiHandler({ final: "X" }, ((e4) => this.eraseChars(e4))), this._parser.registerCsiHandler({ final: "Z" }, ((e4) => this.cursorBackwardTab(e4))), this._parser.registerCsiHandler({ final: "`" }, ((e4) => this.charPosAbsolute(e4))), this._parser.registerCsiHandler({ final: "a" }, ((e4) => this.hPositionRelative(e4))), this._parser.registerCsiHandler({ final: "b" }, ((e4) => this.repeatPrecedingCharacter(e4))), this._parser.registerCsiHandler({ final: "c" }, ((e4) => this.sendDeviceAttributesPrimary(e4))), this._parser.registerCsiHandler({ prefix: ">", final: "c" }, ((e4) => this.sendDeviceAttributesSecondary(e4))), this._parser.registerCsiHandler({ final: "d" }, ((e4) => this.linePosAbsolute(e4))), this._parser.registerCsiHandler({ final: "e" }, ((e4) => this.vPositionRelative(e4))), this._parser.registerCsiHandler({ final: "f" }, ((e4) => this.hVPosition(e4))), this._parser.registerCsiHandler({ final: "g" }, ((e4) => this.tabClear(e4))), this._parser.registerCsiHandler({ final: "h" }, ((e4) => this.setMode(e4))), this._parser.registerCsiHandler({ prefix: "?", final: "h" }, ((e4) => this.setModePrivate(e4))), this._parser.registerCsiHandler({ final: "l" }, ((e4) => this.resetMode(e4))), this._parser.registerCsiHandler({ prefix: "?", final: "l" }, ((e4) => this.resetModePrivate(e4))), this._parser.registerCsiHandler({ final: "m" }, ((e4) => this.charAttributes(e4))), this._parser.registerCsiHandler({ final: "n" }, ((e4) => this.deviceStatus(e4))), this._parser.registerCsiHandler({ prefix: "?", final: "n" }, ((e4) => this.deviceStatusPrivate(e4))), this._parser.registerCsiHandler({ intermediates: "!", final: "p" }, ((e4) => this.softReset(e4))), this._parser.registerCsiHandler({ intermediates: " ", final: "q" }, ((e4) => this.setCursorStyle(e4))), this._parser.registerCsiHandler({ final: "r" }, ((e4) => this.setScrollRegion(e4))), this._parser.registerCsiHandler({ final: "s" }, ((e4) => this.saveCursor(e4))), this._parser.registerCsiHandler({ final: "t" }, ((e4) => this.windowOptions(e4))), this._parser.registerCsiHandler({ final: "u" }, ((e4) => this.restoreCursor(e4))), this._parser.registerCsiHandler({ intermediates: "'", final: "}" }, ((e4) => this.insertColumns(e4))), this._parser.registerCsiHandler({ intermediates: "'", final: "~" }, ((e4) => this.deleteColumns(e4))), this._parser.registerCsiHandler({ intermediates: '"', final: "q" }, ((e4) => this.selectProtected(e4))), this._parser.registerCsiHandler({ intermediates: "$", final: "p" }, ((e4) => this.requestMode(e4, true))), this._parser.registerCsiHandler({ prefix: "?", intermediates: "$", final: "p" }, ((e4) => this.requestMode(e4, false))), this._parser.setExecuteHandler(n2.C0.BEL, (() => this.bell())), this._parser.setExecuteHandler(n2.C0.LF, (() => this.lineFeed())), this._parser.setExecuteHandler(n2.C0.VT, (() => this.lineFeed())), this._parser.setExecuteHandler(n2.C0.FF, (() => this.lineFeed())), this._parser.setExecuteHandler(n2.C0.CR, (() => this.carriageReturn())), this._parser.setExecuteHandler(n2.C0.BS, (() => this.backspace())), this._parser.setExecuteHandler(n2.C0.HT, (() => this.tab())), this._parser.setExecuteHandler(n2.C0.SO, (() => this.shiftOut())), this._parser.setExecuteHandler(n2.C0.SI, (() => this.shiftIn())), this._parser.setExecuteHandler(n2.C1.IND, (() => this.index())), this._parser.setExecuteHandler(n2.C1.NEL, (() => this.nextLine())), this._parser.setExecuteHandler(n2.C1.HTS, (() => this.tabSet())), this._parser.registerOscHandler(0, new g.OscHandler(((e4) => (this.setTitle(e4), this.setIconName(e4), true)))), this._parser.registerOscHandler(1, new g.OscHandler(((e4) => this.setIconName(e4)))), this._parser.registerOscHandler(2, new g.OscHandler(((e4) => this.setTitle(e4)))), this._parser.registerOscHandler(4, new g.OscHandler(((e4) => this.setOrReportIndexedColor(e4)))), this._parser.registerOscHandler(8, new g.OscHandler(((e4) => this.setHyperlink(e4)))), this._parser.registerOscHandler(10, new g.OscHandler(((e4) => this.setOrReportFgColor(e4)))), this._parser.registerOscHandler(11, new g.OscHandler(((e4) => this.setOrReportBgColor(e4)))), this._parser.registerOscHandler(12, new g.OscHandler(((e4) => this.setOrReportCursorColor(e4)))), this._parser.registerOscHandler(104, new g.OscHandler(((e4) => this.restoreIndexedColor(e4)))), this._parser.registerOscHandler(110, new g.OscHandler(((e4) => this.restoreFgColor(e4)))), this._parser.registerOscHandler(111, new g.OscHandler(((e4) => this.restoreBgColor(e4)))), this._parser.registerOscHandler(112, new g.OscHandler(((e4) => this.restoreCursorColor(e4)))), this._parser.registerEscHandler({ final: "7" }, (() => this.saveCursor())), this._parser.registerEscHandler({ final: "8" }, (() => this.restoreCursor())), this._parser.registerEscHandler({ final: "D" }, (() => this.index())), this._parser.registerEscHandler({ final: "E" }, (() => this.nextLine())), this._parser.registerEscHandler({ final: "H" }, (() => this.tabSet())), this._parser.registerEscHandler({ final: "M" }, (() => this.reverseIndex())), this._parser.registerEscHandler({ final: "=" }, (() => this.keypadApplicationMode())), this._parser.registerEscHandler({ final: ">" }, (() => this.keypadNumericMode())), this._parser.registerEscHandler({ final: "c" }, (() => this.fullReset())), this._parser.registerEscHandler({ final: "n" }, (() => this.setgLevel(2))), this._parser.registerEscHandler({ final: "o" }, (() => this.setgLevel(3))), this._parser.registerEscHandler({ final: "|" }, (() => this.setgLevel(3))), this._parser.registerEscHandler({ final: "}" }, (() => this.setgLevel(2))), this._parser.registerEscHandler({ final: "~" }, (() => this.setgLevel(1))), this._parser.registerEscHandler({ intermediates: "%", final: "@" }, (() => this.selectDefaultCharset())), this._parser.registerEscHandler({ intermediates: "%", final: "G" }, (() => this.selectDefaultCharset()));
-            for (const e4 in o.CHARSETS) this._parser.registerEscHandler({ intermediates: "(", final: e4 }, (() => this.selectCharset("(" + e4))), this._parser.registerEscHandler({ intermediates: ")", final: e4 }, (() => this.selectCharset(")" + e4))), this._parser.registerEscHandler({ intermediates: "*", final: e4 }, (() => this.selectCharset("*" + e4))), this._parser.registerEscHandler({ intermediates: "+", final: e4 }, (() => this.selectCharset("+" + e4))), this._parser.registerEscHandler({ intermediates: "-", final: e4 }, (() => this.selectCharset("-" + e4))), this._parser.registerEscHandler({ intermediates: ".", final: e4 }, (() => this.selectCharset("." + e4))), this._parser.registerEscHandler({ intermediates: "/", final: e4 }, (() => this.selectCharset("/" + e4)));
-            this._parser.registerEscHandler({ intermediates: "#", final: "8" }, (() => this.screenAlignmentPattern())), this._parser.setErrorHandler(((e4) => (this._logService.error("Parsing error: ", e4), e4))), this._parser.registerDcsHandler({ intermediates: "$", final: "q" }, new v.DcsHandler(((e4, t4) => this.requestStatusString(e4, t4))));
-          }
-          _preserveStack(e3, t3, s4, i3) {
-            this._parseStack.paused = true, this._parseStack.cursorStartX = e3, this._parseStack.cursorStartY = t3, this._parseStack.decodedLength = s4, this._parseStack.position = i3;
-          }
-          _logSlowResolvingAsync(e3) {
-            this._logService.logLevel <= _.LogLevelEnum.WARN && Promise.race([e3, new Promise(((e4, t3) => setTimeout((() => t3("#SLOW_TIMEOUT")), 5e3)))]).catch(((e4) => {
-              if ("#SLOW_TIMEOUT" !== e4) throw e4;
-              console.warn("async parser handler taking longer than 5000 ms");
-            }));
-          }
-          _getCurrentLinkId() {
-            return this._curAttrData.extended.urlId;
-          }
-          parse(e3, t3) {
-            let s4, i3 = this._activeBuffer.x, r3 = this._activeBuffer.y, n3 = 0;
-            const o2 = this._parseStack.paused;
-            if (o2) {
-              if (s4 = this._parser.parse(this._parseBuffer, this._parseStack.decodedLength, t3)) return this._logSlowResolvingAsync(s4), s4;
-              i3 = this._parseStack.cursorStartX, r3 = this._parseStack.cursorStartY, this._parseStack.paused = false, e3.length > y && (n3 = this._parseStack.position + y);
-            }
-            if (this._logService.logLevel <= _.LogLevelEnum.DEBUG && this._logService.debug("parsing data " + ("string" == typeof e3 ? ` "${e3}"` : ` "${Array.prototype.map.call(e3, ((e4) => String.fromCharCode(e4))).join("")}"`)), this._logService.logLevel === _.LogLevelEnum.TRACE && this._logService.trace("parsing data (codes)", "string" == typeof e3 ? e3.split("").map(((e4) => e4.charCodeAt(0))) : e3), this._parseBuffer.length < e3.length && this._parseBuffer.length < y && (this._parseBuffer = new Uint32Array(Math.min(e3.length, y))), o2 || this._dirtyRowTracker.clearRange(), e3.length > y) for (let t4 = n3; t4 < e3.length; t4 += y) {
-              const n4 = t4 + y < e3.length ? t4 + y : e3.length, o3 = "string" == typeof e3 ? this._stringDecoder.decode(e3.substring(t4, n4), this._parseBuffer) : this._utf8Decoder.decode(e3.subarray(t4, n4), this._parseBuffer);
-              if (s4 = this._parser.parse(this._parseBuffer, o3)) return this._preserveStack(i3, r3, o3, t4), this._logSlowResolvingAsync(s4), s4;
-            }
-            else if (!o2) {
-              const t4 = "string" == typeof e3 ? this._stringDecoder.decode(e3, this._parseBuffer) : this._utf8Decoder.decode(e3, this._parseBuffer);
-              if (s4 = this._parser.parse(this._parseBuffer, t4)) return this._preserveStack(i3, r3, t4, 0), this._logSlowResolvingAsync(s4), s4;
-            }
-            this._activeBuffer.x === i3 && this._activeBuffer.y === r3 || this._onCursorMove.fire();
-            const a2 = this._dirtyRowTracker.end + (this._bufferService.buffer.ybase - this._bufferService.buffer.ydisp), h2 = this._dirtyRowTracker.start + (this._bufferService.buffer.ybase - this._bufferService.buffer.ydisp);
-            h2 < this._bufferService.rows && this._onRequestRefreshRows.fire({ start: Math.min(h2, this._bufferService.rows - 1), end: Math.min(a2, this._bufferService.rows - 1) });
-          }
-          print(e3, t3, s4) {
-            let i3, r3;
-            const n3 = this._charsetService.charset, o2 = this._optionsService.rawOptions.screenReaderMode, a2 = this._bufferService.cols, h2 = this._coreService.decPrivateModes.wraparound, d2 = this._coreService.modes.insertMode, f2 = this._curAttrData;
-            let _2 = this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y);
-            this._dirtyRowTracker.markDirty(this._activeBuffer.y), this._activeBuffer.x && s4 - t3 > 0 && 2 === _2.getWidth(this._activeBuffer.x - 1) && _2.setCellFromCodepoint(this._activeBuffer.x - 1, 0, 1, f2);
-            let g2 = this._parser.precedingJoinState;
-            for (let v2 = t3; v2 < s4; ++v2) {
-              if (i3 = e3[v2], i3 < 127 && n3) {
-                const e4 = n3[String.fromCharCode(i3)];
-                e4 && (i3 = e4.charCodeAt(0));
-              }
-              const t4 = this._unicodeService.charProperties(i3, g2);
-              r3 = p.UnicodeService.extractWidth(t4);
-              const s5 = p.UnicodeService.extractShouldJoin(t4), m2 = s5 ? p.UnicodeService.extractWidth(g2) : 0;
-              if (g2 = t4, o2 && this._onA11yChar.fire((0, c.stringFromCodePoint)(i3)), this._getCurrentLinkId() && this._oscLinkService.addLineToLink(this._getCurrentLinkId(), this._activeBuffer.ybase + this._activeBuffer.y), this._activeBuffer.x + r3 - m2 > a2) {
-                if (h2) {
-                  const e4 = _2;
-                  let t5 = this._activeBuffer.x - m2;
-                  for (this._activeBuffer.x = m2, this._activeBuffer.y++, this._activeBuffer.y === this._activeBuffer.scrollBottom + 1 ? (this._activeBuffer.y--, this._bufferService.scroll(this._eraseAttrData(), true)) : (this._activeBuffer.y >= this._bufferService.rows && (this._activeBuffer.y = this._bufferService.rows - 1), this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y).isWrapped = true), _2 = this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y), m2 > 0 && _2 instanceof l.BufferLine && _2.copyCellsFrom(e4, t5, 0, m2, false); t5 < a2; ) e4.setCellFromCodepoint(t5++, 0, 1, f2);
-                } else if (this._activeBuffer.x = a2 - 1, 2 === r3) continue;
-              }
-              if (s5 && this._activeBuffer.x) {
-                const e4 = _2.getWidth(this._activeBuffer.x - 1) ? 1 : 2;
-                _2.addCodepointToCell(this._activeBuffer.x - e4, i3, r3);
-                for (let e5 = r3 - m2; --e5 >= 0; ) _2.setCellFromCodepoint(this._activeBuffer.x++, 0, 0, f2);
-              } else if (d2 && (_2.insertCells(this._activeBuffer.x, r3 - m2, this._activeBuffer.getNullCell(f2)), 2 === _2.getWidth(a2 - 1) && _2.setCellFromCodepoint(a2 - 1, u.NULL_CELL_CODE, u.NULL_CELL_WIDTH, f2)), _2.setCellFromCodepoint(this._activeBuffer.x++, i3, r3, f2), r3 > 0) for (; --r3; ) _2.setCellFromCodepoint(this._activeBuffer.x++, 0, 0, f2);
-            }
-            this._parser.precedingJoinState = g2, this._activeBuffer.x < a2 && s4 - t3 > 0 && 0 === _2.getWidth(this._activeBuffer.x) && !_2.hasContent(this._activeBuffer.x) && _2.setCellFromCodepoint(this._activeBuffer.x, 0, 1, f2), this._dirtyRowTracker.markDirty(this._activeBuffer.y);
-          }
-          registerCsiHandler(e3, t3) {
-            return "t" !== e3.final || e3.prefix || e3.intermediates ? this._parser.registerCsiHandler(e3, t3) : this._parser.registerCsiHandler(e3, ((e4) => !C(e4.params[0], this._optionsService.rawOptions.windowOptions) || t3(e4)));
-          }
-          registerDcsHandler(e3, t3) {
-            return this._parser.registerDcsHandler(e3, new v.DcsHandler(t3));
-          }
-          registerEscHandler(e3, t3) {
-            return this._parser.registerEscHandler(e3, t3);
-          }
-          registerOscHandler(e3, t3) {
-            return this._parser.registerOscHandler(e3, new g.OscHandler(t3));
-          }
-          bell() {
-            return this._onRequestBell.fire(), true;
-          }
-          lineFeed() {
-            return this._dirtyRowTracker.markDirty(this._activeBuffer.y), this._optionsService.rawOptions.convertEol && (this._activeBuffer.x = 0), this._activeBuffer.y++, this._activeBuffer.y === this._activeBuffer.scrollBottom + 1 ? (this._activeBuffer.y--, this._bufferService.scroll(this._eraseAttrData())) : this._activeBuffer.y >= this._bufferService.rows ? this._activeBuffer.y = this._bufferService.rows - 1 : this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y).isWrapped = false, this._activeBuffer.x >= this._bufferService.cols && this._activeBuffer.x--, this._dirtyRowTracker.markDirty(this._activeBuffer.y), this._onLineFeed.fire(), true;
-          }
-          carriageReturn() {
-            return this._activeBuffer.x = 0, true;
-          }
-          backspace() {
-            if (!this._coreService.decPrivateModes.reverseWraparound) return this._restrictCursor(), this._activeBuffer.x > 0 && this._activeBuffer.x--, true;
-            if (this._restrictCursor(this._bufferService.cols), this._activeBuffer.x > 0) this._activeBuffer.x--;
-            else if (0 === this._activeBuffer.x && this._activeBuffer.y > this._activeBuffer.scrollTop && this._activeBuffer.y <= this._activeBuffer.scrollBottom && this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y)?.isWrapped) {
-              this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y).isWrapped = false, this._activeBuffer.y--, this._activeBuffer.x = this._bufferService.cols - 1;
-              const e3 = this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y);
-              e3.hasWidth(this._activeBuffer.x) && !e3.hasContent(this._activeBuffer.x) && this._activeBuffer.x--;
-            }
-            return this._restrictCursor(), true;
-          }
-          tab() {
-            if (this._activeBuffer.x >= this._bufferService.cols) return true;
-            const e3 = this._activeBuffer.x;
-            return this._activeBuffer.x = this._activeBuffer.nextStop(), this._optionsService.rawOptions.screenReaderMode && this._onA11yTab.fire(this._activeBuffer.x - e3), true;
-          }
-          shiftOut() {
-            return this._charsetService.setgLevel(1), true;
-          }
-          shiftIn() {
-            return this._charsetService.setgLevel(0), true;
-          }
-          _restrictCursor(e3 = this._bufferService.cols - 1) {
-            this._activeBuffer.x = Math.min(e3, Math.max(0, this._activeBuffer.x)), this._activeBuffer.y = this._coreService.decPrivateModes.origin ? Math.min(this._activeBuffer.scrollBottom, Math.max(this._activeBuffer.scrollTop, this._activeBuffer.y)) : Math.min(this._bufferService.rows - 1, Math.max(0, this._activeBuffer.y)), this._dirtyRowTracker.markDirty(this._activeBuffer.y);
-          }
-          _setCursor(e3, t3) {
-            this._dirtyRowTracker.markDirty(this._activeBuffer.y), this._coreService.decPrivateModes.origin ? (this._activeBuffer.x = e3, this._activeBuffer.y = this._activeBuffer.scrollTop + t3) : (this._activeBuffer.x = e3, this._activeBuffer.y = t3), this._restrictCursor(), this._dirtyRowTracker.markDirty(this._activeBuffer.y);
-          }
-          _moveCursor(e3, t3) {
-            this._restrictCursor(), this._setCursor(this._activeBuffer.x + e3, this._activeBuffer.y + t3);
-          }
-          cursorUp(e3) {
-            const t3 = this._activeBuffer.y - this._activeBuffer.scrollTop;
-            return t3 >= 0 ? this._moveCursor(0, -Math.min(t3, e3.params[0] || 1)) : this._moveCursor(0, -(e3.params[0] || 1)), true;
-          }
-          cursorDown(e3) {
-            const t3 = this._activeBuffer.scrollBottom - this._activeBuffer.y;
-            return t3 >= 0 ? this._moveCursor(0, Math.min(t3, e3.params[0] || 1)) : this._moveCursor(0, e3.params[0] || 1), true;
-          }
-          cursorForward(e3) {
-            return this._moveCursor(e3.params[0] || 1, 0), true;
-          }
-          cursorBackward(e3) {
-            return this._moveCursor(-(e3.params[0] || 1), 0), true;
-          }
-          cursorNextLine(e3) {
-            return this.cursorDown(e3), this._activeBuffer.x = 0, true;
-          }
-          cursorPrecedingLine(e3) {
-            return this.cursorUp(e3), this._activeBuffer.x = 0, true;
-          }
-          cursorCharAbsolute(e3) {
-            return this._setCursor((e3.params[0] || 1) - 1, this._activeBuffer.y), true;
-          }
-          cursorPosition(e3) {
-            return this._setCursor(e3.length >= 2 ? (e3.params[1] || 1) - 1 : 0, (e3.params[0] || 1) - 1), true;
-          }
-          charPosAbsolute(e3) {
-            return this._setCursor((e3.params[0] || 1) - 1, this._activeBuffer.y), true;
-          }
-          hPositionRelative(e3) {
-            return this._moveCursor(e3.params[0] || 1, 0), true;
-          }
-          linePosAbsolute(e3) {
-            return this._setCursor(this._activeBuffer.x, (e3.params[0] || 1) - 1), true;
-          }
-          vPositionRelative(e3) {
-            return this._moveCursor(0, e3.params[0] || 1), true;
-          }
-          hVPosition(e3) {
-            return this.cursorPosition(e3), true;
-          }
-          tabClear(e3) {
-            const t3 = e3.params[0];
-            return 0 === t3 ? delete this._activeBuffer.tabs[this._activeBuffer.x] : 3 === t3 && (this._activeBuffer.tabs = {}), true;
-          }
-          cursorForwardTab(e3) {
-            if (this._activeBuffer.x >= this._bufferService.cols) return true;
-            let t3 = e3.params[0] || 1;
-            for (; t3--; ) this._activeBuffer.x = this._activeBuffer.nextStop();
-            return true;
-          }
-          cursorBackwardTab(e3) {
-            if (this._activeBuffer.x >= this._bufferService.cols) return true;
-            let t3 = e3.params[0] || 1;
-            for (; t3--; ) this._activeBuffer.x = this._activeBuffer.prevStop();
-            return true;
-          }
-          selectProtected(e3) {
-            const t3 = e3.params[0];
-            return 1 === t3 && (this._curAttrData.bg |= 536870912), 2 !== t3 && 0 !== t3 || (this._curAttrData.bg &= -536870913), true;
-          }
-          _eraseInBufferLine(e3, t3, s4, i3 = false, r3 = false) {
-            const n3 = this._activeBuffer.lines.get(this._activeBuffer.ybase + e3);
-            n3.replaceCells(t3, s4, this._activeBuffer.getNullCell(this._eraseAttrData()), r3), i3 && (n3.isWrapped = false);
-          }
-          _resetBufferLine(e3, t3 = false) {
-            const s4 = this._activeBuffer.lines.get(this._activeBuffer.ybase + e3);
-            s4 && (s4.fill(this._activeBuffer.getNullCell(this._eraseAttrData()), t3), this._bufferService.buffer.clearMarkers(this._activeBuffer.ybase + e3), s4.isWrapped = false);
-          }
-          eraseInDisplay(e3, t3 = false) {
-            let s4;
-            switch (this._restrictCursor(this._bufferService.cols), e3.params[0]) {
-              case 0:
-                for (s4 = this._activeBuffer.y, this._dirtyRowTracker.markDirty(s4), this._eraseInBufferLine(s4++, this._activeBuffer.x, this._bufferService.cols, 0 === this._activeBuffer.x, t3); s4 < this._bufferService.rows; s4++) this._resetBufferLine(s4, t3);
-                this._dirtyRowTracker.markDirty(s4);
-                break;
-              case 1:
-                for (s4 = this._activeBuffer.y, this._dirtyRowTracker.markDirty(s4), this._eraseInBufferLine(s4, 0, this._activeBuffer.x + 1, true, t3), this._activeBuffer.x + 1 >= this._bufferService.cols && (this._activeBuffer.lines.get(s4 + 1).isWrapped = false); s4--; ) this._resetBufferLine(s4, t3);
-                this._dirtyRowTracker.markDirty(0);
-                break;
-              case 2:
-                if (this._optionsService.rawOptions.scrollOnEraseInDisplay) {
-                  for (s4 = this._bufferService.rows, this._dirtyRowTracker.markRangeDirty(0, s4 - 1); s4--; ) {
-                    const e5 = this._activeBuffer.lines.get(this._activeBuffer.ybase + s4);
-                    if (e5?.getTrimmedLength()) break;
-                  }
-                  for (; s4 >= 0; s4--) this._bufferService.scroll(this._eraseAttrData());
-                } else {
-                  for (s4 = this._bufferService.rows, this._dirtyRowTracker.markDirty(s4 - 1); s4--; ) this._resetBufferLine(s4, t3);
-                  this._dirtyRowTracker.markDirty(0);
-                }
-                break;
-              case 3:
-                const e4 = this._activeBuffer.lines.length - this._bufferService.rows;
-                e4 > 0 && (this._activeBuffer.lines.trimStart(e4), this._activeBuffer.ybase = Math.max(this._activeBuffer.ybase - e4, 0), this._activeBuffer.ydisp = Math.max(this._activeBuffer.ydisp - e4, 0), this._onScroll.fire(0));
-            }
-            return true;
-          }
-          eraseInLine(e3, t3 = false) {
-            switch (this._restrictCursor(this._bufferService.cols), e3.params[0]) {
-              case 0:
-                this._eraseInBufferLine(this._activeBuffer.y, this._activeBuffer.x, this._bufferService.cols, 0 === this._activeBuffer.x, t3);
-                break;
-              case 1:
-                this._eraseInBufferLine(this._activeBuffer.y, 0, this._activeBuffer.x + 1, false, t3);
-                break;
-              case 2:
-                this._eraseInBufferLine(this._activeBuffer.y, 0, this._bufferService.cols, true, t3);
-            }
-            return this._dirtyRowTracker.markDirty(this._activeBuffer.y), true;
-          }
-          insertLines(e3) {
-            this._restrictCursor();
-            let t3 = e3.params[0] || 1;
-            if (this._activeBuffer.y > this._activeBuffer.scrollBottom || this._activeBuffer.y < this._activeBuffer.scrollTop) return true;
-            const s4 = this._activeBuffer.ybase + this._activeBuffer.y, i3 = this._bufferService.rows - 1 - this._activeBuffer.scrollBottom, r3 = this._bufferService.rows - 1 + this._activeBuffer.ybase - i3 + 1;
-            for (; t3--; ) this._activeBuffer.lines.splice(r3 - 1, 1), this._activeBuffer.lines.splice(s4, 0, this._activeBuffer.getBlankLine(this._eraseAttrData()));
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.y, this._activeBuffer.scrollBottom), this._activeBuffer.x = 0, true;
-          }
-          deleteLines(e3) {
-            this._restrictCursor();
-            let t3 = e3.params[0] || 1;
-            if (this._activeBuffer.y > this._activeBuffer.scrollBottom || this._activeBuffer.y < this._activeBuffer.scrollTop) return true;
-            const s4 = this._activeBuffer.ybase + this._activeBuffer.y;
-            let i3;
-            for (i3 = this._bufferService.rows - 1 - this._activeBuffer.scrollBottom, i3 = this._bufferService.rows - 1 + this._activeBuffer.ybase - i3; t3--; ) this._activeBuffer.lines.splice(s4, 1), this._activeBuffer.lines.splice(i3, 0, this._activeBuffer.getBlankLine(this._eraseAttrData()));
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.y, this._activeBuffer.scrollBottom), this._activeBuffer.x = 0, true;
-          }
-          insertChars(e3) {
-            this._restrictCursor();
-            const t3 = this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y);
-            return t3 && (t3.insertCells(this._activeBuffer.x, e3.params[0] || 1, this._activeBuffer.getNullCell(this._eraseAttrData())), this._dirtyRowTracker.markDirty(this._activeBuffer.y)), true;
-          }
-          deleteChars(e3) {
-            this._restrictCursor();
-            const t3 = this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y);
-            return t3 && (t3.deleteCells(this._activeBuffer.x, e3.params[0] || 1, this._activeBuffer.getNullCell(this._eraseAttrData())), this._dirtyRowTracker.markDirty(this._activeBuffer.y)), true;
-          }
-          scrollUp(e3) {
-            let t3 = e3.params[0] || 1;
-            for (; t3--; ) this._activeBuffer.lines.splice(this._activeBuffer.ybase + this._activeBuffer.scrollTop, 1), this._activeBuffer.lines.splice(this._activeBuffer.ybase + this._activeBuffer.scrollBottom, 0, this._activeBuffer.getBlankLine(this._eraseAttrData()));
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.scrollTop, this._activeBuffer.scrollBottom), true;
-          }
-          scrollDown(e3) {
-            let t3 = e3.params[0] || 1;
-            for (; t3--; ) this._activeBuffer.lines.splice(this._activeBuffer.ybase + this._activeBuffer.scrollBottom, 1), this._activeBuffer.lines.splice(this._activeBuffer.ybase + this._activeBuffer.scrollTop, 0, this._activeBuffer.getBlankLine(l.DEFAULT_ATTR_DATA));
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.scrollTop, this._activeBuffer.scrollBottom), true;
-          }
-          scrollLeft(e3) {
-            if (this._activeBuffer.y > this._activeBuffer.scrollBottom || this._activeBuffer.y < this._activeBuffer.scrollTop) return true;
-            const t3 = e3.params[0] || 1;
-            for (let e4 = this._activeBuffer.scrollTop; e4 <= this._activeBuffer.scrollBottom; ++e4) {
-              const s4 = this._activeBuffer.lines.get(this._activeBuffer.ybase + e4);
-              s4.deleteCells(0, t3, this._activeBuffer.getNullCell(this._eraseAttrData())), s4.isWrapped = false;
-            }
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.scrollTop, this._activeBuffer.scrollBottom), true;
-          }
-          scrollRight(e3) {
-            if (this._activeBuffer.y > this._activeBuffer.scrollBottom || this._activeBuffer.y < this._activeBuffer.scrollTop) return true;
-            const t3 = e3.params[0] || 1;
-            for (let e4 = this._activeBuffer.scrollTop; e4 <= this._activeBuffer.scrollBottom; ++e4) {
-              const s4 = this._activeBuffer.lines.get(this._activeBuffer.ybase + e4);
-              s4.insertCells(0, t3, this._activeBuffer.getNullCell(this._eraseAttrData())), s4.isWrapped = false;
-            }
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.scrollTop, this._activeBuffer.scrollBottom), true;
-          }
-          insertColumns(e3) {
-            if (this._activeBuffer.y > this._activeBuffer.scrollBottom || this._activeBuffer.y < this._activeBuffer.scrollTop) return true;
-            const t3 = e3.params[0] || 1;
-            for (let e4 = this._activeBuffer.scrollTop; e4 <= this._activeBuffer.scrollBottom; ++e4) {
-              const s4 = this._activeBuffer.lines.get(this._activeBuffer.ybase + e4);
-              s4.insertCells(this._activeBuffer.x, t3, this._activeBuffer.getNullCell(this._eraseAttrData())), s4.isWrapped = false;
-            }
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.scrollTop, this._activeBuffer.scrollBottom), true;
-          }
-          deleteColumns(e3) {
-            if (this._activeBuffer.y > this._activeBuffer.scrollBottom || this._activeBuffer.y < this._activeBuffer.scrollTop) return true;
-            const t3 = e3.params[0] || 1;
-            for (let e4 = this._activeBuffer.scrollTop; e4 <= this._activeBuffer.scrollBottom; ++e4) {
-              const s4 = this._activeBuffer.lines.get(this._activeBuffer.ybase + e4);
-              s4.deleteCells(this._activeBuffer.x, t3, this._activeBuffer.getNullCell(this._eraseAttrData())), s4.isWrapped = false;
-            }
-            return this._dirtyRowTracker.markRangeDirty(this._activeBuffer.scrollTop, this._activeBuffer.scrollBottom), true;
-          }
-          eraseChars(e3) {
-            this._restrictCursor();
-            const t3 = this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y);
-            return t3 && (t3.replaceCells(this._activeBuffer.x, this._activeBuffer.x + (e3.params[0] || 1), this._activeBuffer.getNullCell(this._eraseAttrData())), this._dirtyRowTracker.markDirty(this._activeBuffer.y)), true;
-          }
-          repeatPrecedingCharacter(e3) {
-            const t3 = this._parser.precedingJoinState;
-            if (!t3) return true;
-            const s4 = e3.params[0] || 1, i3 = p.UnicodeService.extractWidth(t3), r3 = this._activeBuffer.x - i3, n3 = this._activeBuffer.lines.get(this._activeBuffer.ybase + this._activeBuffer.y).getString(r3), o2 = new Uint32Array(n3.length * s4);
-            let a2 = 0;
-            for (let e4 = 0; e4 < n3.length; ) {
-              const t4 = n3.codePointAt(e4) || 0;
-              o2[a2++] = t4, e4 += t4 > 65535 ? 2 : 1;
-            }
-            let h2 = a2;
-            for (let e4 = 1; e4 < s4; ++e4) o2.copyWithin(h2, 0, a2), h2 += a2;
-            return this.print(o2, 0, h2), true;
-          }
-          sendDeviceAttributesPrimary(e3) {
-            return e3.params[0] > 0 || (this._is("xterm") || this._is("rxvt-unicode") || this._is("screen") ? this._coreService.triggerDataEvent(n2.C0.ESC + "[?1;2c") : this._is("linux") && this._coreService.triggerDataEvent(n2.C0.ESC + "[?6c")), true;
-          }
-          sendDeviceAttributesSecondary(e3) {
-            return e3.params[0] > 0 || (this._is("xterm") ? this._coreService.triggerDataEvent(n2.C0.ESC + "[>0;276;0c") : this._is("rxvt-unicode") ? this._coreService.triggerDataEvent(n2.C0.ESC + "[>85;95;0c") : this._is("linux") ? this._coreService.triggerDataEvent(e3.params[0] + "c") : this._is("screen") && this._coreService.triggerDataEvent(n2.C0.ESC + "[>83;40003;0c")), true;
-          }
-          _is(e3) {
-            return 0 === (this._optionsService.rawOptions.termName + "").indexOf(e3);
-          }
-          setMode(e3) {
-            for (let t3 = 0; t3 < e3.length; t3++) switch (e3.params[t3]) {
-              case 4:
-                this._coreService.modes.insertMode = true;
-                break;
-              case 20:
-                this._optionsService.options.convertEol = true;
-            }
-            return true;
-          }
-          setModePrivate(e3) {
-            for (let t3 = 0; t3 < e3.length; t3++) switch (e3.params[t3]) {
-              case 1:
-                this._coreService.decPrivateModes.applicationCursorKeys = true;
-                break;
-              case 2:
-                this._charsetService.setgCharset(0, o.DEFAULT_CHARSET), this._charsetService.setgCharset(1, o.DEFAULT_CHARSET), this._charsetService.setgCharset(2, o.DEFAULT_CHARSET), this._charsetService.setgCharset(3, o.DEFAULT_CHARSET);
-                break;
-              case 3:
-                this._optionsService.rawOptions.windowOptions.setWinLines && (this._bufferService.resize(132, this._bufferService.rows), this._onRequestReset.fire());
-                break;
-              case 6:
-                this._coreService.decPrivateModes.origin = true, this._setCursor(0, 0);
-                break;
-              case 7:
-                this._coreService.decPrivateModes.wraparound = true;
-                break;
-              case 12:
-                this._optionsService.options.cursorBlink = true;
-                break;
-              case 45:
-                this._coreService.decPrivateModes.reverseWraparound = true;
-                break;
-              case 66:
-                this._logService.debug("Serial port requested application keypad."), this._coreService.decPrivateModes.applicationKeypad = true, this._onRequestSyncScrollBar.fire();
-                break;
-              case 9:
-                this._coreMouseService.activeProtocol = "X10";
-                break;
-              case 1e3:
-                this._coreMouseService.activeProtocol = "VT200";
-                break;
-              case 1002:
-                this._coreMouseService.activeProtocol = "DRAG";
-                break;
-              case 1003:
-                this._coreMouseService.activeProtocol = "ANY";
-                break;
-              case 1004:
-                this._coreService.decPrivateModes.sendFocus = true, this._onRequestSendFocus.fire();
-                break;
-              case 1005:
-                this._logService.debug("DECSET 1005 not supported (see #2507)");
-                break;
-              case 1006:
-                this._coreMouseService.activeEncoding = "SGR";
-                break;
-              case 1015:
-                this._logService.debug("DECSET 1015 not supported (see #2507)");
-                break;
-              case 1016:
-                this._coreMouseService.activeEncoding = "SGR_PIXELS";
-                break;
-              case 25:
-                this._coreService.isCursorHidden = false;
-                break;
-              case 1048:
-                this.saveCursor();
-                break;
-              case 1049:
-                this.saveCursor();
-              case 47:
-              case 1047:
-                this._bufferService.buffers.activateAltBuffer(this._eraseAttrData()), this._coreService.isCursorInitialized = true, this._onRequestRefreshRows.fire(void 0), this._onRequestSyncScrollBar.fire();
-                break;
-              case 2004:
-                this._coreService.decPrivateModes.bracketedPasteMode = true;
-                break;
-              case 2026:
-                this._coreService.decPrivateModes.synchronizedOutput = true;
-            }
-            return true;
-          }
-          resetMode(e3) {
-            for (let t3 = 0; t3 < e3.length; t3++) switch (e3.params[t3]) {
-              case 4:
-                this._coreService.modes.insertMode = false;
-                break;
-              case 20:
-                this._optionsService.options.convertEol = false;
-            }
-            return true;
-          }
-          resetModePrivate(e3) {
-            for (let t3 = 0; t3 < e3.length; t3++) switch (e3.params[t3]) {
-              case 1:
-                this._coreService.decPrivateModes.applicationCursorKeys = false;
-                break;
-              case 3:
-                this._optionsService.rawOptions.windowOptions.setWinLines && (this._bufferService.resize(80, this._bufferService.rows), this._onRequestReset.fire());
-                break;
-              case 6:
-                this._coreService.decPrivateModes.origin = false, this._setCursor(0, 0);
-                break;
-              case 7:
-                this._coreService.decPrivateModes.wraparound = false;
-                break;
-              case 12:
-                this._optionsService.options.cursorBlink = false;
-                break;
-              case 45:
-                this._coreService.decPrivateModes.reverseWraparound = false;
-                break;
-              case 66:
-                this._logService.debug("Switching back to normal keypad."), this._coreService.decPrivateModes.applicationKeypad = false, this._onRequestSyncScrollBar.fire();
-                break;
-              case 9:
-              case 1e3:
-              case 1002:
-              case 1003:
-                this._coreMouseService.activeProtocol = "NONE";
-                break;
-              case 1004:
-                this._coreService.decPrivateModes.sendFocus = false;
-                break;
-              case 1005:
-                this._logService.debug("DECRST 1005 not supported (see #2507)");
-                break;
-              case 1006:
-              case 1016:
-                this._coreMouseService.activeEncoding = "DEFAULT";
-                break;
-              case 1015:
-                this._logService.debug("DECRST 1015 not supported (see #2507)");
-                break;
-              case 25:
-                this._coreService.isCursorHidden = true;
-                break;
-              case 1048:
-                this.restoreCursor();
-                break;
-              case 1049:
-              case 47:
-              case 1047:
-                this._bufferService.buffers.activateNormalBuffer(), 1049 === e3.params[t3] && this.restoreCursor(), this._coreService.isCursorInitialized = true, this._onRequestRefreshRows.fire(void 0), this._onRequestSyncScrollBar.fire();
-                break;
-              case 2004:
-                this._coreService.decPrivateModes.bracketedPasteMode = false;
-                break;
-              case 2026:
-                this._coreService.decPrivateModes.synchronizedOutput = false, this._onRequestRefreshRows.fire(void 0);
-            }
-            return true;
-          }
-          requestMode(e3, t3) {
-            const s4 = this._coreService.decPrivateModes, { activeProtocol: i3, activeEncoding: r3 } = this._coreMouseService, o2 = this._coreService, { buffers: a2, cols: h2 } = this._bufferService, { active: c2, alt: l2 } = a2, u2 = this._optionsService.rawOptions, d2 = (e4) => e4 ? 1 : 2, f2 = e3.params[0];
-            return _2 = f2, p2 = t3 ? 2 === f2 ? 4 : 4 === f2 ? d2(o2.modes.insertMode) : 12 === f2 ? 3 : 20 === f2 ? d2(u2.convertEol) : 0 : 1 === f2 ? d2(s4.applicationCursorKeys) : 3 === f2 ? u2.windowOptions.setWinLines ? 80 === h2 ? 2 : 132 === h2 ? 1 : 0 : 0 : 6 === f2 ? d2(s4.origin) : 7 === f2 ? d2(s4.wraparound) : 8 === f2 ? 3 : 9 === f2 ? d2("X10" === i3) : 12 === f2 ? d2(u2.cursorBlink) : 25 === f2 ? d2(!o2.isCursorHidden) : 45 === f2 ? d2(s4.reverseWraparound) : 66 === f2 ? d2(s4.applicationKeypad) : 67 === f2 ? 4 : 1e3 === f2 ? d2("VT200" === i3) : 1002 === f2 ? d2("DRAG" === i3) : 1003 === f2 ? d2("ANY" === i3) : 1004 === f2 ? d2(s4.sendFocus) : 1005 === f2 ? 4 : 1006 === f2 ? d2("SGR" === r3) : 1015 === f2 ? 4 : 1016 === f2 ? d2("SGR_PIXELS" === r3) : 1048 === f2 ? 1 : 47 === f2 || 1047 === f2 || 1049 === f2 ? d2(c2 === l2) : 2004 === f2 ? d2(s4.bracketedPasteMode) : 2026 === f2 ? d2(s4.synchronizedOutput) : 0, o2.triggerDataEvent(`${n2.C0.ESC}[${t3 ? "" : "?"}${_2};${p2}$y`), true;
-            var _2, p2;
-          }
-          _updateAttrColor(e3, t3, s4, i3, r3) {
-            return 2 === t3 ? (e3 |= 50331648, e3 &= -16777216, e3 |= f.AttributeData.fromColorRGB([s4, i3, r3])) : 5 === t3 && (e3 &= -50331904, e3 |= 33554432 | 255 & s4), e3;
-          }
-          _extractColor(e3, t3, s4) {
-            const i3 = [0, 0, -1, 0, 0, 0];
-            let r3 = 0, n3 = 0;
-            do {
-              if (i3[n3 + r3] = e3.params[t3 + n3], e3.hasSubParams(t3 + n3)) {
-                const s5 = e3.getSubParams(t3 + n3);
-                let o2 = 0;
-                do {
-                  5 === i3[1] && (r3 = 1), i3[n3 + o2 + 1 + r3] = s5[o2];
-                } while (++o2 < s5.length && o2 + n3 + 1 + r3 < i3.length);
-                break;
-              }
-              if (5 === i3[1] && n3 + r3 >= 2 || 2 === i3[1] && n3 + r3 >= 5) break;
-              i3[1] && (r3 = 1);
-            } while (++n3 + t3 < e3.length && n3 + r3 < i3.length);
-            for (let e4 = 2; e4 < i3.length; ++e4) -1 === i3[e4] && (i3[e4] = 0);
-            switch (i3[0]) {
-              case 38:
-                s4.fg = this._updateAttrColor(s4.fg, i3[1], i3[3], i3[4], i3[5]);
-                break;
-              case 48:
-                s4.bg = this._updateAttrColor(s4.bg, i3[1], i3[3], i3[4], i3[5]);
-                break;
-              case 58:
-                s4.extended = s4.extended.clone(), s4.extended.underlineColor = this._updateAttrColor(s4.extended.underlineColor, i3[1], i3[3], i3[4], i3[5]);
-            }
-            return n3;
-          }
-          _processUnderline(e3, t3) {
-            t3.extended = t3.extended.clone(), (!~e3 || e3 > 5) && (e3 = 1), t3.extended.underlineStyle = e3, t3.fg |= 268435456, 0 === e3 && (t3.fg &= -268435457), t3.updateExtended();
-          }
-          _processSGR0(e3) {
-            e3.fg = l.DEFAULT_ATTR_DATA.fg, e3.bg = l.DEFAULT_ATTR_DATA.bg, e3.extended = e3.extended.clone(), e3.extended.underlineStyle = 0, e3.extended.underlineColor &= -67108864, e3.updateExtended();
-          }
-          charAttributes(e3) {
-            if (1 === e3.length && 0 === e3.params[0]) return this._processSGR0(this._curAttrData), true;
-            const t3 = e3.length;
-            let s4;
-            const i3 = this._curAttrData;
-            for (let r3 = 0; r3 < t3; r3++) s4 = e3.params[r3], s4 >= 30 && s4 <= 37 ? (i3.fg &= -50331904, i3.fg |= 16777216 | s4 - 30) : s4 >= 40 && s4 <= 47 ? (i3.bg &= -50331904, i3.bg |= 16777216 | s4 - 40) : s4 >= 90 && s4 <= 97 ? (i3.fg &= -50331904, i3.fg |= 16777224 | s4 - 90) : s4 >= 100 && s4 <= 107 ? (i3.bg &= -50331904, i3.bg |= 16777224 | s4 - 100) : 0 === s4 ? this._processSGR0(i3) : 1 === s4 ? i3.fg |= 134217728 : 3 === s4 ? i3.bg |= 67108864 : 4 === s4 ? (i3.fg |= 268435456, this._processUnderline(e3.hasSubParams(r3) ? e3.getSubParams(r3)[0] : 1, i3)) : 5 === s4 ? i3.fg |= 536870912 : 7 === s4 ? i3.fg |= 67108864 : 8 === s4 ? i3.fg |= 1073741824 : 9 === s4 ? i3.fg |= 2147483648 : 2 === s4 ? i3.bg |= 134217728 : 21 === s4 ? this._processUnderline(2, i3) : 22 === s4 ? (i3.fg &= -134217729, i3.bg &= -134217729) : 23 === s4 ? i3.bg &= -67108865 : 24 === s4 ? (i3.fg &= -268435457, this._processUnderline(0, i3)) : 25 === s4 ? i3.fg &= -536870913 : 27 === s4 ? i3.fg &= -67108865 : 28 === s4 ? i3.fg &= -1073741825 : 29 === s4 ? i3.fg &= 2147483647 : 39 === s4 ? (i3.fg &= -67108864, i3.fg |= 16777215 & l.DEFAULT_ATTR_DATA.fg) : 49 === s4 ? (i3.bg &= -67108864, i3.bg |= 16777215 & l.DEFAULT_ATTR_DATA.bg) : 38 === s4 || 48 === s4 || 58 === s4 ? r3 += this._extractColor(e3, r3, i3) : 53 === s4 ? i3.bg |= 1073741824 : 55 === s4 ? i3.bg &= -1073741825 : 59 === s4 ? (i3.extended = i3.extended.clone(), i3.extended.underlineColor = -1, i3.updateExtended()) : 100 === s4 ? (i3.fg &= -67108864, i3.fg |= 16777215 & l.DEFAULT_ATTR_DATA.fg, i3.bg &= -67108864, i3.bg |= 16777215 & l.DEFAULT_ATTR_DATA.bg) : this._logService.debug("Unknown SGR attribute: %d.", s4);
-            return true;
-          }
-          deviceStatus(e3) {
-            switch (e3.params[0]) {
-              case 5:
-                this._coreService.triggerDataEvent(`${n2.C0.ESC}[0n`);
-                break;
-              case 6:
-                const e4 = this._activeBuffer.y + 1, t3 = this._activeBuffer.x + 1;
-                this._coreService.triggerDataEvent(`${n2.C0.ESC}[${e4};${t3}R`);
-            }
-            return true;
-          }
-          deviceStatusPrivate(e3) {
-            if (6 === e3.params[0]) {
-              const e4 = this._activeBuffer.y + 1, t3 = this._activeBuffer.x + 1;
-              this._coreService.triggerDataEvent(`${n2.C0.ESC}[?${e4};${t3}R`);
-            }
-            return true;
-          }
-          softReset(e3) {
-            return this._coreService.isCursorHidden = false, this._onRequestSyncScrollBar.fire(), this._activeBuffer.scrollTop = 0, this._activeBuffer.scrollBottom = this._bufferService.rows - 1, this._curAttrData = l.DEFAULT_ATTR_DATA.clone(), this._coreService.reset(), this._charsetService.reset(), this._activeBuffer.savedX = 0, this._activeBuffer.savedY = this._activeBuffer.ybase, this._activeBuffer.savedCurAttrData.fg = this._curAttrData.fg, this._activeBuffer.savedCurAttrData.bg = this._curAttrData.bg, this._activeBuffer.savedCharset = this._charsetService.charset, this._coreService.decPrivateModes.origin = false, true;
-          }
-          setCursorStyle(e3) {
-            const t3 = 0 === e3.length ? 1 : e3.params[0];
-            if (0 === t3) this._coreService.decPrivateModes.cursorStyle = void 0, this._coreService.decPrivateModes.cursorBlink = void 0;
-            else {
-              switch (t3) {
-                case 1:
-                case 2:
-                  this._coreService.decPrivateModes.cursorStyle = "block";
-                  break;
-                case 3:
-                case 4:
-                  this._coreService.decPrivateModes.cursorStyle = "underline";
-                  break;
-                case 5:
-                case 6:
-                  this._coreService.decPrivateModes.cursorStyle = "bar";
-              }
-              const e4 = t3 % 2 == 1;
-              this._coreService.decPrivateModes.cursorBlink = e4;
-            }
-            return true;
-          }
-          setScrollRegion(e3) {
-            const t3 = e3.params[0] || 1;
-            let s4;
-            return (e3.length < 2 || (s4 = e3.params[1]) > this._bufferService.rows || 0 === s4) && (s4 = this._bufferService.rows), s4 > t3 && (this._activeBuffer.scrollTop = t3 - 1, this._activeBuffer.scrollBottom = s4 - 1, this._setCursor(0, 0)), true;
-          }
-          windowOptions(e3) {
-            if (!C(e3.params[0], this._optionsService.rawOptions.windowOptions)) return true;
-            const t3 = e3.length > 1 ? e3.params[1] : 0;
-            switch (e3.params[0]) {
-              case 14:
-                2 !== t3 && this._onRequestWindowsOptionsReport.fire(w.GET_WIN_SIZE_PIXELS);
-                break;
-              case 16:
-                this._onRequestWindowsOptionsReport.fire(w.GET_CELL_SIZE_PIXELS);
-                break;
-              case 18:
-                this._bufferService && this._coreService.triggerDataEvent(`${n2.C0.ESC}[8;${this._bufferService.rows};${this._bufferService.cols}t`);
-                break;
-              case 22:
-                0 !== t3 && 2 !== t3 || (this._windowTitleStack.push(this._windowTitle), this._windowTitleStack.length > 10 && this._windowTitleStack.shift()), 0 !== t3 && 1 !== t3 || (this._iconNameStack.push(this._iconName), this._iconNameStack.length > 10 && this._iconNameStack.shift());
-                break;
-              case 23:
-                0 !== t3 && 2 !== t3 || this._windowTitleStack.length && this.setTitle(this._windowTitleStack.pop()), 0 !== t3 && 1 !== t3 || this._iconNameStack.length && this.setIconName(this._iconNameStack.pop());
-            }
-            return true;
-          }
-          saveCursor(e3) {
-            return this._activeBuffer.savedX = this._activeBuffer.x, this._activeBuffer.savedY = this._activeBuffer.ybase + this._activeBuffer.y, this._activeBuffer.savedCurAttrData.fg = this._curAttrData.fg, this._activeBuffer.savedCurAttrData.bg = this._curAttrData.bg, this._activeBuffer.savedCharset = this._charsetService.charset, true;
-          }
-          restoreCursor(e3) {
-            return this._activeBuffer.x = this._activeBuffer.savedX || 0, this._activeBuffer.y = Math.max(this._activeBuffer.savedY - this._activeBuffer.ybase, 0), this._curAttrData.fg = this._activeBuffer.savedCurAttrData.fg, this._curAttrData.bg = this._activeBuffer.savedCurAttrData.bg, this._charsetService.charset = this._savedCharset, this._activeBuffer.savedCharset && (this._charsetService.charset = this._activeBuffer.savedCharset), this._restrictCursor(), true;
-          }
-          setTitle(e3) {
-            return this._windowTitle = e3, this._onTitleChange.fire(e3), true;
-          }
-          setIconName(e3) {
-            return this._iconName = e3, true;
-          }
-          setOrReportIndexedColor(e3) {
-            const t3 = [], s4 = e3.split(";");
-            for (; s4.length > 1; ) {
-              const e4 = s4.shift(), i3 = s4.shift();
-              if (/^\d+$/.exec(e4)) {
-                const s5 = parseInt(e4);
-                if (k(s5)) if ("?" === i3) t3.push({ type: 0, index: s5 });
-                else {
-                  const e5 = (0, m.parseColor)(i3);
-                  e5 && t3.push({ type: 1, index: s5, color: e5 });
-                }
-              }
-            }
-            return t3.length && this._onColor.fire(t3), true;
-          }
-          setHyperlink(e3) {
-            const t3 = e3.indexOf(";");
-            if (-1 === t3) return true;
-            const s4 = e3.slice(0, t3).trim(), i3 = e3.slice(t3 + 1);
-            return i3 ? this._createHyperlink(s4, i3) : !s4.trim() && this._finishHyperlink();
-          }
-          _createHyperlink(e3, t3) {
-            this._getCurrentLinkId() && this._finishHyperlink();
-            const s4 = e3.split(":");
-            let i3;
-            const r3 = s4.findIndex(((e4) => e4.startsWith("id=")));
-            return -1 !== r3 && (i3 = s4[r3].slice(3) || void 0), this._curAttrData.extended = this._curAttrData.extended.clone(), this._curAttrData.extended.urlId = this._oscLinkService.registerLink({ id: i3, uri: t3 }), this._curAttrData.updateExtended(), true;
-          }
-          _finishHyperlink() {
-            return this._curAttrData.extended = this._curAttrData.extended.clone(), this._curAttrData.extended.urlId = 0, this._curAttrData.updateExtended(), true;
-          }
-          _setOrReportSpecialColor(e3, t3) {
-            const s4 = e3.split(";");
-            for (let e4 = 0; e4 < s4.length && !(t3 >= this._specialColors.length); ++e4, ++t3) if ("?" === s4[e4]) this._onColor.fire([{ type: 0, index: this._specialColors[t3] }]);
-            else {
-              const i3 = (0, m.parseColor)(s4[e4]);
-              i3 && this._onColor.fire([{ type: 1, index: this._specialColors[t3], color: i3 }]);
-            }
-            return true;
-          }
-          setOrReportFgColor(e3) {
-            return this._setOrReportSpecialColor(e3, 0);
-          }
-          setOrReportBgColor(e3) {
-            return this._setOrReportSpecialColor(e3, 1);
-          }
-          setOrReportCursorColor(e3) {
-            return this._setOrReportSpecialColor(e3, 2);
-          }
-          restoreIndexedColor(e3) {
-            if (!e3) return this._onColor.fire([{ type: 2 }]), true;
-            const t3 = [], s4 = e3.split(";");
-            for (let e4 = 0; e4 < s4.length; ++e4) if (/^\d+$/.exec(s4[e4])) {
-              const i3 = parseInt(s4[e4]);
-              k(i3) && t3.push({ type: 2, index: i3 });
-            }
-            return t3.length && this._onColor.fire(t3), true;
-          }
-          restoreFgColor(e3) {
-            return this._onColor.fire([{ type: 2, index: 256 }]), true;
-          }
-          restoreBgColor(e3) {
-            return this._onColor.fire([{ type: 2, index: 257 }]), true;
-          }
-          restoreCursorColor(e3) {
-            return this._onColor.fire([{ type: 2, index: 258 }]), true;
-          }
-          nextLine() {
-            return this._activeBuffer.x = 0, this.index(), true;
-          }
-          keypadApplicationMode() {
-            return this._logService.debug("Serial port requested application keypad."), this._coreService.decPrivateModes.applicationKeypad = true, this._onRequestSyncScrollBar.fire(), true;
-          }
-          keypadNumericMode() {
-            return this._logService.debug("Switching back to normal keypad."), this._coreService.decPrivateModes.applicationKeypad = false, this._onRequestSyncScrollBar.fire(), true;
-          }
-          selectDefaultCharset() {
-            return this._charsetService.setgLevel(0), this._charsetService.setgCharset(0, o.DEFAULT_CHARSET), true;
-          }
-          selectCharset(e3) {
-            return 2 !== e3.length ? (this.selectDefaultCharset(), true) : ("/" === e3[0] || this._charsetService.setgCharset(S[e3[0]], o.CHARSETS[e3[1]] || o.DEFAULT_CHARSET), true);
-          }
-          index() {
-            return this._restrictCursor(), this._activeBuffer.y++, this._activeBuffer.y === this._activeBuffer.scrollBottom + 1 ? (this._activeBuffer.y--, this._bufferService.scroll(this._eraseAttrData())) : this._activeBuffer.y >= this._bufferService.rows && (this._activeBuffer.y = this._bufferService.rows - 1), this._restrictCursor(), true;
-          }
-          tabSet() {
-            return this._activeBuffer.tabs[this._activeBuffer.x] = true, true;
-          }
-          reverseIndex() {
-            if (this._restrictCursor(), this._activeBuffer.y === this._activeBuffer.scrollTop) {
-              const e3 = this._activeBuffer.scrollBottom - this._activeBuffer.scrollTop;
-              this._activeBuffer.lines.shiftElements(this._activeBuffer.ybase + this._activeBuffer.y, e3, 1), this._activeBuffer.lines.set(this._activeBuffer.ybase + this._activeBuffer.y, this._activeBuffer.getBlankLine(this._eraseAttrData())), this._dirtyRowTracker.markRangeDirty(this._activeBuffer.scrollTop, this._activeBuffer.scrollBottom);
-            } else this._activeBuffer.y--, this._restrictCursor();
-            return true;
-          }
-          fullReset() {
-            return this._parser.reset(), this._onRequestReset.fire(), true;
-          }
-          reset() {
-            this._curAttrData = l.DEFAULT_ATTR_DATA.clone(), this._eraseAttrDataInternal = l.DEFAULT_ATTR_DATA.clone();
-          }
-          _eraseAttrData() {
-            return this._eraseAttrDataInternal.bg &= -67108864, this._eraseAttrDataInternal.bg |= 67108863 & this._curAttrData.bg, this._eraseAttrDataInternal;
-          }
-          setgLevel(e3) {
-            return this._charsetService.setgLevel(e3), true;
-          }
-          screenAlignmentPattern() {
-            const e3 = new d.CellData();
-            e3.content = 1 << 22 | "E".charCodeAt(0), e3.fg = this._curAttrData.fg, e3.bg = this._curAttrData.bg, this._setCursor(0, 0);
-            for (let t3 = 0; t3 < this._bufferService.rows; ++t3) {
-              const s4 = this._activeBuffer.ybase + this._activeBuffer.y + t3, i3 = this._activeBuffer.lines.get(s4);
-              i3 && (i3.fill(e3), i3.isWrapped = false);
-            }
-            return this._dirtyRowTracker.markAllDirty(), this._setCursor(0, 0), true;
-          }
-          requestStatusString(e3, t3) {
-            const s4 = this._bufferService.buffer, i3 = this._optionsService.rawOptions;
-            return ((e4) => (this._coreService.triggerDataEvent(`${n2.C0.ESC}${e4}${n2.C0.ESC}\\`), true))('"q' === e3 ? `P1$r${this._curAttrData.isProtected() ? 1 : 0}"q` : '"p' === e3 ? 'P1$r61;1"p' : "r" === e3 ? `P1$r${s4.scrollTop + 1};${s4.scrollBottom + 1}r` : "m" === e3 ? "P1$r0m" : " q" === e3 ? `P1$r${{ block: 2, underline: 4, bar: 6 }[i3.cursorStyle] - (i3.cursorBlink ? 1 : 0)} q` : "P0$r");
-          }
-          markRangeDirty(e3, t3) {
-            this._dirtyRowTracker.markRangeDirty(e3, t3);
-          }
-        }
-        t2.InputHandler = A;
-        let L = class {
-          constructor(e3) {
-            this._bufferService = e3, this.clearRange();
-          }
-          clearRange() {
-            this.start = this._bufferService.buffer.y, this.end = this._bufferService.buffer.y;
-          }
-          markDirty(e3) {
-            e3 < this.start ? this.start = e3 : e3 > this.end && (this.end = e3);
-          }
-          markRangeDirty(e3, t3) {
-            e3 > t3 && (E = e3, e3 = t3, t3 = E), e3 < this.start && (this.start = e3), t3 > this.end && (this.end = t3);
-          }
-          markAllDirty() {
-            this.markRangeDirty(0, this._bufferService.rows - 1);
-          }
-        };
-        function k(e3) {
-          return 0 <= e3 && e3 < 256;
-        }
-        L = i2([r2(0, _.IBufferService)], L);
-      }, 701: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.isChromeOS = t2.isLinux = t2.isWindows = t2.isIphone = t2.isIpad = t2.isMac = t2.isSafari = t2.isLegacyEdge = t2.isFirefox = t2.isNode = void 0, t2.getSafariVersion = function() {
-          if (!t2.isSafari) return 0;
-          const e3 = s3.match(/Version\/(\d+)/);
-          return null === e3 || e3.length < 2 ? 0 : parseInt(e3[1]);
-        }, t2.isNode = "undefined" != typeof process && "title" in process;
-        const s3 = t2.isNode ? "node" : navigator.userAgent, i2 = t2.isNode ? "node" : navigator.platform;
-        t2.isFirefox = s3.includes("Firefox"), t2.isLegacyEdge = s3.includes("Edge"), t2.isSafari = /^((?!chrome|android).)*safari/i.test(s3), t2.isMac = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"].includes(i2), t2.isIpad = "iPad" === i2, t2.isIphone = "iPhone" === i2, t2.isWindows = ["Windows", "Win16", "Win32", "WinCE"].includes(i2), t2.isLinux = i2.indexOf("Linux") >= 0, t2.isChromeOS = /\bCrOS\b/.test(s3);
-      }, 6168: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.DebouncedIdleTask = t2.IdleTaskQueue = t2.PriorityTaskQueue = void 0;
-        const i2 = s3(701);
-        class r2 {
-          constructor() {
-            this._tasks = [], this._i = 0;
-          }
-          enqueue(e3) {
-            this._tasks.push(e3), this._start();
-          }
-          flush() {
-            for (; this._i < this._tasks.length; ) this._tasks[this._i]() || this._i++;
-            this.clear();
-          }
-          clear() {
-            this._idleCallback && (this._cancelCallback(this._idleCallback), this._idleCallback = void 0), this._i = 0, this._tasks.length = 0;
-          }
-          _start() {
-            this._idleCallback || (this._idleCallback = this._requestCallback(this._process.bind(this)));
-          }
-          _process(e3) {
-            this._idleCallback = void 0;
-            let t3 = 0, s4 = 0, i3 = e3.timeRemaining(), r3 = 0;
-            for (; this._i < this._tasks.length; ) {
-              if (t3 = performance.now(), this._tasks[this._i]() || this._i++, t3 = Math.max(1, performance.now() - t3), s4 = Math.max(t3, s4), r3 = e3.timeRemaining(), 1.5 * s4 > r3) return i3 - t3 < -20 && console.warn(`task queue exceeded allotted deadline by ${Math.abs(Math.round(i3 - t3))}ms`), void this._start();
-              i3 = r3;
-            }
-            this.clear();
-          }
-        }
-        class n2 extends r2 {
-          _requestCallback(e3) {
-            return setTimeout((() => e3(this._createDeadline(16))));
-          }
-          _cancelCallback(e3) {
-            clearTimeout(e3);
-          }
-          _createDeadline(e3) {
-            const t3 = performance.now() + e3;
-            return { timeRemaining: () => Math.max(0, t3 - performance.now()) };
-          }
-        }
-        t2.PriorityTaskQueue = n2, t2.IdleTaskQueue = !i2.isNode && "requestIdleCallback" in window ? class extends r2 {
-          _requestCallback(e3) {
-            return requestIdleCallback(e3);
-          }
-          _cancelCallback(e3) {
-            cancelIdleCallback(e3);
-          }
-        } : n2, t2.DebouncedIdleTask = class {
-          constructor() {
-            this._queue = new t2.IdleTaskQueue();
-          }
-          set(e3) {
-            this._queue.clear(), this._queue.enqueue(e3);
-          }
-          flush() {
-            this._queue.flush();
-          }
-        };
-      }, 5882: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.updateWindowsModeWrappedState = function(e3) {
-          const t3 = e3.buffer.lines.get(e3.buffer.ybase + e3.buffer.y - 1), s4 = t3?.get(e3.cols - 1), r2 = e3.buffer.lines.get(e3.buffer.ybase + e3.buffer.y);
-          r2 && s4 && (r2.isWrapped = s4[i2.CHAR_DATA_CODE_INDEX] !== i2.NULL_CELL_CODE && s4[i2.CHAR_DATA_CODE_INDEX] !== i2.WHITESPACE_CELL_CODE);
-        };
-        const i2 = s3(8938);
-      }, 5451: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.ExtendedAttrs = t2.AttributeData = void 0;
-        class s3 {
-          constructor() {
-            this.fg = 0, this.bg = 0, this.extended = new i2();
-          }
-          static toColorRGB(e3) {
-            return [e3 >>> 16 & 255, e3 >>> 8 & 255, 255 & e3];
-          }
-          static fromColorRGB(e3) {
-            return (255 & e3[0]) << 16 | (255 & e3[1]) << 8 | 255 & e3[2];
-          }
-          clone() {
-            const e3 = new s3();
-            return e3.fg = this.fg, e3.bg = this.bg, e3.extended = this.extended.clone(), e3;
-          }
-          isInverse() {
-            return 67108864 & this.fg;
-          }
-          isBold() {
-            return 134217728 & this.fg;
-          }
-          isUnderline() {
-            return this.hasExtendedAttrs() && 0 !== this.extended.underlineStyle ? 1 : 268435456 & this.fg;
-          }
-          isBlink() {
-            return 536870912 & this.fg;
-          }
-          isInvisible() {
-            return 1073741824 & this.fg;
-          }
-          isItalic() {
-            return 67108864 & this.bg;
-          }
-          isDim() {
-            return 134217728 & this.bg;
-          }
-          isStrikethrough() {
-            return 2147483648 & this.fg;
-          }
-          isProtected() {
-            return 536870912 & this.bg;
-          }
-          isOverline() {
-            return 1073741824 & this.bg;
-          }
-          getFgColorMode() {
-            return 50331648 & this.fg;
-          }
-          getBgColorMode() {
-            return 50331648 & this.bg;
-          }
-          isFgRGB() {
-            return !(50331648 & ~this.fg);
-          }
-          isBgRGB() {
-            return !(50331648 & ~this.bg);
-          }
-          isFgPalette() {
-            return 16777216 == (50331648 & this.fg) || 33554432 == (50331648 & this.fg);
-          }
-          isBgPalette() {
-            return 16777216 == (50331648 & this.bg) || 33554432 == (50331648 & this.bg);
-          }
-          isFgDefault() {
-            return !(50331648 & this.fg);
-          }
-          isBgDefault() {
-            return !(50331648 & this.bg);
-          }
-          isAttributeDefault() {
-            return 0 === this.fg && 0 === this.bg;
-          }
-          getFgColor() {
-            switch (50331648 & this.fg) {
-              case 16777216:
-              case 33554432:
-                return 255 & this.fg;
-              case 50331648:
-                return 16777215 & this.fg;
-              default:
-                return -1;
-            }
-          }
-          getBgColor() {
-            switch (50331648 & this.bg) {
-              case 16777216:
-              case 33554432:
-                return 255 & this.bg;
-              case 50331648:
-                return 16777215 & this.bg;
-              default:
-                return -1;
-            }
-          }
-          hasExtendedAttrs() {
-            return 268435456 & this.bg;
-          }
-          updateExtended() {
-            this.extended.isEmpty() ? this.bg &= -268435457 : this.bg |= 268435456;
-          }
-          getUnderlineColor() {
-            if (268435456 & this.bg && ~this.extended.underlineColor) switch (50331648 & this.extended.underlineColor) {
-              case 16777216:
-              case 33554432:
-                return 255 & this.extended.underlineColor;
-              case 50331648:
-                return 16777215 & this.extended.underlineColor;
-              default:
-                return this.getFgColor();
-            }
-            return this.getFgColor();
-          }
-          getUnderlineColorMode() {
-            return 268435456 & this.bg && ~this.extended.underlineColor ? 50331648 & this.extended.underlineColor : this.getFgColorMode();
-          }
-          isUnderlineColorRGB() {
-            return 268435456 & this.bg && ~this.extended.underlineColor ? !(50331648 & ~this.extended.underlineColor) : this.isFgRGB();
-          }
-          isUnderlineColorPalette() {
-            return 268435456 & this.bg && ~this.extended.underlineColor ? 16777216 == (50331648 & this.extended.underlineColor) || 33554432 == (50331648 & this.extended.underlineColor) : this.isFgPalette();
-          }
-          isUnderlineColorDefault() {
-            return 268435456 & this.bg && ~this.extended.underlineColor ? !(50331648 & this.extended.underlineColor) : this.isFgDefault();
-          }
-          getUnderlineStyle() {
-            return 268435456 & this.fg ? 268435456 & this.bg ? this.extended.underlineStyle : 1 : 0;
-          }
-          getUnderlineVariantOffset() {
-            return this.extended.underlineVariantOffset;
-          }
-        }
-        t2.AttributeData = s3;
-        class i2 {
-          get ext() {
-            return this._urlId ? -469762049 & this._ext | this.underlineStyle << 26 : this._ext;
-          }
-          set ext(e3) {
-            this._ext = e3;
-          }
-          get underlineStyle() {
-            return this._urlId ? 5 : (469762048 & this._ext) >> 26;
-          }
-          set underlineStyle(e3) {
-            this._ext &= -469762049, this._ext |= e3 << 26 & 469762048;
-          }
-          get underlineColor() {
-            return 67108863 & this._ext;
-          }
-          set underlineColor(e3) {
-            this._ext &= -67108864, this._ext |= 67108863 & e3;
-          }
-          get urlId() {
-            return this._urlId;
-          }
-          set urlId(e3) {
-            this._urlId = e3;
-          }
-          get underlineVariantOffset() {
-            const e3 = (3758096384 & this._ext) >> 29;
-            return e3 < 0 ? 4294967288 ^ e3 : e3;
-          }
-          set underlineVariantOffset(e3) {
-            this._ext &= 536870911, this._ext |= e3 << 29 & 3758096384;
-          }
-          constructor(e3 = 0, t3 = 0) {
-            this._ext = 0, this._urlId = 0, this._ext = e3, this._urlId = t3;
-          }
-          clone() {
-            return new i2(this._ext, this._urlId);
-          }
-          isEmpty() {
-            return 0 === this.underlineStyle && 0 === this._urlId;
-          }
-        }
-        t2.ExtendedAttrs = i2;
-      }, 1073: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.Buffer = t2.MAX_BUFFER_SIZE = void 0;
-        const i2 = s3(5639), r2 = s3(6168), n2 = s3(5451), o = s3(6107), a = s3(732), h = s3(3055), c = s3(8938), l = s3(8158), u = s3(6760);
-        t2.MAX_BUFFER_SIZE = 4294967295, t2.Buffer = class {
-          constructor(e3, t3, s4) {
-            this._hasScrollback = e3, this._optionsService = t3, this._bufferService = s4, this.ydisp = 0, this.ybase = 0, this.y = 0, this.x = 0, this.tabs = {}, this.savedY = 0, this.savedX = 0, this.savedCurAttrData = o.DEFAULT_ATTR_DATA.clone(), this.savedCharset = u.DEFAULT_CHARSET, this.markers = [], this._nullCell = h.CellData.fromCharData([0, c.NULL_CELL_CHAR, c.NULL_CELL_WIDTH, c.NULL_CELL_CODE]), this._whitespaceCell = h.CellData.fromCharData([0, c.WHITESPACE_CELL_CHAR, c.WHITESPACE_CELL_WIDTH, c.WHITESPACE_CELL_CODE]), this._isClearing = false, this._memoryCleanupQueue = new r2.IdleTaskQueue(), this._memoryCleanupPosition = 0, this._cols = this._bufferService.cols, this._rows = this._bufferService.rows, this.lines = new i2.CircularList(this._getCorrectBufferLength(this._rows)), this.scrollTop = 0, this.scrollBottom = this._rows - 1, this.setupTabStops();
-          }
-          getNullCell(e3) {
-            return e3 ? (this._nullCell.fg = e3.fg, this._nullCell.bg = e3.bg, this._nullCell.extended = e3.extended) : (this._nullCell.fg = 0, this._nullCell.bg = 0, this._nullCell.extended = new n2.ExtendedAttrs()), this._nullCell;
-          }
-          getWhitespaceCell(e3) {
-            return e3 ? (this._whitespaceCell.fg = e3.fg, this._whitespaceCell.bg = e3.bg, this._whitespaceCell.extended = e3.extended) : (this._whitespaceCell.fg = 0, this._whitespaceCell.bg = 0, this._whitespaceCell.extended = new n2.ExtendedAttrs()), this._whitespaceCell;
-          }
-          getBlankLine(e3, t3) {
-            return new o.BufferLine(this._bufferService.cols, this.getNullCell(e3), t3);
-          }
-          get hasScrollback() {
-            return this._hasScrollback && this.lines.maxLength > this._rows;
-          }
-          get isCursorInViewport() {
-            const e3 = this.ybase + this.y - this.ydisp;
-            return e3 >= 0 && e3 < this._rows;
-          }
-          _getCorrectBufferLength(e3) {
-            if (!this._hasScrollback) return e3;
-            const s4 = e3 + this._optionsService.rawOptions.scrollback;
-            return s4 > t2.MAX_BUFFER_SIZE ? t2.MAX_BUFFER_SIZE : s4;
-          }
-          fillViewportRows(e3) {
-            if (0 === this.lines.length) {
-              void 0 === e3 && (e3 = o.DEFAULT_ATTR_DATA);
-              let t3 = this._rows;
-              for (; t3--; ) this.lines.push(this.getBlankLine(e3));
-            }
-          }
-          clear() {
-            this.ydisp = 0, this.ybase = 0, this.y = 0, this.x = 0, this.lines = new i2.CircularList(this._getCorrectBufferLength(this._rows)), this.scrollTop = 0, this.scrollBottom = this._rows - 1, this.setupTabStops();
-          }
-          resize(e3, t3) {
-            const s4 = this.getNullCell(o.DEFAULT_ATTR_DATA);
-            let i3 = 0;
-            const r3 = this._getCorrectBufferLength(t3);
-            if (r3 > this.lines.maxLength && (this.lines.maxLength = r3), this.lines.length > 0) {
-              if (this._cols < e3) for (let t4 = 0; t4 < this.lines.length; t4++) i3 += +this.lines.get(t4).resize(e3, s4);
-              let n3 = 0;
-              if (this._rows < t3) for (let i4 = this._rows; i4 < t3; i4++) this.lines.length < t3 + this.ybase && (this._optionsService.rawOptions.windowsMode || void 0 !== this._optionsService.rawOptions.windowsPty.backend || void 0 !== this._optionsService.rawOptions.windowsPty.buildNumber ? this.lines.push(new o.BufferLine(e3, s4)) : this.ybase > 0 && this.lines.length <= this.ybase + this.y + n3 + 1 ? (this.ybase--, n3++, this.ydisp > 0 && this.ydisp--) : this.lines.push(new o.BufferLine(e3, s4)));
-              else for (let e4 = this._rows; e4 > t3; e4--) this.lines.length > t3 + this.ybase && (this.lines.length > this.ybase + this.y + 1 ? this.lines.pop() : (this.ybase++, this.ydisp++));
-              if (r3 < this.lines.maxLength) {
-                const e4 = this.lines.length - r3;
-                e4 > 0 && (this.lines.trimStart(e4), this.ybase = Math.max(this.ybase - e4, 0), this.ydisp = Math.max(this.ydisp - e4, 0), this.savedY = Math.max(this.savedY - e4, 0)), this.lines.maxLength = r3;
-              }
-              this.x = Math.min(this.x, e3 - 1), this.y = Math.min(this.y, t3 - 1), n3 && (this.y += n3), this.savedX = Math.min(this.savedX, e3 - 1), this.scrollTop = 0;
-            }
-            if (this.scrollBottom = t3 - 1, this._isReflowEnabled && (this._reflow(e3, t3), this._cols > e3)) for (let t4 = 0; t4 < this.lines.length; t4++) i3 += +this.lines.get(t4).resize(e3, s4);
-            this._cols = e3, this._rows = t3, this._memoryCleanupQueue.clear(), i3 > 0.1 * this.lines.length && (this._memoryCleanupPosition = 0, this._memoryCleanupQueue.enqueue((() => this._batchedMemoryCleanup())));
-          }
-          _batchedMemoryCleanup() {
-            let e3 = true;
-            this._memoryCleanupPosition >= this.lines.length && (this._memoryCleanupPosition = 0, e3 = false);
-            let t3 = 0;
-            for (; this._memoryCleanupPosition < this.lines.length; ) if (t3 += this.lines.get(this._memoryCleanupPosition++).cleanupMemory(), t3 > 100) return true;
-            return e3;
-          }
-          get _isReflowEnabled() {
-            const e3 = this._optionsService.rawOptions.windowsPty;
-            return e3 && e3.buildNumber ? this._hasScrollback && "conpty" === e3.backend && e3.buildNumber >= 21376 : this._hasScrollback && !this._optionsService.rawOptions.windowsMode;
-          }
-          _reflow(e3, t3) {
-            this._cols !== e3 && (e3 > this._cols ? this._reflowLarger(e3, t3) : this._reflowSmaller(e3, t3));
-          }
-          _reflowLarger(e3, t3) {
-            const s4 = this._optionsService.rawOptions.reflowCursorLine, i3 = (0, a.reflowLargerGetLinesToRemove)(this.lines, this._cols, e3, this.ybase + this.y, this.getNullCell(o.DEFAULT_ATTR_DATA), s4);
-            if (i3.length > 0) {
-              const s5 = (0, a.reflowLargerCreateNewLayout)(this.lines, i3);
-              (0, a.reflowLargerApplyNewLayout)(this.lines, s5.layout), this._reflowLargerAdjustViewport(e3, t3, s5.countRemoved);
-            }
-          }
-          _reflowLargerAdjustViewport(e3, t3, s4) {
-            const i3 = this.getNullCell(o.DEFAULT_ATTR_DATA);
-            let r3 = s4;
-            for (; r3-- > 0; ) 0 === this.ybase ? (this.y > 0 && this.y--, this.lines.length < t3 && this.lines.push(new o.BufferLine(e3, i3))) : (this.ydisp === this.ybase && this.ydisp--, this.ybase--);
-            this.savedY = Math.max(this.savedY - s4, 0);
-          }
-          _reflowSmaller(e3, t3) {
-            const s4 = this._optionsService.rawOptions.reflowCursorLine, i3 = this.getNullCell(o.DEFAULT_ATTR_DATA), r3 = [];
-            let n3 = 0;
-            for (let h2 = this.lines.length - 1; h2 >= 0; h2--) {
-              let c2 = this.lines.get(h2);
-              if (!c2 || !c2.isWrapped && c2.getTrimmedLength() <= e3) continue;
-              const l2 = [c2];
-              for (; c2.isWrapped && h2 > 0; ) c2 = this.lines.get(--h2), l2.unshift(c2);
-              if (!s4) {
-                const e4 = this.ybase + this.y;
-                if (e4 >= h2 && e4 < h2 + l2.length) continue;
-              }
-              const u2 = l2[l2.length - 1].getTrimmedLength(), d = (0, a.reflowSmallerGetNewLineLengths)(l2, this._cols, e3), f = d.length - l2.length;
-              let _;
-              _ = 0 === this.ybase && this.y !== this.lines.length - 1 ? Math.max(0, this.y - this.lines.maxLength + f) : Math.max(0, this.lines.length - this.lines.maxLength + f);
-              const p = [];
-              for (let e4 = 0; e4 < f; e4++) {
-                const e5 = this.getBlankLine(o.DEFAULT_ATTR_DATA, true);
-                p.push(e5);
-              }
-              p.length > 0 && (r3.push({ start: h2 + l2.length + n3, newLines: p }), n3 += p.length), l2.push(...p);
-              let g = d.length - 1, v = d[g];
-              0 === v && (g--, v = d[g]);
-              let m = l2.length - f - 1, b = u2;
-              for (; m >= 0; ) {
-                const e4 = Math.min(b, v);
-                if (void 0 === l2[g]) break;
-                if (l2[g].copyCellsFrom(l2[m], b - e4, v - e4, e4, true), v -= e4, 0 === v && (g--, v = d[g]), b -= e4, 0 === b) {
-                  m--;
-                  const e5 = Math.max(m, 0);
-                  b = (0, a.getWrappedLineTrimmedLength)(l2, e5, this._cols);
-                }
-              }
-              for (let t4 = 0; t4 < l2.length; t4++) d[t4] < e3 && l2[t4].setCell(d[t4], i3);
-              let S = f - _;
-              for (; S-- > 0; ) 0 === this.ybase ? this.y < t3 - 1 ? (this.y++, this.lines.pop()) : (this.ybase++, this.ydisp++) : this.ybase < Math.min(this.lines.maxLength, this.lines.length + n3) - t3 && (this.ybase === this.ydisp && this.ydisp++, this.ybase++);
-              this.savedY = Math.min(this.savedY + f, this.ybase + t3 - 1);
-            }
-            if (r3.length > 0) {
-              const e4 = [], t4 = [];
-              for (let e5 = 0; e5 < this.lines.length; e5++) t4.push(this.lines.get(e5));
-              const s5 = this.lines.length;
-              let i4 = s5 - 1, o2 = 0, a2 = r3[o2];
-              this.lines.length = Math.min(this.lines.maxLength, this.lines.length + n3);
-              let h2 = 0;
-              for (let c3 = Math.min(this.lines.maxLength - 1, s5 + n3 - 1); c3 >= 0; c3--) if (a2 && a2.start > i4 + h2) {
-                for (let e5 = a2.newLines.length - 1; e5 >= 0; e5--) this.lines.set(c3--, a2.newLines[e5]);
-                c3++, e4.push({ index: i4 + 1, amount: a2.newLines.length }), h2 += a2.newLines.length, a2 = r3[++o2];
-              } else this.lines.set(c3, t4[i4--]);
-              let c2 = 0;
-              for (let t5 = e4.length - 1; t5 >= 0; t5--) e4[t5].index += c2, this.lines.onInsertEmitter.fire(e4[t5]), c2 += e4[t5].amount;
-              const l2 = Math.max(0, s5 + n3 - this.lines.maxLength);
-              l2 > 0 && this.lines.onTrimEmitter.fire(l2);
-            }
-          }
-          translateBufferLineToString(e3, t3, s4 = 0, i3) {
-            const r3 = this.lines.get(e3);
-            return r3 ? r3.translateToString(t3, s4, i3) : "";
-          }
-          getWrappedRangeForLine(e3) {
-            let t3 = e3, s4 = e3;
-            for (; t3 > 0 && this.lines.get(t3).isWrapped; ) t3--;
-            for (; s4 + 1 < this.lines.length && this.lines.get(s4 + 1).isWrapped; ) s4++;
-            return { first: t3, last: s4 };
-          }
-          setupTabStops(e3) {
-            for (null != e3 ? this.tabs[e3] || (e3 = this.prevStop(e3)) : (this.tabs = {}, e3 = 0); e3 < this._cols; e3 += this._optionsService.rawOptions.tabStopWidth) this.tabs[e3] = true;
-          }
-          prevStop(e3) {
-            for (null == e3 && (e3 = this.x); !this.tabs[--e3] && e3 > 0; ) ;
-            return e3 >= this._cols ? this._cols - 1 : e3 < 0 ? 0 : e3;
-          }
-          nextStop(e3) {
-            for (null == e3 && (e3 = this.x); !this.tabs[++e3] && e3 < this._cols; ) ;
-            return e3 >= this._cols ? this._cols - 1 : e3 < 0 ? 0 : e3;
-          }
-          clearMarkers(e3) {
-            this._isClearing = true;
-            for (let t3 = 0; t3 < this.markers.length; t3++) this.markers[t3].line === e3 && (this.markers[t3].dispose(), this.markers.splice(t3--, 1));
-            this._isClearing = false;
-          }
-          clearAllMarkers() {
-            this._isClearing = true;
-            for (let e3 = 0; e3 < this.markers.length; e3++) this.markers[e3].dispose();
-            this.markers.length = 0, this._isClearing = false;
-          }
-          addMarker(e3) {
-            const t3 = new l.Marker(e3);
-            return this.markers.push(t3), t3.register(this.lines.onTrim(((e4) => {
-              t3.line -= e4, t3.line < 0 && t3.dispose();
-            }))), t3.register(this.lines.onInsert(((e4) => {
-              t3.line >= e4.index && (t3.line += e4.amount);
-            }))), t3.register(this.lines.onDelete(((e4) => {
-              t3.line >= e4.index && t3.line < e4.index + e4.amount && t3.dispose(), t3.line > e4.index && (t3.line -= e4.amount);
-            }))), t3.register(t3.onDispose((() => this._removeMarker(t3)))), t3;
-          }
-          _removeMarker(e3) {
-            this._isClearing || this.markers.splice(this.markers.indexOf(e3), 1);
-          }
-        };
-      }, 6107: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.BufferLine = t2.DEFAULT_ATTR_DATA = void 0;
-        const i2 = s3(5451), r2 = s3(3055), n2 = s3(8938), o = s3(726);
-        t2.DEFAULT_ATTR_DATA = Object.freeze(new i2.AttributeData());
-        let a = 0;
-        class h {
-          constructor(e3, t3, s4 = false) {
-            this.isWrapped = s4, this._combined = {}, this._extendedAttrs = {}, this._data = new Uint32Array(3 * e3);
-            const i3 = t3 || r2.CellData.fromCharData([0, n2.NULL_CELL_CHAR, n2.NULL_CELL_WIDTH, n2.NULL_CELL_CODE]);
-            for (let t4 = 0; t4 < e3; ++t4) this.setCell(t4, i3);
-            this.length = e3;
-          }
-          get(e3) {
-            const t3 = this._data[3 * e3 + 0], s4 = 2097151 & t3;
-            return [this._data[3 * e3 + 1], 2097152 & t3 ? this._combined[e3] : s4 ? (0, o.stringFromCodePoint)(s4) : "", t3 >> 22, 2097152 & t3 ? this._combined[e3].charCodeAt(this._combined[e3].length - 1) : s4];
-          }
-          set(e3, t3) {
-            this._data[3 * e3 + 1] = t3[n2.CHAR_DATA_ATTR_INDEX], t3[n2.CHAR_DATA_CHAR_INDEX].length > 1 ? (this._combined[e3] = t3[1], this._data[3 * e3 + 0] = 2097152 | e3 | t3[n2.CHAR_DATA_WIDTH_INDEX] << 22) : this._data[3 * e3 + 0] = t3[n2.CHAR_DATA_CHAR_INDEX].charCodeAt(0) | t3[n2.CHAR_DATA_WIDTH_INDEX] << 22;
-          }
-          getWidth(e3) {
-            return this._data[3 * e3 + 0] >> 22;
-          }
-          hasWidth(e3) {
-            return 12582912 & this._data[3 * e3 + 0];
-          }
-          getFg(e3) {
-            return this._data[3 * e3 + 1];
-          }
-          getBg(e3) {
-            return this._data[3 * e3 + 2];
-          }
-          hasContent(e3) {
-            return 4194303 & this._data[3 * e3 + 0];
-          }
-          getCodePoint(e3) {
-            const t3 = this._data[3 * e3 + 0];
-            return 2097152 & t3 ? this._combined[e3].charCodeAt(this._combined[e3].length - 1) : 2097151 & t3;
-          }
-          isCombined(e3) {
-            return 2097152 & this._data[3 * e3 + 0];
-          }
-          getString(e3) {
-            const t3 = this._data[3 * e3 + 0];
-            return 2097152 & t3 ? this._combined[e3] : 2097151 & t3 ? (0, o.stringFromCodePoint)(2097151 & t3) : "";
-          }
-          isProtected(e3) {
-            return 536870912 & this._data[3 * e3 + 2];
-          }
-          loadCell(e3, t3) {
-            return a = 3 * e3, t3.content = this._data[a + 0], t3.fg = this._data[a + 1], t3.bg = this._data[a + 2], 2097152 & t3.content && (t3.combinedData = this._combined[e3]), 268435456 & t3.bg && (t3.extended = this._extendedAttrs[e3]), t3;
-          }
-          setCell(e3, t3) {
-            2097152 & t3.content && (this._combined[e3] = t3.combinedData), 268435456 & t3.bg && (this._extendedAttrs[e3] = t3.extended), this._data[3 * e3 + 0] = t3.content, this._data[3 * e3 + 1] = t3.fg, this._data[3 * e3 + 2] = t3.bg;
-          }
-          setCellFromCodepoint(e3, t3, s4, i3) {
-            268435456 & i3.bg && (this._extendedAttrs[e3] = i3.extended), this._data[3 * e3 + 0] = t3 | s4 << 22, this._data[3 * e3 + 1] = i3.fg, this._data[3 * e3 + 2] = i3.bg;
-          }
-          addCodepointToCell(e3, t3, s4) {
-            let i3 = this._data[3 * e3 + 0];
-            2097152 & i3 ? this._combined[e3] += (0, o.stringFromCodePoint)(t3) : 2097151 & i3 ? (this._combined[e3] = (0, o.stringFromCodePoint)(2097151 & i3) + (0, o.stringFromCodePoint)(t3), i3 &= -2097152, i3 |= 2097152) : i3 = t3 | 1 << 22, s4 && (i3 &= -12582913, i3 |= s4 << 22), this._data[3 * e3 + 0] = i3;
-          }
-          insertCells(e3, t3, s4) {
-            if ((e3 %= this.length) && 2 === this.getWidth(e3 - 1) && this.setCellFromCodepoint(e3 - 1, 0, 1, s4), t3 < this.length - e3) {
-              const i3 = new r2.CellData();
-              for (let s5 = this.length - e3 - t3 - 1; s5 >= 0; --s5) this.setCell(e3 + t3 + s5, this.loadCell(e3 + s5, i3));
-              for (let i4 = 0; i4 < t3; ++i4) this.setCell(e3 + i4, s4);
-            } else for (let t4 = e3; t4 < this.length; ++t4) this.setCell(t4, s4);
-            2 === this.getWidth(this.length - 1) && this.setCellFromCodepoint(this.length - 1, 0, 1, s4);
-          }
-          deleteCells(e3, t3, s4) {
-            if (e3 %= this.length, t3 < this.length - e3) {
-              const i3 = new r2.CellData();
-              for (let s5 = 0; s5 < this.length - e3 - t3; ++s5) this.setCell(e3 + s5, this.loadCell(e3 + t3 + s5, i3));
-              for (let e4 = this.length - t3; e4 < this.length; ++e4) this.setCell(e4, s4);
-            } else for (let t4 = e3; t4 < this.length; ++t4) this.setCell(t4, s4);
-            e3 && 2 === this.getWidth(e3 - 1) && this.setCellFromCodepoint(e3 - 1, 0, 1, s4), 0 !== this.getWidth(e3) || this.hasContent(e3) || this.setCellFromCodepoint(e3, 0, 1, s4);
-          }
-          replaceCells(e3, t3, s4, i3 = false) {
-            if (i3) for (e3 && 2 === this.getWidth(e3 - 1) && !this.isProtected(e3 - 1) && this.setCellFromCodepoint(e3 - 1, 0, 1, s4), t3 < this.length && 2 === this.getWidth(t3 - 1) && !this.isProtected(t3) && this.setCellFromCodepoint(t3, 0, 1, s4); e3 < t3 && e3 < this.length; ) this.isProtected(e3) || this.setCell(e3, s4), e3++;
-            else for (e3 && 2 === this.getWidth(e3 - 1) && this.setCellFromCodepoint(e3 - 1, 0, 1, s4), t3 < this.length && 2 === this.getWidth(t3 - 1) && this.setCellFromCodepoint(t3, 0, 1, s4); e3 < t3 && e3 < this.length; ) this.setCell(e3++, s4);
-          }
-          resize(e3, t3) {
-            if (e3 === this.length) return 4 * this._data.length * 2 < this._data.buffer.byteLength;
-            const s4 = 3 * e3;
-            if (e3 > this.length) {
-              if (this._data.buffer.byteLength >= 4 * s4) this._data = new Uint32Array(this._data.buffer, 0, s4);
-              else {
-                const e4 = new Uint32Array(s4);
-                e4.set(this._data), this._data = e4;
-              }
-              for (let s5 = this.length; s5 < e3; ++s5) this.setCell(s5, t3);
-            } else {
-              this._data = this._data.subarray(0, s4);
-              const t4 = Object.keys(this._combined);
-              for (let s5 = 0; s5 < t4.length; s5++) {
-                const i4 = parseInt(t4[s5], 10);
-                i4 >= e3 && delete this._combined[i4];
-              }
-              const i3 = Object.keys(this._extendedAttrs);
-              for (let t5 = 0; t5 < i3.length; t5++) {
-                const s5 = parseInt(i3[t5], 10);
-                s5 >= e3 && delete this._extendedAttrs[s5];
-              }
-            }
-            return this.length = e3, 4 * s4 * 2 < this._data.buffer.byteLength;
-          }
-          cleanupMemory() {
-            if (4 * this._data.length * 2 < this._data.buffer.byteLength) {
-              const e3 = new Uint32Array(this._data.length);
-              return e3.set(this._data), this._data = e3, 1;
-            }
-            return 0;
-          }
-          fill(e3, t3 = false) {
-            if (t3) for (let t4 = 0; t4 < this.length; ++t4) this.isProtected(t4) || this.setCell(t4, e3);
-            else {
-              this._combined = {}, this._extendedAttrs = {};
-              for (let t4 = 0; t4 < this.length; ++t4) this.setCell(t4, e3);
-            }
-          }
-          copyFrom(e3) {
-            this.length !== e3.length ? this._data = new Uint32Array(e3._data) : this._data.set(e3._data), this.length = e3.length, this._combined = {};
-            for (const t3 in e3._combined) this._combined[t3] = e3._combined[t3];
-            this._extendedAttrs = {};
-            for (const t3 in e3._extendedAttrs) this._extendedAttrs[t3] = e3._extendedAttrs[t3];
-            this.isWrapped = e3.isWrapped;
-          }
-          clone() {
-            const e3 = new h(0);
-            e3._data = new Uint32Array(this._data), e3.length = this.length;
-            for (const t3 in this._combined) e3._combined[t3] = this._combined[t3];
-            for (const t3 in this._extendedAttrs) e3._extendedAttrs[t3] = this._extendedAttrs[t3];
-            return e3.isWrapped = this.isWrapped, e3;
-          }
-          getTrimmedLength() {
-            for (let e3 = this.length - 1; e3 >= 0; --e3) if (4194303 & this._data[3 * e3 + 0]) return e3 + (this._data[3 * e3 + 0] >> 22);
-            return 0;
-          }
-          getNoBgTrimmedLength() {
-            for (let e3 = this.length - 1; e3 >= 0; --e3) if (4194303 & this._data[3 * e3 + 0] || 50331648 & this._data[3 * e3 + 2]) return e3 + (this._data[3 * e3 + 0] >> 22);
-            return 0;
-          }
-          copyCellsFrom(e3, t3, s4, i3, r3) {
-            const n3 = e3._data;
-            if (r3) for (let r4 = i3 - 1; r4 >= 0; r4--) {
-              for (let e4 = 0; e4 < 3; e4++) this._data[3 * (s4 + r4) + e4] = n3[3 * (t3 + r4) + e4];
-              268435456 & n3[3 * (t3 + r4) + 2] && (this._extendedAttrs[s4 + r4] = e3._extendedAttrs[t3 + r4]);
-            }
-            else for (let r4 = 0; r4 < i3; r4++) {
-              for (let e4 = 0; e4 < 3; e4++) this._data[3 * (s4 + r4) + e4] = n3[3 * (t3 + r4) + e4];
-              268435456 & n3[3 * (t3 + r4) + 2] && (this._extendedAttrs[s4 + r4] = e3._extendedAttrs[t3 + r4]);
-            }
-            const o2 = Object.keys(e3._combined);
-            for (let i4 = 0; i4 < o2.length; i4++) {
-              const r4 = parseInt(o2[i4], 10);
-              r4 >= t3 && (this._combined[r4 - t3 + s4] = e3._combined[r4]);
-            }
-          }
-          translateToString(e3, t3, s4, i3) {
-            t3 = t3 ?? 0, s4 = s4 ?? this.length, e3 && (s4 = Math.min(s4, this.getTrimmedLength())), i3 && (i3.length = 0);
-            let r3 = "";
-            for (; t3 < s4; ) {
-              const e4 = this._data[3 * t3 + 0], s5 = 2097151 & e4, a2 = 2097152 & e4 ? this._combined[t3] : s5 ? (0, o.stringFromCodePoint)(s5) : n2.WHITESPACE_CELL_CHAR;
-              if (r3 += a2, i3) for (let e5 = 0; e5 < a2.length; ++e5) i3.push(t3);
-              t3 += e4 >> 22 || 1;
-            }
-            return i3 && i3.push(t3), r3;
-          }
-        }
-        t2.BufferLine = h;
-      }, 732: (e2, t2) => {
-        function s3(e3, t3, s4) {
-          if (t3 === e3.length - 1) return e3[t3].getTrimmedLength();
-          const i2 = !e3[t3].hasContent(s4 - 1) && 1 === e3[t3].getWidth(s4 - 1), r2 = 2 === e3[t3 + 1].getWidth(0);
-          return i2 && r2 ? s4 - 1 : s4;
-        }
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.reflowLargerGetLinesToRemove = function(e3, t3, i2, r2, n2, o) {
-          const a = [];
-          for (let h = 0; h < e3.length - 1; h++) {
-            let c = h, l = e3.get(++c);
-            if (!l.isWrapped) continue;
-            const u = [e3.get(h)];
-            for (; c < e3.length && l.isWrapped; ) u.push(l), l = e3.get(++c);
-            if (!o && r2 >= h && r2 < c) {
-              h += u.length - 1;
-              continue;
-            }
-            let d = 0, f = s3(u, d, t3), _ = 1, p = 0;
-            for (; _ < u.length; ) {
-              const e4 = s3(u, _, t3), r3 = e4 - p, o2 = i2 - f, a2 = Math.min(r3, o2);
-              u[d].copyCellsFrom(u[_], p, f, a2, false), f += a2, f === i2 && (d++, f = 0), p += a2, p === e4 && (_++, p = 0), 0 === f && 0 !== d && 2 === u[d - 1].getWidth(i2 - 1) && (u[d].copyCellsFrom(u[d - 1], i2 - 1, f++, 1, false), u[d - 1].setCell(i2 - 1, n2));
-            }
-            u[d].replaceCells(f, i2, n2);
-            let g = 0;
-            for (let e4 = u.length - 1; e4 > 0 && (e4 > d || 0 === u[e4].getTrimmedLength()); e4--) g++;
-            g > 0 && (a.push(h + u.length - g), a.push(g)), h += u.length - 1;
-          }
-          return a;
-        }, t2.reflowLargerCreateNewLayout = function(e3, t3) {
-          const s4 = [];
-          let i2 = 0, r2 = t3[i2], n2 = 0;
-          for (let o = 0; o < e3.length; o++) if (r2 === o) {
-            const s5 = t3[++i2];
-            e3.onDeleteEmitter.fire({ index: o - n2, amount: s5 }), o += s5 - 1, n2 += s5, r2 = t3[++i2];
-          } else s4.push(o);
-          return { layout: s4, countRemoved: n2 };
-        }, t2.reflowLargerApplyNewLayout = function(e3, t3) {
-          const s4 = [];
-          for (let i2 = 0; i2 < t3.length; i2++) s4.push(e3.get(t3[i2]));
-          for (let t4 = 0; t4 < s4.length; t4++) e3.set(t4, s4[t4]);
-          e3.length = t3.length;
-        }, t2.reflowSmallerGetNewLineLengths = function(e3, t3, i2) {
-          const r2 = [], n2 = e3.map(((i3, r3) => s3(e3, r3, t3))).reduce(((e4, t4) => e4 + t4));
-          let o = 0, a = 0, h = 0;
-          for (; h < n2; ) {
-            if (n2 - h < i2) {
-              r2.push(n2 - h);
-              break;
-            }
-            o += i2;
-            const c = s3(e3, a, t3);
-            o > c && (o -= c, a++);
-            const l = 2 === e3[a].getWidth(o - 1);
-            l && o--;
-            const u = l ? i2 - 1 : i2;
-            r2.push(u), h += u;
-          }
-          return r2;
-        }, t2.getWrappedLineTrimmedLength = s3;
-      }, 4097: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.BufferSet = void 0;
-        const i2 = s3(7150), r2 = s3(1073), n2 = s3(802);
-        class o extends i2.Disposable {
-          constructor(e3, t3) {
-            super(), this._optionsService = e3, this._bufferService = t3, this._onBufferActivate = this._register(new n2.Emitter()), this.onBufferActivate = this._onBufferActivate.event, this.reset(), this._register(this._optionsService.onSpecificOptionChange("scrollback", (() => this.resize(this._bufferService.cols, this._bufferService.rows)))), this._register(this._optionsService.onSpecificOptionChange("tabStopWidth", (() => this.setupTabStops())));
-          }
-          reset() {
-            this._normal = new r2.Buffer(true, this._optionsService, this._bufferService), this._normal.fillViewportRows(), this._alt = new r2.Buffer(false, this._optionsService, this._bufferService), this._activeBuffer = this._normal, this._onBufferActivate.fire({ activeBuffer: this._normal, inactiveBuffer: this._alt }), this.setupTabStops();
-          }
-          get alt() {
-            return this._alt;
-          }
-          get active() {
-            return this._activeBuffer;
-          }
-          get normal() {
-            return this._normal;
-          }
-          activateNormalBuffer() {
-            this._activeBuffer !== this._normal && (this._normal.x = this._alt.x, this._normal.y = this._alt.y, this._alt.clearAllMarkers(), this._alt.clear(), this._activeBuffer = this._normal, this._onBufferActivate.fire({ activeBuffer: this._normal, inactiveBuffer: this._alt }));
-          }
-          activateAltBuffer(e3) {
-            this._activeBuffer !== this._alt && (this._alt.fillViewportRows(e3), this._alt.x = this._normal.x, this._alt.y = this._normal.y, this._activeBuffer = this._alt, this._onBufferActivate.fire({ activeBuffer: this._alt, inactiveBuffer: this._normal }));
-          }
-          resize(e3, t3) {
-            this._normal.resize(e3, t3), this._alt.resize(e3, t3), this.setupTabStops(e3);
-          }
-          setupTabStops(e3) {
-            this._normal.setupTabStops(e3), this._alt.setupTabStops(e3);
-          }
-        }
-        t2.BufferSet = o;
-      }, 3055: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.CellData = void 0;
-        const i2 = s3(726), r2 = s3(8938), n2 = s3(5451);
-        class o extends n2.AttributeData {
-          constructor() {
-            super(...arguments), this.content = 0, this.fg = 0, this.bg = 0, this.extended = new n2.ExtendedAttrs(), this.combinedData = "";
-          }
-          static fromCharData(e3) {
-            const t3 = new o();
-            return t3.setFromCharData(e3), t3;
-          }
-          isCombined() {
-            return 2097152 & this.content;
-          }
-          getWidth() {
-            return this.content >> 22;
-          }
-          getChars() {
-            return 2097152 & this.content ? this.combinedData : 2097151 & this.content ? (0, i2.stringFromCodePoint)(2097151 & this.content) : "";
-          }
-          getCode() {
-            return this.isCombined() ? this.combinedData.charCodeAt(this.combinedData.length - 1) : 2097151 & this.content;
-          }
-          setFromCharData(e3) {
-            this.fg = e3[r2.CHAR_DATA_ATTR_INDEX], this.bg = 0;
-            let t3 = false;
-            if (e3[r2.CHAR_DATA_CHAR_INDEX].length > 2) t3 = true;
-            else if (2 === e3[r2.CHAR_DATA_CHAR_INDEX].length) {
-              const s4 = e3[r2.CHAR_DATA_CHAR_INDEX].charCodeAt(0);
-              if (55296 <= s4 && s4 <= 56319) {
-                const i3 = e3[r2.CHAR_DATA_CHAR_INDEX].charCodeAt(1);
-                56320 <= i3 && i3 <= 57343 ? this.content = 1024 * (s4 - 55296) + i3 - 56320 + 65536 | e3[r2.CHAR_DATA_WIDTH_INDEX] << 22 : t3 = true;
-              } else t3 = true;
-            } else this.content = e3[r2.CHAR_DATA_CHAR_INDEX].charCodeAt(0) | e3[r2.CHAR_DATA_WIDTH_INDEX] << 22;
-            t3 && (this.combinedData = e3[r2.CHAR_DATA_CHAR_INDEX], this.content = 2097152 | e3[r2.CHAR_DATA_WIDTH_INDEX] << 22);
-          }
-          getAsCharData() {
-            return [this.fg, this.getChars(), this.getWidth(), this.getCode()];
-          }
-        }
-        t2.CellData = o;
-      }, 8938: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.WHITESPACE_CELL_CODE = t2.WHITESPACE_CELL_WIDTH = t2.WHITESPACE_CELL_CHAR = t2.NULL_CELL_CODE = t2.NULL_CELL_WIDTH = t2.NULL_CELL_CHAR = t2.CHAR_DATA_CODE_INDEX = t2.CHAR_DATA_WIDTH_INDEX = t2.CHAR_DATA_CHAR_INDEX = t2.CHAR_DATA_ATTR_INDEX = t2.DEFAULT_EXT = t2.DEFAULT_ATTR = t2.DEFAULT_COLOR = void 0, t2.DEFAULT_COLOR = 0, t2.DEFAULT_ATTR = t2.DEFAULT_COLOR << 9 | 256, t2.DEFAULT_EXT = 0, t2.CHAR_DATA_ATTR_INDEX = 0, t2.CHAR_DATA_CHAR_INDEX = 1, t2.CHAR_DATA_WIDTH_INDEX = 2, t2.CHAR_DATA_CODE_INDEX = 3, t2.NULL_CELL_CHAR = "", t2.NULL_CELL_WIDTH = 1, t2.NULL_CELL_CODE = 0, t2.WHITESPACE_CELL_CHAR = " ", t2.WHITESPACE_CELL_WIDTH = 1, t2.WHITESPACE_CELL_CODE = 32;
-      }, 8158: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.Marker = void 0;
-        const i2 = s3(802), r2 = s3(7150);
-        class n2 {
-          get id() {
-            return this._id;
-          }
-          constructor(e3) {
-            this.line = e3, this.isDisposed = false, this._disposables = [], this._id = n2._nextId++, this._onDispose = this.register(new i2.Emitter()), this.onDispose = this._onDispose.event;
-          }
-          dispose() {
-            this.isDisposed || (this.isDisposed = true, this.line = -1, this._onDispose.fire(), (0, r2.dispose)(this._disposables), this._disposables.length = 0);
-          }
-          register(e3) {
-            return this._disposables.push(e3), e3;
-          }
-        }
-        t2.Marker = n2, n2._nextId = 1;
-      }, 6760: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.DEFAULT_CHARSET = t2.CHARSETS = void 0, t2.CHARSETS = {}, t2.DEFAULT_CHARSET = t2.CHARSETS.B, t2.CHARSETS[0] = { "`": "\u25C6", a: "\u2592", b: "\u2409", c: "\u240C", d: "\u240D", e: "\u240A", f: "\xB0", g: "\xB1", h: "\u2424", i: "\u240B", j: "\u2518", k: "\u2510", l: "\u250C", m: "\u2514", n: "\u253C", o: "\u23BA", p: "\u23BB", q: "\u2500", r: "\u23BC", s: "\u23BD", t: "\u251C", u: "\u2524", v: "\u2534", w: "\u252C", x: "\u2502", y: "\u2264", z: "\u2265", "{": "\u03C0", "|": "\u2260", "}": "\xA3", "~": "\xB7" }, t2.CHARSETS.A = { "#": "\xA3" }, t2.CHARSETS.B = void 0, t2.CHARSETS[4] = { "#": "\xA3", "@": "\xBE", "[": "ij", "\\": "\xBD", "]": "|", "{": "\xA8", "|": "f", "}": "\xBC", "~": "\xB4" }, t2.CHARSETS.C = t2.CHARSETS[5] = { "[": "\xC4", "\\": "\xD6", "]": "\xC5", "^": "\xDC", "`": "\xE9", "{": "\xE4", "|": "\xF6", "}": "\xE5", "~": "\xFC" }, t2.CHARSETS.R = { "#": "\xA3", "@": "\xE0", "[": "\xB0", "\\": "\xE7", "]": "\xA7", "{": "\xE9", "|": "\xF9", "}": "\xE8", "~": "\xA8" }, t2.CHARSETS.Q = { "@": "\xE0", "[": "\xE2", "\\": "\xE7", "]": "\xEA", "^": "\xEE", "`": "\xF4", "{": "\xE9", "|": "\xF9", "}": "\xE8", "~": "\xFB" }, t2.CHARSETS.K = { "@": "\xA7", "[": "\xC4", "\\": "\xD6", "]": "\xDC", "{": "\xE4", "|": "\xF6", "}": "\xFC", "~": "\xDF" }, t2.CHARSETS.Y = { "#": "\xA3", "@": "\xA7", "[": "\xB0", "\\": "\xE7", "]": "\xE9", "`": "\xF9", "{": "\xE0", "|": "\xF2", "}": "\xE8", "~": "\xEC" }, t2.CHARSETS.E = t2.CHARSETS[6] = { "@": "\xC4", "[": "\xC6", "\\": "\xD8", "]": "\xC5", "^": "\xDC", "`": "\xE4", "{": "\xE6", "|": "\xF8", "}": "\xE5", "~": "\xFC" }, t2.CHARSETS.Z = { "#": "\xA3", "@": "\xA7", "[": "\xA1", "\\": "\xD1", "]": "\xBF", "{": "\xB0", "|": "\xF1", "}": "\xE7" }, t2.CHARSETS.H = t2.CHARSETS[7] = { "@": "\xC9", "[": "\xC4", "\\": "\xD6", "]": "\xC5", "^": "\xDC", "`": "\xE9", "{": "\xE4", "|": "\xF6", "}": "\xE5", "~": "\xFC" }, t2.CHARSETS["="] = { "#": "\xF9", "@": "\xE0", "[": "\xE9", "\\": "\xE7", "]": "\xEA", "^": "\xEE", _: "\xE8", "`": "\xF4", "{": "\xE4", "|": "\xF6", "}": "\xFC", "~": "\xFB" };
-      }, 3534: (e2, t2) => {
-        var s3, i2, r2;
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.C1_ESCAPED = t2.C1 = t2.C0 = void 0, (function(e3) {
-          e3.NUL = "\0", e3.SOH = "", e3.STX = "", e3.ETX = "", e3.EOT = "", e3.ENQ = "", e3.ACK = "", e3.BEL = "\x07", e3.BS = "\b", e3.HT = "	", e3.LF = "\n", e3.VT = "\v", e3.FF = "\f", e3.CR = "\r", e3.SO = "", e3.SI = "", e3.DLE = "", e3.DC1 = "", e3.DC2 = "", e3.DC3 = "", e3.DC4 = "", e3.NAK = "", e3.SYN = "", e3.ETB = "", e3.CAN = "", e3.EM = "", e3.SUB = "", e3.ESC = "\x1B", e3.FS = "", e3.GS = "", e3.RS = "", e3.US = "", e3.SP = " ", e3.DEL = "\x7F";
-        })(s3 || (t2.C0 = s3 = {})), (function(e3) {
-          e3.PAD = "\x80", e3.HOP = "\x81", e3.BPH = "\x82", e3.NBH = "\x83", e3.IND = "\x84", e3.NEL = "\x85", e3.SSA = "\x86", e3.ESA = "\x87", e3.HTS = "\x88", e3.HTJ = "\x89", e3.VTS = "\x8A", e3.PLD = "\x8B", e3.PLU = "\x8C", e3.RI = "\x8D", e3.SS2 = "\x8E", e3.SS3 = "\x8F", e3.DCS = "\x90", e3.PU1 = "\x91", e3.PU2 = "\x92", e3.STS = "\x93", e3.CCH = "\x94", e3.MW = "\x95", e3.SPA = "\x96", e3.EPA = "\x97", e3.SOS = "\x98", e3.SGCI = "\x99", e3.SCI = "\x9A", e3.CSI = "\x9B", e3.ST = "\x9C", e3.OSC = "\x9D", e3.PM = "\x9E", e3.APC = "\x9F";
-        })(i2 || (t2.C1 = i2 = {})), (function(e3) {
-          e3.ST = `${s3.ESC}\\`;
-        })(r2 || (t2.C1_ESCAPED = r2 = {}));
-      }, 726: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.Utf8ToUtf32 = t2.StringToUtf32 = void 0, t2.stringFromCodePoint = function(e3) {
-          return e3 > 65535 ? (e3 -= 65536, String.fromCharCode(55296 + (e3 >> 10)) + String.fromCharCode(e3 % 1024 + 56320)) : String.fromCharCode(e3);
-        }, t2.utf32ToString = function(e3, t3 = 0, s3 = e3.length) {
-          let i2 = "";
-          for (let r2 = t3; r2 < s3; ++r2) {
-            let t4 = e3[r2];
-            t4 > 65535 ? (t4 -= 65536, i2 += String.fromCharCode(55296 + (t4 >> 10)) + String.fromCharCode(t4 % 1024 + 56320)) : i2 += String.fromCharCode(t4);
-          }
-          return i2;
-        }, t2.StringToUtf32 = class {
-          constructor() {
-            this._interim = 0;
-          }
-          clear() {
-            this._interim = 0;
-          }
-          decode(e3, t3) {
-            const s3 = e3.length;
-            if (!s3) return 0;
-            let i2 = 0, r2 = 0;
-            if (this._interim) {
-              const s4 = e3.charCodeAt(r2++);
-              56320 <= s4 && s4 <= 57343 ? t3[i2++] = 1024 * (this._interim - 55296) + s4 - 56320 + 65536 : (t3[i2++] = this._interim, t3[i2++] = s4), this._interim = 0;
-            }
-            for (let n2 = r2; n2 < s3; ++n2) {
-              const r3 = e3.charCodeAt(n2);
-              if (55296 <= r3 && r3 <= 56319) {
-                if (++n2 >= s3) return this._interim = r3, i2;
-                const o = e3.charCodeAt(n2);
-                56320 <= o && o <= 57343 ? t3[i2++] = 1024 * (r3 - 55296) + o - 56320 + 65536 : (t3[i2++] = r3, t3[i2++] = o);
-              } else 65279 !== r3 && (t3[i2++] = r3);
-            }
-            return i2;
-          }
-        }, t2.Utf8ToUtf32 = class {
-          constructor() {
-            this.interim = new Uint8Array(3);
-          }
-          clear() {
-            this.interim.fill(0);
-          }
-          decode(e3, t3) {
-            const s3 = e3.length;
-            if (!s3) return 0;
-            let i2, r2, n2, o, a = 0, h = 0, c = 0;
-            if (this.interim[0]) {
-              let i3 = false, r3 = this.interim[0];
-              r3 &= 192 == (224 & r3) ? 31 : 224 == (240 & r3) ? 15 : 7;
-              let n3, o2 = 0;
-              for (; (n3 = 63 & this.interim[++o2]) && o2 < 4; ) r3 <<= 6, r3 |= n3;
-              const h2 = 192 == (224 & this.interim[0]) ? 2 : 224 == (240 & this.interim[0]) ? 3 : 4, l2 = h2 - o2;
-              for (; c < l2; ) {
-                if (c >= s3) return 0;
-                if (n3 = e3[c++], 128 != (192 & n3)) {
-                  c--, i3 = true;
-                  break;
-                }
-                this.interim[o2++] = n3, r3 <<= 6, r3 |= 63 & n3;
-              }
-              i3 || (2 === h2 ? r3 < 128 ? c-- : t3[a++] = r3 : 3 === h2 ? r3 < 2048 || r3 >= 55296 && r3 <= 57343 || 65279 === r3 || (t3[a++] = r3) : r3 < 65536 || r3 > 1114111 || (t3[a++] = r3)), this.interim.fill(0);
-            }
-            const l = s3 - 4;
-            let u = c;
-            for (; u < s3; ) {
-              for (; !(!(u < l) || 128 & (i2 = e3[u]) || 128 & (r2 = e3[u + 1]) || 128 & (n2 = e3[u + 2]) || 128 & (o = e3[u + 3])); ) t3[a++] = i2, t3[a++] = r2, t3[a++] = n2, t3[a++] = o, u += 4;
-              if (i2 = e3[u++], i2 < 128) t3[a++] = i2;
-              else if (192 == (224 & i2)) {
-                if (u >= s3) return this.interim[0] = i2, a;
-                if (r2 = e3[u++], 128 != (192 & r2)) {
-                  u--;
-                  continue;
-                }
-                if (h = (31 & i2) << 6 | 63 & r2, h < 128) {
-                  u--;
-                  continue;
-                }
-                t3[a++] = h;
-              } else if (224 == (240 & i2)) {
-                if (u >= s3) return this.interim[0] = i2, a;
-                if (r2 = e3[u++], 128 != (192 & r2)) {
-                  u--;
-                  continue;
-                }
-                if (u >= s3) return this.interim[0] = i2, this.interim[1] = r2, a;
-                if (n2 = e3[u++], 128 != (192 & n2)) {
-                  u--;
-                  continue;
-                }
-                if (h = (15 & i2) << 12 | (63 & r2) << 6 | 63 & n2, h < 2048 || h >= 55296 && h <= 57343 || 65279 === h) continue;
-                t3[a++] = h;
-              } else if (240 == (248 & i2)) {
-                if (u >= s3) return this.interim[0] = i2, a;
-                if (r2 = e3[u++], 128 != (192 & r2)) {
-                  u--;
-                  continue;
-                }
-                if (u >= s3) return this.interim[0] = i2, this.interim[1] = r2, a;
-                if (n2 = e3[u++], 128 != (192 & n2)) {
-                  u--;
-                  continue;
-                }
-                if (u >= s3) return this.interim[0] = i2, this.interim[1] = r2, this.interim[2] = n2, a;
-                if (o = e3[u++], 128 != (192 & o)) {
-                  u--;
-                  continue;
-                }
-                if (h = (7 & i2) << 18 | (63 & r2) << 12 | (63 & n2) << 6 | 63 & o, h < 65536 || h > 1114111) continue;
-                t3[a++] = h;
-              }
-            }
-            return a;
-          }
-        };
-      }, 7428: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.UnicodeV6 = void 0;
-        const i2 = s3(6415), r2 = [[768, 879], [1155, 1158], [1160, 1161], [1425, 1469], [1471, 1471], [1473, 1474], [1476, 1477], [1479, 1479], [1536, 1539], [1552, 1557], [1611, 1630], [1648, 1648], [1750, 1764], [1767, 1768], [1770, 1773], [1807, 1807], [1809, 1809], [1840, 1866], [1958, 1968], [2027, 2035], [2305, 2306], [2364, 2364], [2369, 2376], [2381, 2381], [2385, 2388], [2402, 2403], [2433, 2433], [2492, 2492], [2497, 2500], [2509, 2509], [2530, 2531], [2561, 2562], [2620, 2620], [2625, 2626], [2631, 2632], [2635, 2637], [2672, 2673], [2689, 2690], [2748, 2748], [2753, 2757], [2759, 2760], [2765, 2765], [2786, 2787], [2817, 2817], [2876, 2876], [2879, 2879], [2881, 2883], [2893, 2893], [2902, 2902], [2946, 2946], [3008, 3008], [3021, 3021], [3134, 3136], [3142, 3144], [3146, 3149], [3157, 3158], [3260, 3260], [3263, 3263], [3270, 3270], [3276, 3277], [3298, 3299], [3393, 3395], [3405, 3405], [3530, 3530], [3538, 3540], [3542, 3542], [3633, 3633], [3636, 3642], [3655, 3662], [3761, 3761], [3764, 3769], [3771, 3772], [3784, 3789], [3864, 3865], [3893, 3893], [3895, 3895], [3897, 3897], [3953, 3966], [3968, 3972], [3974, 3975], [3984, 3991], [3993, 4028], [4038, 4038], [4141, 4144], [4146, 4146], [4150, 4151], [4153, 4153], [4184, 4185], [4448, 4607], [4959, 4959], [5906, 5908], [5938, 5940], [5970, 5971], [6002, 6003], [6068, 6069], [6071, 6077], [6086, 6086], [6089, 6099], [6109, 6109], [6155, 6157], [6313, 6313], [6432, 6434], [6439, 6440], [6450, 6450], [6457, 6459], [6679, 6680], [6912, 6915], [6964, 6964], [6966, 6970], [6972, 6972], [6978, 6978], [7019, 7027], [7616, 7626], [7678, 7679], [8203, 8207], [8234, 8238], [8288, 8291], [8298, 8303], [8400, 8431], [12330, 12335], [12441, 12442], [43014, 43014], [43019, 43019], [43045, 43046], [64286, 64286], [65024, 65039], [65056, 65059], [65279, 65279], [65529, 65531]], n2 = [[68097, 68099], [68101, 68102], [68108, 68111], [68152, 68154], [68159, 68159], [119143, 119145], [119155, 119170], [119173, 119179], [119210, 119213], [119362, 119364], [917505, 917505], [917536, 917631], [917760, 917999]];
-        let o;
-        t2.UnicodeV6 = class {
-          constructor() {
-            if (this.version = "6", !o) {
-              o = new Uint8Array(65536), o.fill(1), o[0] = 0, o.fill(0, 1, 32), o.fill(0, 127, 160), o.fill(2, 4352, 4448), o[9001] = 2, o[9002] = 2, o.fill(2, 11904, 42192), o[12351] = 1, o.fill(2, 44032, 55204), o.fill(2, 63744, 64256), o.fill(2, 65040, 65050), o.fill(2, 65072, 65136), o.fill(2, 65280, 65377), o.fill(2, 65504, 65511);
-              for (let e3 = 0; e3 < r2.length; ++e3) o.fill(0, r2[e3][0], r2[e3][1] + 1);
-            }
-          }
-          wcwidth(e3) {
-            return e3 < 32 ? 0 : e3 < 127 ? 1 : e3 < 65536 ? o[e3] : (function(e4, t3) {
-              let s4, i3 = 0, r3 = t3.length - 1;
-              if (e4 < t3[0][0] || e4 > t3[r3][1]) return false;
-              for (; r3 >= i3; ) if (s4 = i3 + r3 >> 1, e4 > t3[s4][1]) i3 = s4 + 1;
-              else {
-                if (!(e4 < t3[s4][0])) return true;
-                r3 = s4 - 1;
-              }
-              return false;
-            })(e3, n2) ? 0 : e3 >= 131072 && e3 <= 196605 || e3 >= 196608 && e3 <= 262141 ? 2 : 1;
-          }
-          charProperties(e3, t3) {
-            let s4 = this.wcwidth(e3), r3 = 0 === s4 && 0 !== t3;
-            if (r3) {
-              const e4 = i2.UnicodeService.extractWidth(t3);
-              0 === e4 ? r3 = false : e4 > s4 && (s4 = e4);
-            }
-            return i2.UnicodeService.createPropertyValue(0, s4, r3);
-          }
-        };
-      }, 3562: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.WriteBuffer = void 0;
-        const i2 = s3(7150), r2 = s3(802);
-        class n2 extends i2.Disposable {
-          constructor(e3) {
-            super(), this._action = e3, this._writeBuffer = [], this._callbacks = [], this._pendingData = 0, this._bufferOffset = 0, this._isSyncWriting = false, this._syncCalls = 0, this._didUserInput = false, this._onWriteParsed = this._register(new r2.Emitter()), this.onWriteParsed = this._onWriteParsed.event;
-          }
-          handleUserInput() {
-            this._didUserInput = true;
-          }
-          writeSync(e3, t3) {
-            if (void 0 !== t3 && this._syncCalls > t3) return void (this._syncCalls = 0);
-            if (this._pendingData += e3.length, this._writeBuffer.push(e3), this._callbacks.push(void 0), this._syncCalls++, this._isSyncWriting) return;
-            let s4;
-            for (this._isSyncWriting = true; s4 = this._writeBuffer.shift(); ) {
-              this._action(s4);
-              const e4 = this._callbacks.shift();
-              e4 && e4();
-            }
-            this._pendingData = 0, this._bufferOffset = 2147483647, this._isSyncWriting = false, this._syncCalls = 0;
-          }
-          write(e3, t3) {
-            if (this._pendingData > 5e7) throw new Error("write data discarded, use flow control to avoid losing data");
-            if (!this._writeBuffer.length) {
-              if (this._bufferOffset = 0, this._didUserInput) return this._didUserInput = false, this._pendingData += e3.length, this._writeBuffer.push(e3), this._callbacks.push(t3), void this._innerWrite();
-              setTimeout((() => this._innerWrite()));
-            }
-            this._pendingData += e3.length, this._writeBuffer.push(e3), this._callbacks.push(t3);
-          }
-          _innerWrite(e3 = 0, t3 = true) {
-            const s4 = e3 || performance.now();
-            for (; this._writeBuffer.length > this._bufferOffset; ) {
-              const e4 = this._writeBuffer[this._bufferOffset], i3 = this._action(e4, t3);
-              if (i3) {
-                const e5 = (e6) => performance.now() - s4 >= 12 ? setTimeout((() => this._innerWrite(0, e6))) : this._innerWrite(s4, e6);
-                return void i3.catch(((e6) => (queueMicrotask((() => {
-                  throw e6;
-                })), Promise.resolve(false)))).then(e5);
-              }
-              const r3 = this._callbacks[this._bufferOffset];
-              if (r3 && r3(), this._bufferOffset++, this._pendingData -= e4.length, performance.now() - s4 >= 12) break;
-            }
-            this._writeBuffer.length > this._bufferOffset ? (this._bufferOffset > 50 && (this._writeBuffer = this._writeBuffer.slice(this._bufferOffset), this._callbacks = this._callbacks.slice(this._bufferOffset), this._bufferOffset = 0), setTimeout((() => this._innerWrite()))) : (this._writeBuffer.length = 0, this._callbacks.length = 0, this._pendingData = 0, this._bufferOffset = 0), this._onWriteParsed.fire();
-          }
-        }
-        t2.WriteBuffer = n2;
-      }, 8693: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.parseColor = function(e3) {
-          if (!e3) return;
-          let t3 = e3.toLowerCase();
-          if (0 === t3.indexOf("rgb:")) {
-            t3 = t3.slice(4);
-            const e4 = s3.exec(t3);
-            if (e4) {
-              const t4 = e4[1] ? 15 : e4[4] ? 255 : e4[7] ? 4095 : 65535;
-              return [Math.round(parseInt(e4[1] || e4[4] || e4[7] || e4[10], 16) / t4 * 255), Math.round(parseInt(e4[2] || e4[5] || e4[8] || e4[11], 16) / t4 * 255), Math.round(parseInt(e4[3] || e4[6] || e4[9] || e4[12], 16) / t4 * 255)];
-            }
-          } else if (0 === t3.indexOf("#") && (t3 = t3.slice(1), i2.exec(t3) && [3, 6, 9, 12].includes(t3.length))) {
-            const e4 = t3.length / 3, s4 = [0, 0, 0];
-            for (let i3 = 0; i3 < 3; ++i3) {
-              const r3 = parseInt(t3.slice(e4 * i3, e4 * i3 + e4), 16);
-              s4[i3] = 1 === e4 ? r3 << 4 : 2 === e4 ? r3 : 3 === e4 ? r3 >> 4 : r3 >> 8;
-            }
-            return s4;
-          }
-        }, t2.toRgbString = function(e3, t3 = 16) {
-          const [s4, i3, n2] = e3;
-          return `rgb:${r2(s4, t3)}/${r2(i3, t3)}/${r2(n2, t3)}`;
-        };
-        const s3 = /^([\da-f])\/([\da-f])\/([\da-f])$|^([\da-f]{2})\/([\da-f]{2})\/([\da-f]{2})$|^([\da-f]{3})\/([\da-f]{3})\/([\da-f]{3})$|^([\da-f]{4})\/([\da-f]{4})\/([\da-f]{4})$/, i2 = /^[\da-f]+$/;
-        function r2(e3, t3) {
-          const s4 = e3.toString(16), i3 = s4.length < 2 ? "0" + s4 : s4;
-          switch (t3) {
-            case 4:
-              return s4[0];
-            case 8:
-              return i3;
-            case 12:
-              return (i3 + i3).slice(0, 3);
-            default:
-              return i3 + i3;
-          }
-        }
-      }, 1263: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.PAYLOAD_LIMIT = void 0, t2.PAYLOAD_LIMIT = 1e7;
-      }, 9823: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.DcsHandler = t2.DcsParser = void 0;
-        const i2 = s3(726), r2 = s3(7262), n2 = s3(1263), o = [];
-        t2.DcsParser = class {
-          constructor() {
-            this._handlers = /* @__PURE__ */ Object.create(null), this._active = o, this._ident = 0, this._handlerFb = () => {
-            }, this._stack = { paused: false, loopPosition: 0, fallThrough: false };
-          }
-          dispose() {
-            this._handlers = /* @__PURE__ */ Object.create(null), this._handlerFb = () => {
-            }, this._active = o;
-          }
-          registerHandler(e3, t3) {
-            void 0 === this._handlers[e3] && (this._handlers[e3] = []);
-            const s4 = this._handlers[e3];
-            return s4.push(t3), { dispose: () => {
-              const e4 = s4.indexOf(t3);
-              -1 !== e4 && s4.splice(e4, 1);
-            } };
-          }
-          clearHandler(e3) {
-            this._handlers[e3] && delete this._handlers[e3];
-          }
-          setHandlerFallback(e3) {
-            this._handlerFb = e3;
-          }
-          reset() {
-            if (this._active.length) for (let e3 = this._stack.paused ? this._stack.loopPosition - 1 : this._active.length - 1; e3 >= 0; --e3) this._active[e3].unhook(false);
-            this._stack.paused = false, this._active = o, this._ident = 0;
-          }
-          hook(e3, t3) {
-            if (this.reset(), this._ident = e3, this._active = this._handlers[e3] || o, this._active.length) for (let e4 = this._active.length - 1; e4 >= 0; e4--) this._active[e4].hook(t3);
-            else this._handlerFb(this._ident, "HOOK", t3);
-          }
-          put(e3, t3, s4) {
-            if (this._active.length) for (let i3 = this._active.length - 1; i3 >= 0; i3--) this._active[i3].put(e3, t3, s4);
-            else this._handlerFb(this._ident, "PUT", (0, i2.utf32ToString)(e3, t3, s4));
-          }
-          unhook(e3, t3 = true) {
-            if (this._active.length) {
-              let s4 = false, i3 = this._active.length - 1, r3 = false;
-              if (this._stack.paused && (i3 = this._stack.loopPosition - 1, s4 = t3, r3 = this._stack.fallThrough, this._stack.paused = false), !r3 && false === s4) {
-                for (; i3 >= 0 && (s4 = this._active[i3].unhook(e3), true !== s4); i3--) if (s4 instanceof Promise) return this._stack.paused = true, this._stack.loopPosition = i3, this._stack.fallThrough = false, s4;
-                i3--;
-              }
-              for (; i3 >= 0; i3--) if (s4 = this._active[i3].unhook(false), s4 instanceof Promise) return this._stack.paused = true, this._stack.loopPosition = i3, this._stack.fallThrough = true, s4;
-            } else this._handlerFb(this._ident, "UNHOOK", e3);
-            this._active = o, this._ident = 0;
-          }
-        };
-        const a = new r2.Params();
-        a.addParam(0), t2.DcsHandler = class {
-          constructor(e3) {
-            this._handler = e3, this._data = "", this._params = a, this._hitLimit = false;
-          }
-          hook(e3) {
-            this._params = e3.length > 1 || e3.params[0] ? e3.clone() : a, this._data = "", this._hitLimit = false;
-          }
-          put(e3, t3, s4) {
-            this._hitLimit || (this._data += (0, i2.utf32ToString)(e3, t3, s4), this._data.length > n2.PAYLOAD_LIMIT && (this._data = "", this._hitLimit = true));
-          }
-          unhook(e3) {
-            let t3 = false;
-            if (this._hitLimit) t3 = false;
-            else if (e3 && (t3 = this._handler(this._data, this._params), t3 instanceof Promise)) return t3.then(((e4) => (this._params = a, this._data = "", this._hitLimit = false, e4)));
-            return this._params = a, this._data = "", this._hitLimit = false, t3;
-          }
-        };
-      }, 6717: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.EscapeSequenceParser = t2.VT500_TRANSITION_TABLE = t2.TransitionTable = void 0;
-        const i2 = s3(7150), r2 = s3(7262), n2 = s3(1346), o = s3(9823);
-        class a {
-          constructor(e3) {
-            this.table = new Uint8Array(e3);
-          }
-          setDefault(e3, t3) {
-            this.table.fill(e3 << 4 | t3);
-          }
-          add(e3, t3, s4, i3) {
-            this.table[t3 << 8 | e3] = s4 << 4 | i3;
-          }
-          addMany(e3, t3, s4, i3) {
-            for (let r3 = 0; r3 < e3.length; r3++) this.table[t3 << 8 | e3[r3]] = s4 << 4 | i3;
-          }
-        }
-        t2.TransitionTable = a;
-        const h = 160;
-        t2.VT500_TRANSITION_TABLE = (function() {
-          const e3 = new a(4095), t3 = Array.apply(null, Array(256)).map(((e4, t4) => t4)), s4 = (e4, s5) => t3.slice(e4, s5), i3 = s4(32, 127), r3 = s4(0, 24);
-          r3.push(25), r3.push.apply(r3, s4(28, 32));
-          const n3 = s4(0, 14);
-          let o2;
-          for (o2 in e3.setDefault(1, 0), e3.addMany(i3, 0, 2, 0), n3) e3.addMany([24, 26, 153, 154], o2, 3, 0), e3.addMany(s4(128, 144), o2, 3, 0), e3.addMany(s4(144, 152), o2, 3, 0), e3.add(156, o2, 0, 0), e3.add(27, o2, 11, 1), e3.add(157, o2, 4, 8), e3.addMany([152, 158, 159], o2, 0, 7), e3.add(155, o2, 11, 3), e3.add(144, o2, 11, 9);
-          return e3.addMany(r3, 0, 3, 0), e3.addMany(r3, 1, 3, 1), e3.add(127, 1, 0, 1), e3.addMany(r3, 8, 0, 8), e3.addMany(r3, 3, 3, 3), e3.add(127, 3, 0, 3), e3.addMany(r3, 4, 3, 4), e3.add(127, 4, 0, 4), e3.addMany(r3, 6, 3, 6), e3.addMany(r3, 5, 3, 5), e3.add(127, 5, 0, 5), e3.addMany(r3, 2, 3, 2), e3.add(127, 2, 0, 2), e3.add(93, 1, 4, 8), e3.addMany(i3, 8, 5, 8), e3.add(127, 8, 5, 8), e3.addMany([156, 27, 24, 26, 7], 8, 6, 0), e3.addMany(s4(28, 32), 8, 0, 8), e3.addMany([88, 94, 95], 1, 0, 7), e3.addMany(i3, 7, 0, 7), e3.addMany(r3, 7, 0, 7), e3.add(156, 7, 0, 0), e3.add(127, 7, 0, 7), e3.add(91, 1, 11, 3), e3.addMany(s4(64, 127), 3, 7, 0), e3.addMany(s4(48, 60), 3, 8, 4), e3.addMany([60, 61, 62, 63], 3, 9, 4), e3.addMany(s4(48, 60), 4, 8, 4), e3.addMany(s4(64, 127), 4, 7, 0), e3.addMany([60, 61, 62, 63], 4, 0, 6), e3.addMany(s4(32, 64), 6, 0, 6), e3.add(127, 6, 0, 6), e3.addMany(s4(64, 127), 6, 0, 0), e3.addMany(s4(32, 48), 3, 9, 5), e3.addMany(s4(32, 48), 5, 9, 5), e3.addMany(s4(48, 64), 5, 0, 6), e3.addMany(s4(64, 127), 5, 7, 0), e3.addMany(s4(32, 48), 4, 9, 5), e3.addMany(s4(32, 48), 1, 9, 2), e3.addMany(s4(32, 48), 2, 9, 2), e3.addMany(s4(48, 127), 2, 10, 0), e3.addMany(s4(48, 80), 1, 10, 0), e3.addMany(s4(81, 88), 1, 10, 0), e3.addMany([89, 90, 92], 1, 10, 0), e3.addMany(s4(96, 127), 1, 10, 0), e3.add(80, 1, 11, 9), e3.addMany(r3, 9, 0, 9), e3.add(127, 9, 0, 9), e3.addMany(s4(28, 32), 9, 0, 9), e3.addMany(s4(32, 48), 9, 9, 12), e3.addMany(s4(48, 60), 9, 8, 10), e3.addMany([60, 61, 62, 63], 9, 9, 10), e3.addMany(r3, 11, 0, 11), e3.addMany(s4(32, 128), 11, 0, 11), e3.addMany(s4(28, 32), 11, 0, 11), e3.addMany(r3, 10, 0, 10), e3.add(127, 10, 0, 10), e3.addMany(s4(28, 32), 10, 0, 10), e3.addMany(s4(48, 60), 10, 8, 10), e3.addMany([60, 61, 62, 63], 10, 0, 11), e3.addMany(s4(32, 48), 10, 9, 12), e3.addMany(r3, 12, 0, 12), e3.add(127, 12, 0, 12), e3.addMany(s4(28, 32), 12, 0, 12), e3.addMany(s4(32, 48), 12, 9, 12), e3.addMany(s4(48, 64), 12, 0, 11), e3.addMany(s4(64, 127), 12, 12, 13), e3.addMany(s4(64, 127), 10, 12, 13), e3.addMany(s4(64, 127), 9, 12, 13), e3.addMany(r3, 13, 13, 13), e3.addMany(i3, 13, 13, 13), e3.add(127, 13, 0, 13), e3.addMany([27, 156, 24, 26], 13, 14, 0), e3.add(h, 0, 2, 0), e3.add(h, 8, 5, 8), e3.add(h, 6, 0, 6), e3.add(h, 11, 0, 11), e3.add(h, 13, 13, 13), e3;
-        })();
-        class c extends i2.Disposable {
-          constructor(e3 = t2.VT500_TRANSITION_TABLE) {
-            super(), this._transitions = e3, this._parseStack = { state: 0, handlers: [], handlerPos: 0, transition: 0, chunkPos: 0 }, this.initialState = 0, this.currentState = this.initialState, this._params = new r2.Params(), this._params.addParam(0), this._collect = 0, this.precedingJoinState = 0, this._printHandlerFb = (e4, t3, s4) => {
-            }, this._executeHandlerFb = (e4) => {
-            }, this._csiHandlerFb = (e4, t3) => {
-            }, this._escHandlerFb = (e4) => {
-            }, this._errorHandlerFb = (e4) => e4, this._printHandler = this._printHandlerFb, this._executeHandlers = /* @__PURE__ */ Object.create(null), this._csiHandlers = /* @__PURE__ */ Object.create(null), this._escHandlers = /* @__PURE__ */ Object.create(null), this._register((0, i2.toDisposable)((() => {
-              this._csiHandlers = /* @__PURE__ */ Object.create(null), this._executeHandlers = /* @__PURE__ */ Object.create(null), this._escHandlers = /* @__PURE__ */ Object.create(null);
-            }))), this._oscParser = this._register(new n2.OscParser()), this._dcsParser = this._register(new o.DcsParser()), this._errorHandler = this._errorHandlerFb, this.registerEscHandler({ final: "\\" }, (() => true));
-          }
-          _identifier(e3, t3 = [64, 126]) {
-            let s4 = 0;
-            if (e3.prefix) {
-              if (e3.prefix.length > 1) throw new Error("only one byte as prefix supported");
-              if (s4 = e3.prefix.charCodeAt(0), s4 && 60 > s4 || s4 > 63) throw new Error("prefix must be in range 0x3c .. 0x3f");
-            }
-            if (e3.intermediates) {
-              if (e3.intermediates.length > 2) throw new Error("only two bytes as intermediates are supported");
-              for (let t4 = 0; t4 < e3.intermediates.length; ++t4) {
-                const i4 = e3.intermediates.charCodeAt(t4);
-                if (32 > i4 || i4 > 47) throw new Error("intermediate must be in range 0x20 .. 0x2f");
-                s4 <<= 8, s4 |= i4;
-              }
-            }
-            if (1 !== e3.final.length) throw new Error("final must be a single byte");
-            const i3 = e3.final.charCodeAt(0);
-            if (t3[0] > i3 || i3 > t3[1]) throw new Error(`final must be in range ${t3[0]} .. ${t3[1]}`);
-            return s4 <<= 8, s4 |= i3, s4;
-          }
-          identToString(e3) {
-            const t3 = [];
-            for (; e3; ) t3.push(String.fromCharCode(255 & e3)), e3 >>= 8;
-            return t3.reverse().join("");
-          }
-          setPrintHandler(e3) {
-            this._printHandler = e3;
-          }
-          clearPrintHandler() {
-            this._printHandler = this._printHandlerFb;
-          }
-          registerEscHandler(e3, t3) {
-            const s4 = this._identifier(e3, [48, 126]);
-            void 0 === this._escHandlers[s4] && (this._escHandlers[s4] = []);
-            const i3 = this._escHandlers[s4];
-            return i3.push(t3), { dispose: () => {
-              const e4 = i3.indexOf(t3);
-              -1 !== e4 && i3.splice(e4, 1);
-            } };
-          }
-          clearEscHandler(e3) {
-            this._escHandlers[this._identifier(e3, [48, 126])] && delete this._escHandlers[this._identifier(e3, [48, 126])];
-          }
-          setEscHandlerFallback(e3) {
-            this._escHandlerFb = e3;
-          }
-          setExecuteHandler(e3, t3) {
-            this._executeHandlers[e3.charCodeAt(0)] = t3;
-          }
-          clearExecuteHandler(e3) {
-            this._executeHandlers[e3.charCodeAt(0)] && delete this._executeHandlers[e3.charCodeAt(0)];
-          }
-          setExecuteHandlerFallback(e3) {
-            this._executeHandlerFb = e3;
-          }
-          registerCsiHandler(e3, t3) {
-            const s4 = this._identifier(e3);
-            void 0 === this._csiHandlers[s4] && (this._csiHandlers[s4] = []);
-            const i3 = this._csiHandlers[s4];
-            return i3.push(t3), { dispose: () => {
-              const e4 = i3.indexOf(t3);
-              -1 !== e4 && i3.splice(e4, 1);
-            } };
-          }
-          clearCsiHandler(e3) {
-            this._csiHandlers[this._identifier(e3)] && delete this._csiHandlers[this._identifier(e3)];
-          }
-          setCsiHandlerFallback(e3) {
-            this._csiHandlerFb = e3;
-          }
-          registerDcsHandler(e3, t3) {
-            return this._dcsParser.registerHandler(this._identifier(e3), t3);
-          }
-          clearDcsHandler(e3) {
-            this._dcsParser.clearHandler(this._identifier(e3));
-          }
-          setDcsHandlerFallback(e3) {
-            this._dcsParser.setHandlerFallback(e3);
-          }
-          registerOscHandler(e3, t3) {
-            return this._oscParser.registerHandler(e3, t3);
-          }
-          clearOscHandler(e3) {
-            this._oscParser.clearHandler(e3);
-          }
-          setOscHandlerFallback(e3) {
-            this._oscParser.setHandlerFallback(e3);
-          }
-          setErrorHandler(e3) {
-            this._errorHandler = e3;
-          }
-          clearErrorHandler() {
-            this._errorHandler = this._errorHandlerFb;
-          }
-          reset() {
-            this.currentState = this.initialState, this._oscParser.reset(), this._dcsParser.reset(), this._params.reset(), this._params.addParam(0), this._collect = 0, this.precedingJoinState = 0, 0 !== this._parseStack.state && (this._parseStack.state = 2, this._parseStack.handlers = []);
-          }
-          _preserveStack(e3, t3, s4, i3, r3) {
-            this._parseStack.state = e3, this._parseStack.handlers = t3, this._parseStack.handlerPos = s4, this._parseStack.transition = i3, this._parseStack.chunkPos = r3;
-          }
-          parse(e3, t3, s4) {
-            let i3, r3 = 0, n3 = 0, o2 = 0;
-            if (this._parseStack.state) if (2 === this._parseStack.state) this._parseStack.state = 0, o2 = this._parseStack.chunkPos + 1;
-            else {
-              if (void 0 === s4 || 1 === this._parseStack.state) throw this._parseStack.state = 1, new Error("improper continuation due to previous async handler, giving up parsing");
-              const t4 = this._parseStack.handlers;
-              let n4 = this._parseStack.handlerPos - 1;
-              switch (this._parseStack.state) {
-                case 3:
-                  if (false === s4 && n4 > -1) {
-                    for (; n4 >= 0 && (i3 = t4[n4](this._params), true !== i3); n4--) if (i3 instanceof Promise) return this._parseStack.handlerPos = n4, i3;
-                  }
-                  this._parseStack.handlers = [];
-                  break;
-                case 4:
-                  if (false === s4 && n4 > -1) {
-                    for (; n4 >= 0 && (i3 = t4[n4](), true !== i3); n4--) if (i3 instanceof Promise) return this._parseStack.handlerPos = n4, i3;
-                  }
-                  this._parseStack.handlers = [];
-                  break;
-                case 6:
-                  if (r3 = e3[this._parseStack.chunkPos], i3 = this._dcsParser.unhook(24 !== r3 && 26 !== r3, s4), i3) return i3;
-                  27 === r3 && (this._parseStack.transition |= 1), this._params.reset(), this._params.addParam(0), this._collect = 0;
-                  break;
-                case 5:
-                  if (r3 = e3[this._parseStack.chunkPos], i3 = this._oscParser.end(24 !== r3 && 26 !== r3, s4), i3) return i3;
-                  27 === r3 && (this._parseStack.transition |= 1), this._params.reset(), this._params.addParam(0), this._collect = 0;
-              }
-              this._parseStack.state = 0, o2 = this._parseStack.chunkPos + 1, this.precedingJoinState = 0, this.currentState = 15 & this._parseStack.transition;
-            }
-            for (let s5 = o2; s5 < t3; ++s5) {
-              switch (r3 = e3[s5], n3 = this._transitions.table[this.currentState << 8 | (r3 < 160 ? r3 : h)], n3 >> 4) {
-                case 2:
-                  for (let i4 = s5 + 1; ; ++i4) {
-                    if (i4 >= t3 || (r3 = e3[i4]) < 32 || r3 > 126 && r3 < h) {
-                      this._printHandler(e3, s5, i4), s5 = i4 - 1;
-                      break;
-                    }
-                    if (++i4 >= t3 || (r3 = e3[i4]) < 32 || r3 > 126 && r3 < h) {
-                      this._printHandler(e3, s5, i4), s5 = i4 - 1;
-                      break;
-                    }
-                    if (++i4 >= t3 || (r3 = e3[i4]) < 32 || r3 > 126 && r3 < h) {
-                      this._printHandler(e3, s5, i4), s5 = i4 - 1;
-                      break;
-                    }
-                    if (++i4 >= t3 || (r3 = e3[i4]) < 32 || r3 > 126 && r3 < h) {
-                      this._printHandler(e3, s5, i4), s5 = i4 - 1;
-                      break;
-                    }
-                  }
-                  break;
-                case 3:
-                  this._executeHandlers[r3] ? this._executeHandlers[r3]() : this._executeHandlerFb(r3), this.precedingJoinState = 0;
-                  break;
-                case 0:
-                  break;
-                case 1:
-                  if (this._errorHandler({ position: s5, code: r3, currentState: this.currentState, collect: this._collect, params: this._params, abort: false }).abort) return;
-                  break;
-                case 7:
-                  const o3 = this._csiHandlers[this._collect << 8 | r3];
-                  let a2 = o3 ? o3.length - 1 : -1;
-                  for (; a2 >= 0 && (i3 = o3[a2](this._params), true !== i3); a2--) if (i3 instanceof Promise) return this._preserveStack(3, o3, a2, n3, s5), i3;
-                  a2 < 0 && this._csiHandlerFb(this._collect << 8 | r3, this._params), this.precedingJoinState = 0;
-                  break;
-                case 8:
-                  do {
-                    switch (r3) {
-                      case 59:
-                        this._params.addParam(0);
-                        break;
-                      case 58:
-                        this._params.addSubParam(-1);
-                        break;
-                      default:
-                        this._params.addDigit(r3 - 48);
-                    }
-                  } while (++s5 < t3 && (r3 = e3[s5]) > 47 && r3 < 60);
-                  s5--;
-                  break;
-                case 9:
-                  this._collect <<= 8, this._collect |= r3;
-                  break;
-                case 10:
-                  const c2 = this._escHandlers[this._collect << 8 | r3];
-                  let l = c2 ? c2.length - 1 : -1;
-                  for (; l >= 0 && (i3 = c2[l](), true !== i3); l--) if (i3 instanceof Promise) return this._preserveStack(4, c2, l, n3, s5), i3;
-                  l < 0 && this._escHandlerFb(this._collect << 8 | r3), this.precedingJoinState = 0;
-                  break;
-                case 11:
-                  this._params.reset(), this._params.addParam(0), this._collect = 0;
-                  break;
-                case 12:
-                  this._dcsParser.hook(this._collect << 8 | r3, this._params);
-                  break;
-                case 13:
-                  for (let i4 = s5 + 1; ; ++i4) if (i4 >= t3 || 24 === (r3 = e3[i4]) || 26 === r3 || 27 === r3 || r3 > 127 && r3 < h) {
-                    this._dcsParser.put(e3, s5, i4), s5 = i4 - 1;
-                    break;
-                  }
-                  break;
-                case 14:
-                  if (i3 = this._dcsParser.unhook(24 !== r3 && 26 !== r3), i3) return this._preserveStack(6, [], 0, n3, s5), i3;
-                  27 === r3 && (n3 |= 1), this._params.reset(), this._params.addParam(0), this._collect = 0, this.precedingJoinState = 0;
-                  break;
-                case 4:
-                  this._oscParser.start();
-                  break;
-                case 5:
-                  for (let i4 = s5 + 1; ; i4++) if (i4 >= t3 || (r3 = e3[i4]) < 32 || r3 > 127 && r3 < h) {
-                    this._oscParser.put(e3, s5, i4), s5 = i4 - 1;
-                    break;
-                  }
-                  break;
-                case 6:
-                  if (i3 = this._oscParser.end(24 !== r3 && 26 !== r3), i3) return this._preserveStack(5, [], 0, n3, s5), i3;
-                  27 === r3 && (n3 |= 1), this._params.reset(), this._params.addParam(0), this._collect = 0, this.precedingJoinState = 0;
-              }
-              this.currentState = 15 & n3;
-            }
-          }
-        }
-        t2.EscapeSequenceParser = c;
-      }, 1346: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.OscHandler = t2.OscParser = void 0;
-        const i2 = s3(1263), r2 = s3(726), n2 = [];
-        t2.OscParser = class {
-          constructor() {
-            this._state = 0, this._active = n2, this._id = -1, this._handlers = /* @__PURE__ */ Object.create(null), this._handlerFb = () => {
-            }, this._stack = { paused: false, loopPosition: 0, fallThrough: false };
-          }
-          registerHandler(e3, t3) {
-            void 0 === this._handlers[e3] && (this._handlers[e3] = []);
-            const s4 = this._handlers[e3];
-            return s4.push(t3), { dispose: () => {
-              const e4 = s4.indexOf(t3);
-              -1 !== e4 && s4.splice(e4, 1);
-            } };
-          }
-          clearHandler(e3) {
-            this._handlers[e3] && delete this._handlers[e3];
-          }
-          setHandlerFallback(e3) {
-            this._handlerFb = e3;
-          }
-          dispose() {
-            this._handlers = /* @__PURE__ */ Object.create(null), this._handlerFb = () => {
-            }, this._active = n2;
-          }
-          reset() {
-            if (2 === this._state) for (let e3 = this._stack.paused ? this._stack.loopPosition - 1 : this._active.length - 1; e3 >= 0; --e3) this._active[e3].end(false);
-            this._stack.paused = false, this._active = n2, this._id = -1, this._state = 0;
-          }
-          _start() {
-            if (this._active = this._handlers[this._id] || n2, this._active.length) for (let e3 = this._active.length - 1; e3 >= 0; e3--) this._active[e3].start();
-            else this._handlerFb(this._id, "START");
-          }
-          _put(e3, t3, s4) {
-            if (this._active.length) for (let i3 = this._active.length - 1; i3 >= 0; i3--) this._active[i3].put(e3, t3, s4);
-            else this._handlerFb(this._id, "PUT", (0, r2.utf32ToString)(e3, t3, s4));
-          }
-          start() {
-            this.reset(), this._state = 1;
-          }
-          put(e3, t3, s4) {
-            if (3 !== this._state) {
-              if (1 === this._state) for (; t3 < s4; ) {
-                const s5 = e3[t3++];
-                if (59 === s5) {
-                  this._state = 2, this._start();
-                  break;
-                }
-                if (s5 < 48 || 57 < s5) return void (this._state = 3);
-                -1 === this._id && (this._id = 0), this._id = 10 * this._id + s5 - 48;
-              }
-              2 === this._state && s4 - t3 > 0 && this._put(e3, t3, s4);
-            }
-          }
-          end(e3, t3 = true) {
-            if (0 !== this._state) {
-              if (3 !== this._state) if (1 === this._state && this._start(), this._active.length) {
-                let s4 = false, i3 = this._active.length - 1, r3 = false;
-                if (this._stack.paused && (i3 = this._stack.loopPosition - 1, s4 = t3, r3 = this._stack.fallThrough, this._stack.paused = false), !r3 && false === s4) {
-                  for (; i3 >= 0 && (s4 = this._active[i3].end(e3), true !== s4); i3--) if (s4 instanceof Promise) return this._stack.paused = true, this._stack.loopPosition = i3, this._stack.fallThrough = false, s4;
-                  i3--;
-                }
-                for (; i3 >= 0; i3--) if (s4 = this._active[i3].end(false), s4 instanceof Promise) return this._stack.paused = true, this._stack.loopPosition = i3, this._stack.fallThrough = true, s4;
-              } else this._handlerFb(this._id, "END", e3);
-              this._active = n2, this._id = -1, this._state = 0;
-            }
-          }
-        }, t2.OscHandler = class {
-          constructor(e3) {
-            this._handler = e3, this._data = "", this._hitLimit = false;
-          }
-          start() {
-            this._data = "", this._hitLimit = false;
-          }
-          put(e3, t3, s4) {
-            this._hitLimit || (this._data += (0, r2.utf32ToString)(e3, t3, s4), this._data.length > i2.PAYLOAD_LIMIT && (this._data = "", this._hitLimit = true));
-          }
-          end(e3) {
-            let t3 = false;
-            if (this._hitLimit) t3 = false;
-            else if (e3 && (t3 = this._handler(this._data), t3 instanceof Promise)) return t3.then(((e4) => (this._data = "", this._hitLimit = false, e4)));
-            return this._data = "", this._hitLimit = false, t3;
-          }
-        };
-      }, 7262: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.Params = void 0;
-        const s3 = 2147483647;
-        class i2 {
-          static fromArray(e3) {
-            const t3 = new i2();
-            if (!e3.length) return t3;
-            for (let s4 = Array.isArray(e3[0]) ? 1 : 0; s4 < e3.length; ++s4) {
-              const i3 = e3[s4];
-              if (Array.isArray(i3)) for (let e4 = 0; e4 < i3.length; ++e4) t3.addSubParam(i3[e4]);
-              else t3.addParam(i3);
-            }
-            return t3;
-          }
-          constructor(e3 = 32, t3 = 32) {
-            if (this.maxLength = e3, this.maxSubParamsLength = t3, t3 > 256) throw new Error("maxSubParamsLength must not be greater than 256");
-            this.params = new Int32Array(e3), this.length = 0, this._subParams = new Int32Array(t3), this._subParamsLength = 0, this._subParamsIdx = new Uint16Array(e3), this._rejectDigits = false, this._rejectSubDigits = false, this._digitIsSub = false;
-          }
-          clone() {
-            const e3 = new i2(this.maxLength, this.maxSubParamsLength);
-            return e3.params.set(this.params), e3.length = this.length, e3._subParams.set(this._subParams), e3._subParamsLength = this._subParamsLength, e3._subParamsIdx.set(this._subParamsIdx), e3._rejectDigits = this._rejectDigits, e3._rejectSubDigits = this._rejectSubDigits, e3._digitIsSub = this._digitIsSub, e3;
-          }
-          toArray() {
-            const e3 = [];
-            for (let t3 = 0; t3 < this.length; ++t3) {
-              e3.push(this.params[t3]);
-              const s4 = this._subParamsIdx[t3] >> 8, i3 = 255 & this._subParamsIdx[t3];
-              i3 - s4 > 0 && e3.push(Array.prototype.slice.call(this._subParams, s4, i3));
-            }
-            return e3;
-          }
-          reset() {
-            this.length = 0, this._subParamsLength = 0, this._rejectDigits = false, this._rejectSubDigits = false, this._digitIsSub = false;
-          }
-          addParam(e3) {
-            if (this._digitIsSub = false, this.length >= this.maxLength) this._rejectDigits = true;
-            else {
-              if (e3 < -1) throw new Error("values lesser than -1 are not allowed");
-              this._subParamsIdx[this.length] = this._subParamsLength << 8 | this._subParamsLength, this.params[this.length++] = e3 > s3 ? s3 : e3;
-            }
-          }
-          addSubParam(e3) {
-            if (this._digitIsSub = true, this.length) if (this._rejectDigits || this._subParamsLength >= this.maxSubParamsLength) this._rejectSubDigits = true;
-            else {
-              if (e3 < -1) throw new Error("values lesser than -1 are not allowed");
-              this._subParams[this._subParamsLength++] = e3 > s3 ? s3 : e3, this._subParamsIdx[this.length - 1]++;
-            }
-          }
-          hasSubParams(e3) {
-            return (255 & this._subParamsIdx[e3]) - (this._subParamsIdx[e3] >> 8) > 0;
-          }
-          getSubParams(e3) {
-            const t3 = this._subParamsIdx[e3] >> 8, s4 = 255 & this._subParamsIdx[e3];
-            return s4 - t3 > 0 ? this._subParams.subarray(t3, s4) : null;
-          }
-          getSubParamsAll() {
-            const e3 = {};
-            for (let t3 = 0; t3 < this.length; ++t3) {
-              const s4 = this._subParamsIdx[t3] >> 8, i3 = 255 & this._subParamsIdx[t3];
-              i3 - s4 > 0 && (e3[t3] = this._subParams.slice(s4, i3));
-            }
-            return e3;
-          }
-          addDigit(e3) {
-            let t3;
-            if (this._rejectDigits || !(t3 = this._digitIsSub ? this._subParamsLength : this.length) || this._digitIsSub && this._rejectSubDigits) return;
-            const i3 = this._digitIsSub ? this._subParams : this.params, r2 = i3[t3 - 1];
-            i3[t3 - 1] = ~r2 ? Math.min(10 * r2 + e3, s3) : e3;
-          }
-        }
-        t2.Params = i2;
-      }, 3027: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.AddonManager = void 0, t2.AddonManager = class {
-          constructor() {
-            this._addons = [];
-          }
-          dispose() {
-            for (let e3 = this._addons.length - 1; e3 >= 0; e3--) this._addons[e3].instance.dispose();
-          }
-          loadAddon(e3, t3) {
-            const s3 = { instance: t3, dispose: t3.dispose, isDisposed: false };
-            this._addons.push(s3), t3.dispose = () => this._wrappedAddonDispose(s3), t3.activate(e3);
-          }
-          _wrappedAddonDispose(e3) {
-            if (e3.isDisposed) return;
-            let t3 = -1;
-            for (let s3 = 0; s3 < this._addons.length; s3++) if (this._addons[s3] === e3) {
-              t3 = s3;
-              break;
-            }
-            if (-1 === t3) throw new Error("Could not dispose an addon that has not been loaded");
-            e3.isDisposed = true, e3.dispose.apply(e3.instance), this._addons.splice(t3, 1);
-          }
-        };
-      }, 3235: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.BufferApiView = void 0;
-        const i2 = s3(793), r2 = s3(3055);
-        t2.BufferApiView = class {
-          constructor(e3, t3) {
-            this._buffer = e3, this.type = t3;
-          }
-          init(e3) {
-            return this._buffer = e3, this;
-          }
-          get cursorY() {
-            return this._buffer.y;
-          }
-          get cursorX() {
-            return this._buffer.x;
-          }
-          get viewportY() {
-            return this._buffer.ydisp;
-          }
-          get baseY() {
-            return this._buffer.ybase;
-          }
-          get length() {
-            return this._buffer.lines.length;
-          }
-          getLine(e3) {
-            const t3 = this._buffer.lines.get(e3);
-            if (t3) return new i2.BufferLineApiView(t3);
-          }
-          getNullCell() {
-            return new r2.CellData();
-          }
-        };
-      }, 793: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.BufferLineApiView = void 0;
-        const i2 = s3(3055);
-        t2.BufferLineApiView = class {
-          constructor(e3) {
-            this._line = e3;
-          }
-          get isWrapped() {
-            return this._line.isWrapped;
-          }
-          get length() {
-            return this._line.length;
-          }
-          getCell(e3, t3) {
-            if (!(e3 < 0 || e3 >= this._line.length)) return t3 ? (this._line.loadCell(e3, t3), t3) : this._line.loadCell(e3, new i2.CellData());
-          }
-          translateToString(e3, t3, s4) {
-            return this._line.translateToString(e3, t3, s4);
-          }
-        };
-      }, 5101: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.BufferNamespaceApi = void 0;
-        const i2 = s3(3235), r2 = s3(7150), n2 = s3(802);
-        class o extends r2.Disposable {
-          constructor(e3) {
-            super(), this._core = e3, this._onBufferChange = this._register(new n2.Emitter()), this.onBufferChange = this._onBufferChange.event, this._normal = new i2.BufferApiView(this._core.buffers.normal, "normal"), this._alternate = new i2.BufferApiView(this._core.buffers.alt, "alternate"), this._core.buffers.onBufferActivate((() => this._onBufferChange.fire(this.active)));
-          }
-          get active() {
-            if (this._core.buffers.active === this._core.buffers.normal) return this.normal;
-            if (this._core.buffers.active === this._core.buffers.alt) return this.alternate;
-            throw new Error("Active buffer is neither normal nor alternate");
-          }
-          get normal() {
-            return this._normal.init(this._core.buffers.normal);
-          }
-          get alternate() {
-            return this._alternate.init(this._core.buffers.alt);
-          }
-        }
-        t2.BufferNamespaceApi = o;
-      }, 6097: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.ParserApi = void 0, t2.ParserApi = class {
-          constructor(e3) {
-            this._core = e3;
-          }
-          registerCsiHandler(e3, t3) {
-            return this._core.registerCsiHandler(e3, ((e4) => t3(e4.toArray())));
-          }
-          addCsiHandler(e3, t3) {
-            return this.registerCsiHandler(e3, t3);
-          }
-          registerDcsHandler(e3, t3) {
-            return this._core.registerDcsHandler(e3, ((e4, s3) => t3(e4, s3.toArray())));
-          }
-          addDcsHandler(e3, t3) {
-            return this.registerDcsHandler(e3, t3);
-          }
-          registerEscHandler(e3, t3) {
-            return this._core.registerEscHandler(e3, t3);
-          }
-          addEscHandler(e3, t3) {
-            return this.registerEscHandler(e3, t3);
-          }
-          registerOscHandler(e3, t3) {
-            return this._core.registerOscHandler(e3, t3);
-          }
-          addOscHandler(e3, t3) {
-            return this.registerOscHandler(e3, t3);
-          }
-        };
-      }, 4335: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.UnicodeApi = void 0, t2.UnicodeApi = class {
-          constructor(e3) {
-            this._core = e3;
-          }
-          register(e3) {
-            this._core.unicodeService.register(e3);
-          }
-          get versions() {
-            return this._core.unicodeService.versions;
-          }
-          get activeVersion() {
-            return this._core.unicodeService.activeVersion;
-          }
-          set activeVersion(e3) {
-            this._core.unicodeService.activeVersion = e3;
-          }
-        };
-      }, 9640: function(e2, t2, s3) {
-        var i2 = this && this.__decorate || function(e3, t3, s4, i3) {
-          var r3, n3 = arguments.length, o2 = n3 < 3 ? t3 : null === i3 ? i3 = Object.getOwnPropertyDescriptor(t3, s4) : i3;
-          if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) o2 = Reflect.decorate(e3, t3, s4, i3);
-          else for (var a2 = e3.length - 1; a2 >= 0; a2--) (r3 = e3[a2]) && (o2 = (n3 < 3 ? r3(o2) : n3 > 3 ? r3(t3, s4, o2) : r3(t3, s4)) || o2);
-          return n3 > 3 && o2 && Object.defineProperty(t3, s4, o2), o2;
-        }, r2 = this && this.__param || function(e3, t3) {
-          return function(s4, i3) {
-            t3(s4, i3, e3);
-          };
-        };
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.BufferService = t2.MINIMUM_ROWS = t2.MINIMUM_COLS = void 0;
-        const n2 = s3(7150), o = s3(4097), a = s3(6501), h = s3(802);
-        t2.MINIMUM_COLS = 2, t2.MINIMUM_ROWS = 1;
-        let c = class extends n2.Disposable {
-          get buffer() {
-            return this.buffers.active;
-          }
-          constructor(e3) {
-            super(), this.isUserScrolling = false, this._onResize = this._register(new h.Emitter()), this.onResize = this._onResize.event, this._onScroll = this._register(new h.Emitter()), this.onScroll = this._onScroll.event, this.cols = Math.max(e3.rawOptions.cols || 0, t2.MINIMUM_COLS), this.rows = Math.max(e3.rawOptions.rows || 0, t2.MINIMUM_ROWS), this.buffers = this._register(new o.BufferSet(e3, this)), this._register(this.buffers.onBufferActivate(((e4) => {
-              this._onScroll.fire(e4.activeBuffer.ydisp);
-            })));
-          }
-          resize(e3, t3) {
-            const s4 = this.cols !== e3, i3 = this.rows !== t3;
-            this.cols = e3, this.rows = t3, this.buffers.resize(e3, t3), this._onResize.fire({ cols: e3, rows: t3, colsChanged: s4, rowsChanged: i3 });
-          }
-          reset() {
-            this.buffers.reset(), this.isUserScrolling = false;
-          }
-          scroll(e3, t3 = false) {
-            const s4 = this.buffer;
-            let i3;
-            i3 = this._cachedBlankLine, i3 && i3.length === this.cols && i3.getFg(0) === e3.fg && i3.getBg(0) === e3.bg || (i3 = s4.getBlankLine(e3, t3), this._cachedBlankLine = i3), i3.isWrapped = t3;
-            const r3 = s4.ybase + s4.scrollTop, n3 = s4.ybase + s4.scrollBottom;
-            if (0 === s4.scrollTop) {
-              const e4 = s4.lines.isFull;
-              n3 === s4.lines.length - 1 ? e4 ? s4.lines.recycle().copyFrom(i3) : s4.lines.push(i3.clone()) : s4.lines.splice(n3 + 1, 0, i3.clone()), e4 ? this.isUserScrolling && (s4.ydisp = Math.max(s4.ydisp - 1, 0)) : (s4.ybase++, this.isUserScrolling || s4.ydisp++);
-            } else {
-              const e4 = n3 - r3 + 1;
-              s4.lines.shiftElements(r3 + 1, e4 - 1, -1), s4.lines.set(n3, i3.clone());
-            }
-            this.isUserScrolling || (s4.ydisp = s4.ybase), this._onScroll.fire(s4.ydisp);
-          }
-          scrollLines(e3, t3) {
-            const s4 = this.buffer;
-            if (e3 < 0) {
-              if (0 === s4.ydisp) return;
-              this.isUserScrolling = true;
-            } else e3 + s4.ydisp >= s4.ybase && (this.isUserScrolling = false);
-            const i3 = s4.ydisp;
-            s4.ydisp = Math.max(Math.min(s4.ydisp + e3, s4.ybase), 0), i3 !== s4.ydisp && (t3 || this._onScroll.fire(s4.ydisp));
-          }
-        };
-        t2.BufferService = c, t2.BufferService = c = i2([r2(0, a.IOptionsService)], c);
-      }, 5746: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.CharsetService = void 0, t2.CharsetService = class {
-          constructor() {
-            this.glevel = 0, this._charsets = [];
-          }
-          reset() {
-            this.charset = void 0, this._charsets = [], this.glevel = 0;
-          }
-          setgLevel(e3) {
-            this.glevel = e3, this.charset = this._charsets[e3];
-          }
-          setgCharset(e3, t3) {
-            this._charsets[e3] = t3, this.glevel === e3 && (this.charset = t3);
-          }
-        };
-      }, 7792: function(e2, t2, s3) {
-        var i2 = this && this.__decorate || function(e3, t3, s4, i3) {
-          var r3, n3 = arguments.length, o2 = n3 < 3 ? t3 : null === i3 ? i3 = Object.getOwnPropertyDescriptor(t3, s4) : i3;
-          if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) o2 = Reflect.decorate(e3, t3, s4, i3);
-          else for (var a2 = e3.length - 1; a2 >= 0; a2--) (r3 = e3[a2]) && (o2 = (n3 < 3 ? r3(o2) : n3 > 3 ? r3(t3, s4, o2) : r3(t3, s4)) || o2);
-          return n3 > 3 && o2 && Object.defineProperty(t3, s4, o2), o2;
-        }, r2 = this && this.__param || function(e3, t3) {
-          return function(s4, i3) {
-            t3(s4, i3, e3);
-          };
-        };
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.CoreMouseService = void 0;
-        const n2 = s3(6501), o = s3(7150), a = s3(802), h = { NONE: { events: 0, restrict: () => false }, X10: { events: 1, restrict: (e3) => 4 !== e3.button && 1 === e3.action && (e3.ctrl = false, e3.alt = false, e3.shift = false, true) }, VT200: { events: 19, restrict: (e3) => 32 !== e3.action }, DRAG: { events: 23, restrict: (e3) => 32 !== e3.action || 3 !== e3.button }, ANY: { events: 31, restrict: (e3) => true } };
-        function c(e3, t3) {
-          let s4 = (e3.ctrl ? 16 : 0) | (e3.shift ? 4 : 0) | (e3.alt ? 8 : 0);
-          return 4 === e3.button ? (s4 |= 64, s4 |= e3.action) : (s4 |= 3 & e3.button, 4 & e3.button && (s4 |= 64), 8 & e3.button && (s4 |= 128), 32 === e3.action ? s4 |= 32 : 0 !== e3.action || t3 || (s4 |= 3)), s4;
-        }
-        const l = String.fromCharCode, u = { DEFAULT: (e3) => {
-          const t3 = [c(e3, false) + 32, e3.col + 32, e3.row + 32];
-          return t3[0] > 255 || t3[1] > 255 || t3[2] > 255 ? "" : `\x1B[M${l(t3[0])}${l(t3[1])}${l(t3[2])}`;
-        }, SGR: (e3) => {
-          const t3 = 0 === e3.action && 4 !== e3.button ? "m" : "M";
-          return `\x1B[<${c(e3, true)};${e3.col};${e3.row}${t3}`;
-        }, SGR_PIXELS: (e3) => {
-          const t3 = 0 === e3.action && 4 !== e3.button ? "m" : "M";
-          return `\x1B[<${c(e3, true)};${e3.x};${e3.y}${t3}`;
-        } };
-        let d = class extends o.Disposable {
-          constructor(e3, t3, s4) {
-            super(), this._bufferService = e3, this._coreService = t3, this._optionsService = s4, this._protocols = {}, this._encodings = {}, this._activeProtocol = "", this._activeEncoding = "", this._lastEvent = null, this._wheelPartialScroll = 0, this._onProtocolChange = this._register(new a.Emitter()), this.onProtocolChange = this._onProtocolChange.event;
-            for (const e4 of Object.keys(h)) this.addProtocol(e4, h[e4]);
-            for (const e4 of Object.keys(u)) this.addEncoding(e4, u[e4]);
-            this.reset();
-          }
-          addProtocol(e3, t3) {
-            this._protocols[e3] = t3;
-          }
-          addEncoding(e3, t3) {
-            this._encodings[e3] = t3;
-          }
-          get activeProtocol() {
-            return this._activeProtocol;
-          }
-          get areMouseEventsActive() {
-            return 0 !== this._protocols[this._activeProtocol].events;
-          }
-          set activeProtocol(e3) {
-            if (!this._protocols[e3]) throw new Error(`unknown protocol "${e3}"`);
-            this._activeProtocol = e3, this._onProtocolChange.fire(this._protocols[e3].events);
-          }
-          get activeEncoding() {
-            return this._activeEncoding;
-          }
-          set activeEncoding(e3) {
-            if (!this._encodings[e3]) throw new Error(`unknown encoding "${e3}"`);
-            this._activeEncoding = e3;
-          }
-          reset() {
-            this.activeProtocol = "NONE", this.activeEncoding = "DEFAULT", this._lastEvent = null, this._wheelPartialScroll = 0;
-          }
-          consumeWheelEvent(e3, t3, s4) {
-            if (0 === e3.deltaY || e3.shiftKey) return 0;
-            if (void 0 === t3 || void 0 === s4) return 0;
-            const i3 = t3 / s4;
-            let r3 = this._applyScrollModifier(e3.deltaY, e3);
-            return e3.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? (r3 /= i3 + 0, Math.abs(e3.deltaY) < 50 && (r3 *= 0.3), this._wheelPartialScroll += r3, r3 = Math.floor(Math.abs(this._wheelPartialScroll)) * (this._wheelPartialScroll > 0 ? 1 : -1), this._wheelPartialScroll %= 1) : e3.deltaMode === WheelEvent.DOM_DELTA_PAGE && (r3 *= this._bufferService.rows), r3;
-          }
-          _applyScrollModifier(e3, t3) {
-            return t3.altKey || t3.ctrlKey || t3.shiftKey ? e3 * this._optionsService.rawOptions.fastScrollSensitivity * this._optionsService.rawOptions.scrollSensitivity : e3 * this._optionsService.rawOptions.scrollSensitivity;
-          }
-          triggerMouseEvent(e3) {
-            if (e3.col < 0 || e3.col >= this._bufferService.cols || e3.row < 0 || e3.row >= this._bufferService.rows) return false;
-            if (4 === e3.button && 32 === e3.action) return false;
-            if (3 === e3.button && 32 !== e3.action) return false;
-            if (4 !== e3.button && (2 === e3.action || 3 === e3.action)) return false;
-            if (e3.col++, e3.row++, 32 === e3.action && this._lastEvent && this._equalEvents(this._lastEvent, e3, "SGR_PIXELS" === this._activeEncoding)) return false;
-            if (!this._protocols[this._activeProtocol].restrict(e3)) return false;
-            const t3 = this._encodings[this._activeEncoding](e3);
-            return t3 && ("DEFAULT" === this._activeEncoding ? this._coreService.triggerBinaryEvent(t3) : this._coreService.triggerDataEvent(t3, true)), this._lastEvent = e3, true;
-          }
-          explainEvents(e3) {
-            return { down: !!(1 & e3), up: !!(2 & e3), drag: !!(4 & e3), move: !!(8 & e3), wheel: !!(16 & e3) };
-          }
-          _equalEvents(e3, t3, s4) {
-            if (s4) {
-              if (e3.x !== t3.x) return false;
-              if (e3.y !== t3.y) return false;
-            } else {
-              if (e3.col !== t3.col) return false;
-              if (e3.row !== t3.row) return false;
-            }
-            return e3.button === t3.button && e3.action === t3.action && e3.ctrl === t3.ctrl && e3.alt === t3.alt && e3.shift === t3.shift;
-          }
-        };
-        t2.CoreMouseService = d, t2.CoreMouseService = d = i2([r2(0, n2.IBufferService), r2(1, n2.ICoreService), r2(2, n2.IOptionsService)], d);
-      }, 4071: function(e2, t2, s3) {
-        var i2 = this && this.__decorate || function(e3, t3, s4, i3) {
-          var r3, n3 = arguments.length, o2 = n3 < 3 ? t3 : null === i3 ? i3 = Object.getOwnPropertyDescriptor(t3, s4) : i3;
-          if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) o2 = Reflect.decorate(e3, t3, s4, i3);
-          else for (var a2 = e3.length - 1; a2 >= 0; a2--) (r3 = e3[a2]) && (o2 = (n3 < 3 ? r3(o2) : n3 > 3 ? r3(t3, s4, o2) : r3(t3, s4)) || o2);
-          return n3 > 3 && o2 && Object.defineProperty(t3, s4, o2), o2;
-        }, r2 = this && this.__param || function(e3, t3) {
-          return function(s4, i3) {
-            t3(s4, i3, e3);
-          };
-        };
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.CoreService = void 0;
-        const n2 = s3(7453), o = s3(7150), a = s3(6501), h = s3(802), c = Object.freeze({ insertMode: false }), l = Object.freeze({ applicationCursorKeys: false, applicationKeypad: false, bracketedPasteMode: false, cursorBlink: void 0, cursorStyle: void 0, origin: false, reverseWraparound: false, sendFocus: false, synchronizedOutput: false, wraparound: true });
-        let u = class extends o.Disposable {
-          constructor(e3, t3, s4) {
-            super(), this._bufferService = e3, this._logService = t3, this._optionsService = s4, this.isCursorInitialized = false, this.isCursorHidden = false, this._onData = this._register(new h.Emitter()), this.onData = this._onData.event, this._onUserInput = this._register(new h.Emitter()), this.onUserInput = this._onUserInput.event, this._onBinary = this._register(new h.Emitter()), this.onBinary = this._onBinary.event, this._onRequestScrollToBottom = this._register(new h.Emitter()), this.onRequestScrollToBottom = this._onRequestScrollToBottom.event, this.modes = (0, n2.clone)(c), this.decPrivateModes = (0, n2.clone)(l);
-          }
-          reset() {
-            this.modes = (0, n2.clone)(c), this.decPrivateModes = (0, n2.clone)(l);
-          }
-          triggerDataEvent(e3, t3 = false) {
-            if (this._optionsService.rawOptions.disableStdin) return;
-            const s4 = this._bufferService.buffer;
-            t3 && this._optionsService.rawOptions.scrollOnUserInput && s4.ybase !== s4.ydisp && this._onRequestScrollToBottom.fire(), t3 && this._onUserInput.fire(), this._logService.debug(`sending data "${e3}"`), this._logService.trace("sending data (codes)", (() => e3.split("").map(((e4) => e4.charCodeAt(0))))), this._onData.fire(e3);
-          }
-          triggerBinaryEvent(e3) {
-            this._optionsService.rawOptions.disableStdin || (this._logService.debug(`sending binary "${e3}"`), this._logService.trace("sending binary (codes)", (() => e3.split("").map(((e4) => e4.charCodeAt(0))))), this._onBinary.fire(e3));
-          }
-        };
-        t2.CoreService = u, t2.CoreService = u = i2([r2(0, a.IBufferService), r2(1, a.ILogService), r2(2, a.IOptionsService)], u);
-      }, 6025: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.InstantiationService = t2.ServiceCollection = void 0;
-        const i2 = s3(6501), r2 = s3(6201);
-        class n2 {
-          constructor(...e3) {
-            this._entries = /* @__PURE__ */ new Map();
-            for (const [t3, s4] of e3) this.set(t3, s4);
-          }
-          set(e3, t3) {
-            const s4 = this._entries.get(e3);
-            return this._entries.set(e3, t3), s4;
-          }
-          forEach(e3) {
-            for (const [t3, s4] of this._entries.entries()) e3(t3, s4);
-          }
-          has(e3) {
-            return this._entries.has(e3);
-          }
-          get(e3) {
-            return this._entries.get(e3);
-          }
-        }
-        t2.ServiceCollection = n2, t2.InstantiationService = class {
-          constructor() {
-            this._services = new n2(), this._services.set(i2.IInstantiationService, this);
-          }
-          setService(e3, t3) {
-            this._services.set(e3, t3);
-          }
-          getService(e3) {
-            return this._services.get(e3);
-          }
-          createInstance(e3, ...t3) {
-            const s4 = (0, r2.getServiceDependencies)(e3).sort(((e4, t4) => e4.index - t4.index)), i3 = [];
-            for (const t4 of s4) {
-              const s5 = this._services.get(t4.id);
-              if (!s5) throw new Error(`[createInstance] ${e3.name} depends on UNKNOWN service ${t4.id._id}.`);
-              i3.push(s5);
-            }
-            const n3 = s4.length > 0 ? s4[0].index : t3.length;
-            if (t3.length !== n3) throw new Error(`[createInstance] First service dependency of ${e3.name} at position ${n3 + 1} conflicts with ${t3.length} static arguments`);
-            return new e3(...[...t3, ...i3]);
-          }
-        };
-      }, 7276: function(e2, t2, s3) {
-        var i2 = this && this.__decorate || function(e3, t3, s4, i3) {
-          var r3, n3 = arguments.length, o2 = n3 < 3 ? t3 : null === i3 ? i3 = Object.getOwnPropertyDescriptor(t3, s4) : i3;
-          if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) o2 = Reflect.decorate(e3, t3, s4, i3);
-          else for (var a2 = e3.length - 1; a2 >= 0; a2--) (r3 = e3[a2]) && (o2 = (n3 < 3 ? r3(o2) : n3 > 3 ? r3(t3, s4, o2) : r3(t3, s4)) || o2);
-          return n3 > 3 && o2 && Object.defineProperty(t3, s4, o2), o2;
-        }, r2 = this && this.__param || function(e3, t3) {
-          return function(s4, i3) {
-            t3(s4, i3, e3);
-          };
-        };
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.LogService = void 0, t2.setTraceLogger = function(e3) {
-          h = e3;
-        }, t2.traceCall = function(e3, t3, s4) {
-          if ("function" != typeof s4.value) throw new Error("not supported");
-          const i3 = s4.value;
-          s4.value = function(...e4) {
-            if (h.logLevel !== o.LogLevelEnum.TRACE) return i3.apply(this, e4);
-            h.trace(`GlyphRenderer#${i3.name}(${e4.map(((e5) => JSON.stringify(e5))).join(", ")})`);
-            const t4 = i3.apply(this, e4);
-            return h.trace(`GlyphRenderer#${i3.name} return`, t4), t4;
-          };
-        };
-        const n2 = s3(7150), o = s3(6501), a = { trace: o.LogLevelEnum.TRACE, debug: o.LogLevelEnum.DEBUG, info: o.LogLevelEnum.INFO, warn: o.LogLevelEnum.WARN, error: o.LogLevelEnum.ERROR, off: o.LogLevelEnum.OFF };
-        let h, c = class extends n2.Disposable {
-          get logLevel() {
-            return this._logLevel;
-          }
-          constructor(e3) {
-            super(), this._optionsService = e3, this._logLevel = o.LogLevelEnum.OFF, this._updateLogLevel(), this._register(this._optionsService.onSpecificOptionChange("logLevel", (() => this._updateLogLevel()))), h = this;
-          }
-          _updateLogLevel() {
-            this._logLevel = a[this._optionsService.rawOptions.logLevel];
-          }
-          _evalLazyOptionalParams(e3) {
-            for (let t3 = 0; t3 < e3.length; t3++) "function" == typeof e3[t3] && (e3[t3] = e3[t3]());
-          }
-          _log(e3, t3, s4) {
-            this._evalLazyOptionalParams(s4), e3.call(console, (this._optionsService.options.logger ? "" : "xterm.js: ") + t3, ...s4);
-          }
-          trace(e3, ...t3) {
-            this._logLevel <= o.LogLevelEnum.TRACE && this._log(this._optionsService.options.logger?.trace.bind(this._optionsService.options.logger) ?? console.log, e3, t3);
-          }
-          debug(e3, ...t3) {
-            this._logLevel <= o.LogLevelEnum.DEBUG && this._log(this._optionsService.options.logger?.debug.bind(this._optionsService.options.logger) ?? console.log, e3, t3);
-          }
-          info(e3, ...t3) {
-            this._logLevel <= o.LogLevelEnum.INFO && this._log(this._optionsService.options.logger?.info.bind(this._optionsService.options.logger) ?? console.info, e3, t3);
-          }
-          warn(e3, ...t3) {
-            this._logLevel <= o.LogLevelEnum.WARN && this._log(this._optionsService.options.logger?.warn.bind(this._optionsService.options.logger) ?? console.warn, e3, t3);
-          }
-          error(e3, ...t3) {
-            this._logLevel <= o.LogLevelEnum.ERROR && this._log(this._optionsService.options.logger?.error.bind(this._optionsService.options.logger) ?? console.error, e3, t3);
-          }
-        };
-        t2.LogService = c, t2.LogService = c = i2([r2(0, o.IOptionsService)], c);
-      }, 56: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.OptionsService = t2.DEFAULT_OPTIONS = void 0;
-        const i2 = s3(7150), r2 = s3(701), n2 = s3(802);
-        t2.DEFAULT_OPTIONS = { cols: 80, rows: 24, cursorBlink: false, cursorStyle: "block", cursorWidth: 1, cursorInactiveStyle: "outline", customGlyphs: true, drawBoldTextInBrightColors: true, documentOverride: null, fastScrollModifier: "alt", fastScrollSensitivity: 5, fontFamily: "monospace", fontSize: 15, fontWeight: "normal", fontWeightBold: "bold", ignoreBracketedPasteMode: false, lineHeight: 1, letterSpacing: 0, linkHandler: null, logLevel: "info", logger: null, scrollback: 1e3, scrollOnEraseInDisplay: false, scrollOnUserInput: true, scrollSensitivity: 1, screenReaderMode: false, smoothScrollDuration: 0, macOptionIsMeta: false, macOptionClickForcesSelection: false, minimumContrastRatio: 1, disableStdin: false, allowProposedApi: false, allowTransparency: false, tabStopWidth: 8, theme: {}, reflowCursorLine: false, rescaleOverlappingGlyphs: false, rightClickSelectsWord: r2.isMac, windowOptions: {}, windowsMode: false, windowsPty: {}, wordSeparator: " ()[]{}',\"`", altClickMovesCursor: true, convertEol: false, termName: "xterm", cancelEvents: false, overviewRuler: {} };
-        const o = ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"];
-        class a extends i2.Disposable {
-          constructor(e3) {
-            super(), this._onOptionChange = this._register(new n2.Emitter()), this.onOptionChange = this._onOptionChange.event;
-            const s4 = { ...t2.DEFAULT_OPTIONS };
-            for (const t3 in e3) if (t3 in s4) try {
-              const i3 = e3[t3];
-              s4[t3] = this._sanitizeAndValidateOption(t3, i3);
-            } catch (e4) {
-              console.error(e4);
-            }
-            this.rawOptions = s4, this.options = { ...s4 }, this._setupOptions(), this._register((0, i2.toDisposable)((() => {
-              this.rawOptions.linkHandler = null, this.rawOptions.documentOverride = null;
-            })));
-          }
-          onSpecificOptionChange(e3, t3) {
-            return this.onOptionChange(((s4) => {
-              s4 === e3 && t3(this.rawOptions[e3]);
-            }));
-          }
-          onMultipleOptionChange(e3, t3) {
-            return this.onOptionChange(((s4) => {
-              -1 !== e3.indexOf(s4) && t3();
-            }));
-          }
-          _setupOptions() {
-            const e3 = (e4) => {
-              if (!(e4 in t2.DEFAULT_OPTIONS)) throw new Error(`No option with key "${e4}"`);
-              return this.rawOptions[e4];
-            }, s4 = (e4, s5) => {
-              if (!(e4 in t2.DEFAULT_OPTIONS)) throw new Error(`No option with key "${e4}"`);
-              s5 = this._sanitizeAndValidateOption(e4, s5), this.rawOptions[e4] !== s5 && (this.rawOptions[e4] = s5, this._onOptionChange.fire(e4));
-            };
-            for (const t3 in this.rawOptions) {
-              const i3 = { get: e3.bind(this, t3), set: s4.bind(this, t3) };
-              Object.defineProperty(this.options, t3, i3);
-            }
-          }
-          _sanitizeAndValidateOption(e3, s4) {
-            switch (e3) {
-              case "cursorStyle":
-                if (s4 || (s4 = t2.DEFAULT_OPTIONS[e3]), !/* @__PURE__ */ (function(e4) {
-                  return "block" === e4 || "underline" === e4 || "bar" === e4;
-                })(s4)) throw new Error(`"${s4}" is not a valid value for ${e3}`);
-                break;
-              case "wordSeparator":
-                s4 || (s4 = t2.DEFAULT_OPTIONS[e3]);
-                break;
-              case "fontWeight":
-              case "fontWeightBold":
-                if ("number" == typeof s4 && 1 <= s4 && s4 <= 1e3) break;
-                s4 = o.includes(s4) ? s4 : t2.DEFAULT_OPTIONS[e3];
-                break;
-              case "cursorWidth":
-                s4 = Math.floor(s4);
-              case "lineHeight":
-              case "tabStopWidth":
-                if (s4 < 1) throw new Error(`${e3} cannot be less than 1, value: ${s4}`);
-                break;
-              case "minimumContrastRatio":
-                s4 = Math.max(1, Math.min(21, Math.round(10 * s4) / 10));
-                break;
-              case "scrollback":
-                if ((s4 = Math.min(s4, 4294967295)) < 0) throw new Error(`${e3} cannot be less than 0, value: ${s4}`);
-                break;
-              case "fastScrollSensitivity":
-              case "scrollSensitivity":
-                if (s4 <= 0) throw new Error(`${e3} cannot be less than or equal to 0, value: ${s4}`);
-                break;
-              case "rows":
-              case "cols":
-                if (!s4 && 0 !== s4) throw new Error(`${e3} must be numeric, value: ${s4}`);
-                break;
-              case "windowsPty":
-                s4 = s4 ?? {};
-            }
-            return s4;
-          }
-        }
-        t2.OptionsService = a;
-      }, 8811: function(e2, t2, s3) {
-        var i2 = this && this.__decorate || function(e3, t3, s4, i3) {
-          var r3, n3 = arguments.length, o2 = n3 < 3 ? t3 : null === i3 ? i3 = Object.getOwnPropertyDescriptor(t3, s4) : i3;
-          if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) o2 = Reflect.decorate(e3, t3, s4, i3);
-          else for (var a = e3.length - 1; a >= 0; a--) (r3 = e3[a]) && (o2 = (n3 < 3 ? r3(o2) : n3 > 3 ? r3(t3, s4, o2) : r3(t3, s4)) || o2);
-          return n3 > 3 && o2 && Object.defineProperty(t3, s4, o2), o2;
-        }, r2 = this && this.__param || function(e3, t3) {
-          return function(s4, i3) {
-            t3(s4, i3, e3);
-          };
-        };
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.OscLinkService = void 0;
-        const n2 = s3(6501);
-        let o = class {
-          constructor(e3) {
-            this._bufferService = e3, this._nextId = 1, this._entriesWithId = /* @__PURE__ */ new Map(), this._dataByLinkId = /* @__PURE__ */ new Map();
-          }
-          registerLink(e3) {
-            const t3 = this._bufferService.buffer;
-            if (void 0 === e3.id) {
-              const s5 = t3.addMarker(t3.ybase + t3.y), i4 = { data: e3, id: this._nextId++, lines: [s5] };
-              return s5.onDispose((() => this._removeMarkerFromLink(i4, s5))), this._dataByLinkId.set(i4.id, i4), i4.id;
-            }
-            const s4 = e3, i3 = this._getEntryIdKey(s4), r3 = this._entriesWithId.get(i3);
-            if (r3) return this.addLineToLink(r3.id, t3.ybase + t3.y), r3.id;
-            const n3 = t3.addMarker(t3.ybase + t3.y), o2 = { id: this._nextId++, key: this._getEntryIdKey(s4), data: s4, lines: [n3] };
-            return n3.onDispose((() => this._removeMarkerFromLink(o2, n3))), this._entriesWithId.set(o2.key, o2), this._dataByLinkId.set(o2.id, o2), o2.id;
-          }
-          addLineToLink(e3, t3) {
-            const s4 = this._dataByLinkId.get(e3);
-            if (s4 && s4.lines.every(((e4) => e4.line !== t3))) {
-              const e4 = this._bufferService.buffer.addMarker(t3);
-              s4.lines.push(e4), e4.onDispose((() => this._removeMarkerFromLink(s4, e4)));
-            }
-          }
-          getLinkData(e3) {
-            return this._dataByLinkId.get(e3)?.data;
-          }
-          _getEntryIdKey(e3) {
-            return `${e3.id};;${e3.uri}`;
-          }
-          _removeMarkerFromLink(e3, t3) {
-            const s4 = e3.lines.indexOf(t3);
-            -1 !== s4 && (e3.lines.splice(s4, 1), 0 === e3.lines.length && (void 0 !== e3.data.id && this._entriesWithId.delete(e3.key), this._dataByLinkId.delete(e3.id)));
-          }
-        };
-        t2.OscLinkService = o, t2.OscLinkService = o = i2([r2(0, n2.IBufferService)], o);
-      }, 6201: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.serviceRegistry = void 0, t2.getServiceDependencies = function(e3) {
-          return e3[i2] || [];
-        }, t2.createDecorator = function(e3) {
-          if (t2.serviceRegistry.has(e3)) return t2.serviceRegistry.get(e3);
-          const r2 = function(e4, t3, n2) {
-            if (3 !== arguments.length) throw new Error("@IServiceName-decorator can only be used to decorate a parameter");
-            !(function(e5, t4, r3) {
-              t4[s3] === t4 ? t4[i2].push({ id: e5, index: r3 }) : (t4[i2] = [{ id: e5, index: r3 }], t4[s3] = t4);
-            })(r2, e4, n2);
-          };
-          return r2._id = e3, t2.serviceRegistry.set(e3, r2), r2;
-        };
-        const s3 = "di$target", i2 = "di$dependencies";
-        t2.serviceRegistry = /* @__PURE__ */ new Map();
-      }, 6501: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.IDecorationService = t2.IUnicodeService = t2.IOscLinkService = t2.IOptionsService = t2.ILogService = t2.LogLevelEnum = t2.IInstantiationService = t2.ICharsetService = t2.ICoreService = t2.ICoreMouseService = t2.IBufferService = void 0;
-        const i2 = s3(6201);
-        var r2;
-        t2.IBufferService = (0, i2.createDecorator)("BufferService"), t2.ICoreMouseService = (0, i2.createDecorator)("CoreMouseService"), t2.ICoreService = (0, i2.createDecorator)("CoreService"), t2.ICharsetService = (0, i2.createDecorator)("CharsetService"), t2.IInstantiationService = (0, i2.createDecorator)("InstantiationService"), (function(e3) {
-          e3[e3.TRACE = 0] = "TRACE", e3[e3.DEBUG = 1] = "DEBUG", e3[e3.INFO = 2] = "INFO", e3[e3.WARN = 3] = "WARN", e3[e3.ERROR = 4] = "ERROR", e3[e3.OFF = 5] = "OFF";
-        })(r2 || (t2.LogLevelEnum = r2 = {})), t2.ILogService = (0, i2.createDecorator)("LogService"), t2.IOptionsService = (0, i2.createDecorator)("OptionsService"), t2.IOscLinkService = (0, i2.createDecorator)("OscLinkService"), t2.IUnicodeService = (0, i2.createDecorator)("UnicodeService"), t2.IDecorationService = (0, i2.createDecorator)("DecorationService");
-      }, 6415: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.UnicodeService = void 0;
-        const i2 = s3(7428), r2 = s3(802);
-        class n2 {
-          static extractShouldJoin(e3) {
-            return !!(1 & e3);
-          }
-          static extractWidth(e3) {
-            return e3 >> 1 & 3;
-          }
-          static extractCharKind(e3) {
-            return e3 >> 3;
-          }
-          static createPropertyValue(e3, t3, s4 = false) {
-            return (16777215 & e3) << 3 | (3 & t3) << 1 | (s4 ? 1 : 0);
-          }
-          constructor() {
-            this._providers = /* @__PURE__ */ Object.create(null), this._active = "", this._onChange = new r2.Emitter(), this.onChange = this._onChange.event;
-            const e3 = new i2.UnicodeV6();
-            this.register(e3), this._active = e3.version, this._activeProvider = e3;
-          }
-          dispose() {
-            this._onChange.dispose();
-          }
-          get versions() {
-            return Object.keys(this._providers);
-          }
-          get activeVersion() {
-            return this._active;
-          }
-          set activeVersion(e3) {
-            if (!this._providers[e3]) throw new Error(`unknown Unicode version "${e3}"`);
-            this._active = e3, this._activeProvider = this._providers[e3], this._onChange.fire(e3);
-          }
-          register(e3) {
-            this._providers[e3.version] = e3;
-          }
-          wcwidth(e3) {
-            return this._activeProvider.wcwidth(e3);
-          }
-          getStringCellWidth(e3) {
-            let t3 = 0, s4 = 0;
-            const i3 = e3.length;
-            for (let r3 = 0; r3 < i3; ++r3) {
-              let o = e3.charCodeAt(r3);
-              if (55296 <= o && o <= 56319) {
-                if (++r3 >= i3) return t3 + this.wcwidth(o);
-                const s5 = e3.charCodeAt(r3);
-                56320 <= s5 && s5 <= 57343 ? o = 1024 * (o - 55296) + s5 - 56320 + 65536 : t3 += this.wcwidth(s5);
-              }
-              const a = this.charProperties(o, s4);
-              let h = n2.extractWidth(a);
-              n2.extractShouldJoin(a) && (h -= n2.extractWidth(s4)), t3 += h, s4 = a;
-            }
-            return t3;
-          }
-          charProperties(e3, t3) {
-            return this._activeProvider.charProperties(e3, t3);
-          }
-        }
-        t2.UnicodeService = n2;
-      }, 5856: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.Terminal = void 0;
-        const i2 = s3(6107), r2 = s3(5777), n2 = s3(802);
-        class o extends r2.CoreTerminal {
-          constructor(e3 = {}) {
-            super(e3), this._onBell = this._register(new n2.Emitter()), this.onBell = this._onBell.event, this._onCursorMove = this._register(new n2.Emitter()), this.onCursorMove = this._onCursorMove.event, this._onTitleChange = this._register(new n2.Emitter()), this.onTitleChange = this._onTitleChange.event, this._onA11yCharEmitter = this._register(new n2.Emitter()), this.onA11yChar = this._onA11yCharEmitter.event, this._onA11yTabEmitter = this._register(new n2.Emitter()), this.onA11yTab = this._onA11yTabEmitter.event, this._setup(), this._register(this._inputHandler.onRequestBell((() => this.bell()))), this._register(this._inputHandler.onRequestReset((() => this.reset()))), this._register(n2.Event.forward(this._inputHandler.onCursorMove, this._onCursorMove)), this._register(n2.Event.forward(this._inputHandler.onTitleChange, this._onTitleChange)), this._register(n2.Event.forward(this._inputHandler.onA11yChar, this._onA11yCharEmitter)), this._register(n2.Event.forward(this._inputHandler.onA11yTab, this._onA11yTabEmitter));
-          }
-          get buffer() {
-            return this.buffers.active;
-          }
-          get markers() {
-            return this.buffer.markers;
-          }
-          addMarker(e3) {
-            if (this.buffer === this.buffers.normal) return this.buffer.addMarker(this.buffer.ybase + this.buffer.y + e3);
-          }
-          bell() {
-            this._onBell.fire();
-          }
-          input(e3, t3 = true) {
-            this.coreService.triggerDataEvent(e3, t3);
-          }
-          resize(e3, t3) {
-            e3 === this.cols && t3 === this.rows || super.resize(e3, t3);
-          }
-          clear() {
-            if (0 !== this.buffer.ybase || 0 !== this.buffer.y) {
-              this.buffer.lines.set(0, this.buffer.lines.get(this.buffer.ybase + this.buffer.y)), this.buffer.lines.length = 1, this.buffer.ydisp = 0, this.buffer.ybase = 0, this.buffer.y = 0;
-              for (let e3 = 1; e3 < this.rows; e3++) this.buffer.lines.push(this.buffer.getBlankLine(i2.DEFAULT_ATTR_DATA));
-              this._onScroll.fire({ position: this.buffer.ydisp });
-            }
-          }
-          reset() {
-            this.options.rows = this.rows, this.options.cols = this.cols, this._setup(), super.reset();
-          }
-        }
-        t2.Terminal = o;
-      }, 3058: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.Permutation = t2.CallbackIterable = t2.ArrayQueue = t2.booleanComparator = t2.numberComparator = t2.CompareResult = void 0, t2.tail = function(e3, t3 = 0) {
-          return e3[e3.length - (1 + t3)];
-        }, t2.tail2 = function(e3) {
-          if (0 === e3.length) throw new Error("Invalid tail call");
-          return [e3.slice(0, e3.length - 1), e3[e3.length - 1]];
-        }, t2.equals = function(e3, t3, s4 = (e4, t4) => e4 === t4) {
-          if (e3 === t3) return true;
-          if (!e3 || !t3) return false;
-          if (e3.length !== t3.length) return false;
-          for (let i3 = 0, r3 = e3.length; i3 < r3; i3++) if (!s4(e3[i3], t3[i3])) return false;
-          return true;
-        }, t2.removeFastWithoutKeepingOrder = function(e3, t3) {
-          const s4 = e3.length - 1;
-          t3 < s4 && (e3[t3] = e3[s4]), e3.pop();
-        }, t2.binarySearch = function(e3, t3, s4) {
-          return n2(e3.length, ((i3) => s4(e3[i3], t3)));
-        }, t2.binarySearch2 = n2, t2.quickSelect = function e3(t3, s4, i3) {
-          if ((t3 |= 0) >= s4.length) throw new TypeError("invalid index");
-          const r3 = s4[Math.floor(s4.length * Math.random())], n3 = [], o2 = [], a2 = [];
-          for (const e4 of s4) {
-            const t4 = i3(e4, r3);
-            t4 < 0 ? n3.push(e4) : t4 > 0 ? o2.push(e4) : a2.push(e4);
-          }
-          return t3 < n3.length ? e3(t3, n3, i3) : t3 < n3.length + a2.length ? a2[0] : e3(t3 - (n3.length + a2.length), o2, i3);
-        }, t2.groupBy = function(e3, t3) {
-          const s4 = [];
-          let i3;
-          for (const r3 of e3.slice(0).sort(t3)) i3 && 0 === t3(i3[0], r3) ? i3.push(r3) : (i3 = [r3], s4.push(i3));
-          return s4;
-        }, t2.groupAdjacentBy = function* (e3, t3) {
-          let s4, i3;
-          for (const r3 of e3) void 0 !== i3 && t3(i3, r3) ? s4.push(r3) : (s4 && (yield s4), s4 = [r3]), i3 = r3;
-          s4 && (yield s4);
-        }, t2.forEachAdjacent = function(e3, t3) {
-          for (let s4 = 0; s4 <= e3.length; s4++) t3(0 === s4 ? void 0 : e3[s4 - 1], s4 === e3.length ? void 0 : e3[s4]);
-        }, t2.forEachWithNeighbors = function(e3, t3) {
-          for (let s4 = 0; s4 < e3.length; s4++) t3(0 === s4 ? void 0 : e3[s4 - 1], e3[s4], s4 + 1 === e3.length ? void 0 : e3[s4 + 1]);
-        }, t2.sortedDiff = o, t2.delta = function(e3, t3, s4) {
-          const i3 = o(e3, t3, s4), r3 = [], n3 = [];
-          for (const t4 of i3) r3.push(...e3.slice(t4.start, t4.start + t4.deleteCount)), n3.push(...t4.toInsert);
-          return { removed: r3, added: n3 };
-        }, t2.top = function(e3, t3, s4) {
-          if (0 === s4) return [];
-          const i3 = e3.slice(0, s4).sort(t3);
-          return a(e3, t3, i3, s4, e3.length), i3;
-        }, t2.topAsync = function(e3, t3, s4, r3, n3) {
-          return 0 === s4 ? Promise.resolve([]) : new Promise(((o2, h2) => {
-            (async () => {
-              const o3 = e3.length, h3 = e3.slice(0, s4).sort(t3);
-              for (let c2 = s4, l2 = Math.min(s4 + r3, o3); c2 < o3; c2 = l2, l2 = Math.min(l2 + r3, o3)) {
-                if (c2 > s4 && await new Promise(((e4) => setTimeout(e4))), n3 && n3.isCancellationRequested) throw new i2.CancellationError();
-                a(e3, t3, h3, c2, l2);
-              }
-              return h3;
-            })().then(o2, h2);
-          }));
-        }, t2.coalesce = function(e3) {
-          return e3.filter(((e4) => !!e4));
-        }, t2.coalesceInPlace = function(e3) {
-          let t3 = 0;
-          for (let s4 = 0; s4 < e3.length; s4++) e3[s4] && (e3[t3] = e3[s4], t3 += 1);
-          e3.length = t3;
-        }, t2.move = function(e3, t3, s4) {
-          e3.splice(s4, 0, e3.splice(t3, 1)[0]);
-        }, t2.isFalsyOrEmpty = function(e3) {
-          return !Array.isArray(e3) || 0 === e3.length;
-        }, t2.isNonEmptyArray = function(e3) {
-          return Array.isArray(e3) && e3.length > 0;
-        }, t2.distinct = function(e3, t3 = (e4) => e4) {
-          const s4 = /* @__PURE__ */ new Set();
-          return e3.filter(((e4) => {
-            const i3 = t3(e4);
-            return !s4.has(i3) && (s4.add(i3), true);
-          }));
-        }, t2.uniqueFilter = function(e3) {
-          const t3 = /* @__PURE__ */ new Set();
-          return (s4) => {
-            const i3 = e3(s4);
-            return !t3.has(i3) && (t3.add(i3), true);
-          };
-        }, t2.firstOrDefault = function(e3, t3) {
-          return e3.length > 0 ? e3[0] : t3;
-        }, t2.lastOrDefault = function(e3, t3) {
-          return e3.length > 0 ? e3[e3.length - 1] : t3;
-        }, t2.commonPrefixLength = function(e3, t3, s4 = (e4, t4) => e4 === t4) {
-          let i3 = 0;
-          for (let r3 = 0, n3 = Math.min(e3.length, t3.length); r3 < n3 && s4(e3[r3], t3[r3]); r3++) i3++;
-          return i3;
-        }, t2.range = function(e3, t3) {
-          let s4 = "number" == typeof t3 ? e3 : 0;
-          "number" == typeof t3 ? s4 = e3 : (s4 = 0, t3 = e3);
-          const i3 = [];
-          if (s4 <= t3) for (let e4 = s4; e4 < t3; e4++) i3.push(e4);
-          else for (let e4 = s4; e4 > t3; e4--) i3.push(e4);
-          return i3;
-        }, t2.index = function(e3, t3, s4) {
-          return e3.reduce(((e4, i3) => (e4[t3(i3)] = s4 ? s4(i3) : i3, e4)), /* @__PURE__ */ Object.create(null));
-        }, t2.insert = function(e3, t3) {
-          return e3.push(t3), () => h(e3, t3);
-        }, t2.remove = h, t2.arrayInsert = function(e3, t3, s4) {
-          const i3 = e3.slice(0, t3), r3 = e3.slice(t3);
-          return i3.concat(s4, r3);
-        }, t2.shuffle = function(e3, t3) {
-          let s4;
-          if ("number" == typeof t3) {
-            let e4 = t3;
-            s4 = () => {
-              const t4 = 179426549 * Math.sin(e4++);
-              return t4 - Math.floor(t4);
-            };
-          } else s4 = Math.random;
-          for (let t4 = e3.length - 1; t4 > 0; t4 -= 1) {
-            const i3 = Math.floor(s4() * (t4 + 1)), r3 = e3[t4];
-            e3[t4] = e3[i3], e3[i3] = r3;
-          }
-        }, t2.pushToStart = function(e3, t3) {
-          const s4 = e3.indexOf(t3);
-          s4 > -1 && (e3.splice(s4, 1), e3.unshift(t3));
-        }, t2.pushToEnd = function(e3, t3) {
-          const s4 = e3.indexOf(t3);
-          s4 > -1 && (e3.splice(s4, 1), e3.push(t3));
-        }, t2.pushMany = function(e3, t3) {
-          for (const s4 of t3) e3.push(s4);
-        }, t2.mapArrayOrNot = function(e3, t3) {
-          return Array.isArray(e3) ? e3.map(t3) : t3(e3);
-        }, t2.asArray = function(e3) {
-          return Array.isArray(e3) ? e3 : [e3];
-        }, t2.getRandomElement = function(e3) {
-          return e3[Math.floor(Math.random() * e3.length)];
-        }, t2.insertInto = c, t2.splice = function(e3, t3, s4, i3) {
-          const r3 = l(e3, t3);
-          let n3 = e3.splice(r3, s4);
-          return void 0 === n3 && (n3 = []), c(e3, r3, i3), n3;
-        }, t2.compareBy = function(e3, t3) {
-          return (s4, i3) => t3(e3(s4), e3(i3));
-        }, t2.tieBreakComparators = function(...e3) {
-          return (t3, s4) => {
-            for (const i3 of e3) {
-              const e4 = i3(t3, s4);
-              if (!u.isNeitherLessOrGreaterThan(e4)) return e4;
-            }
-            return u.neitherLessOrGreaterThan;
-          };
-        }, t2.reverseOrder = function(e3) {
-          return (t3, s4) => -e3(t3, s4);
-        };
-        const i2 = s3(9807), r2 = s3(8297);
-        function n2(e3, t3) {
-          let s4 = 0, i3 = e3 - 1;
-          for (; s4 <= i3; ) {
-            const e4 = (s4 + i3) / 2 | 0, r3 = t3(e4);
-            if (r3 < 0) s4 = e4 + 1;
-            else {
-              if (!(r3 > 0)) return e4;
-              i3 = e4 - 1;
-            }
-          }
-          return -(s4 + 1);
-        }
-        function o(e3, t3, s4) {
-          const i3 = [];
-          function r3(e4, t4, s5) {
-            if (0 === t4 && 0 === s5.length) return;
-            const r4 = i3[i3.length - 1];
-            r4 && r4.start + r4.deleteCount === e4 ? (r4.deleteCount += t4, r4.toInsert.push(...s5)) : i3.push({ start: e4, deleteCount: t4, toInsert: s5 });
-          }
-          let n3 = 0, o2 = 0;
-          for (; ; ) {
-            if (n3 === e3.length) {
-              r3(n3, 0, t3.slice(o2));
-              break;
-            }
-            if (o2 === t3.length) {
-              r3(n3, e3.length - n3, []);
-              break;
-            }
-            const i4 = e3[n3], a2 = t3[o2], h2 = s4(i4, a2);
-            0 === h2 ? (n3 += 1, o2 += 1) : h2 < 0 ? (r3(n3, 1, []), n3 += 1) : h2 > 0 && (r3(n3, 0, [a2]), o2 += 1);
-          }
-          return i3;
-        }
-        function a(e3, t3, s4, i3, n3) {
-          for (const o2 = s4.length; i3 < n3; i3++) {
-            const n4 = e3[i3];
-            if (t3(n4, s4[o2 - 1]) < 0) {
-              s4.pop();
-              const e4 = (0, r2.findFirstIdxMonotonousOrArrLen)(s4, ((e5) => t3(n4, e5) < 0));
-              s4.splice(e4, 0, n4);
-            }
-          }
-        }
-        function h(e3, t3) {
-          const s4 = e3.indexOf(t3);
-          if (s4 > -1) return e3.splice(s4, 1), t3;
-        }
-        function c(e3, t3, s4) {
-          const i3 = l(e3, t3), r3 = e3.length, n3 = s4.length;
-          e3.length = r3 + n3;
-          for (let t4 = r3 - 1; t4 >= i3; t4--) e3[t4 + n3] = e3[t4];
-          for (let t4 = 0; t4 < n3; t4++) e3[t4 + i3] = s4[t4];
-        }
-        function l(e3, t3) {
-          return t3 < 0 ? Math.max(t3 + e3.length, 0) : Math.min(t3, e3.length);
-        }
-        var u;
-        !(function(e3) {
-          e3.isLessThan = function(e4) {
-            return e4 < 0;
-          }, e3.isLessThanOrEqual = function(e4) {
-            return e4 <= 0;
-          }, e3.isGreaterThan = function(e4) {
-            return e4 > 0;
-          }, e3.isNeitherLessOrGreaterThan = function(e4) {
-            return 0 === e4;
-          }, e3.greaterThan = 1, e3.lessThan = -1, e3.neitherLessOrGreaterThan = 0;
-        })(u || (t2.CompareResult = u = {})), t2.numberComparator = (e3, t3) => e3 - t3, t2.booleanComparator = (e3, s4) => (0, t2.numberComparator)(e3 ? 1 : 0, s4 ? 1 : 0), t2.ArrayQueue = class {
-          constructor(e3) {
-            this.items = e3, this.firstIdx = 0, this.lastIdx = this.items.length - 1;
-          }
-          get length() {
-            return this.lastIdx - this.firstIdx + 1;
-          }
-          takeWhile(e3) {
-            let t3 = this.firstIdx;
-            for (; t3 < this.items.length && e3(this.items[t3]); ) t3++;
-            const s4 = t3 === this.firstIdx ? null : this.items.slice(this.firstIdx, t3);
-            return this.firstIdx = t3, s4;
-          }
-          takeFromEndWhile(e3) {
-            let t3 = this.lastIdx;
-            for (; t3 >= 0 && e3(this.items[t3]); ) t3--;
-            const s4 = t3 === this.lastIdx ? null : this.items.slice(t3 + 1, this.lastIdx + 1);
-            return this.lastIdx = t3, s4;
-          }
-          peek() {
-            if (0 !== this.length) return this.items[this.firstIdx];
-          }
-          peekLast() {
-            if (0 !== this.length) return this.items[this.lastIdx];
-          }
-          dequeue() {
-            const e3 = this.items[this.firstIdx];
-            return this.firstIdx++, e3;
-          }
-          removeLast() {
-            const e3 = this.items[this.lastIdx];
-            return this.lastIdx--, e3;
-          }
-          takeCount(e3) {
-            const t3 = this.items.slice(this.firstIdx, this.firstIdx + e3);
-            return this.firstIdx += e3, t3;
-          }
-        };
-        class d {
-          static {
-            this.empty = new d(((e3) => {
-            }));
-          }
-          constructor(e3) {
-            this.iterate = e3;
-          }
-          forEach(e3) {
-            this.iterate(((t3) => (e3(t3), true)));
-          }
-          toArray() {
-            const e3 = [];
-            return this.iterate(((t3) => (e3.push(t3), true))), e3;
-          }
-          filter(e3) {
-            return new d(((t3) => this.iterate(((s4) => !e3(s4) || t3(s4)))));
-          }
-          map(e3) {
-            return new d(((t3) => this.iterate(((s4) => t3(e3(s4))))));
-          }
-          some(e3) {
-            let t3 = false;
-            return this.iterate(((s4) => (t3 = e3(s4), !t3))), t3;
-          }
-          findFirst(e3) {
-            let t3;
-            return this.iterate(((s4) => !e3(s4) || (t3 = s4, false))), t3;
-          }
-          findLast(e3) {
-            let t3;
-            return this.iterate(((s4) => (e3(s4) && (t3 = s4), true))), t3;
-          }
-          findLastMaxBy(e3) {
-            let t3, s4 = true;
-            return this.iterate(((i3) => ((s4 || u.isGreaterThan(e3(i3, t3))) && (s4 = false, t3 = i3), true))), t3;
-          }
-        }
-        t2.CallbackIterable = d;
-        class f {
-          constructor(e3) {
-            this._indexMap = e3;
-          }
-          static createSortPermutation(e3, t3) {
-            const s4 = Array.from(e3.keys()).sort(((s5, i3) => t3(e3[s5], e3[i3])));
-            return new f(s4);
-          }
-          apply(e3) {
-            return e3.map(((t3, s4) => e3[this._indexMap[s4]]));
-          }
-          inverse() {
-            const e3 = this._indexMap.slice();
-            for (let t3 = 0; t3 < this._indexMap.length; t3++) e3[this._indexMap[t3]] = t3;
-            return new f(e3);
-          }
-        }
-        t2.Permutation = f;
-      }, 8297: (e2, t2) => {
-        function s3(e3, t3, s4 = e3.length - 1) {
-          for (let i3 = s4; i3 >= 0; i3--) if (t3(e3[i3])) return i3;
-          return -1;
-        }
-        function i2(e3, t3, s4 = 0, i3 = e3.length) {
-          let r3 = s4, n3 = i3;
-          for (; r3 < n3; ) {
-            const s5 = Math.floor((r3 + n3) / 2);
-            t3(e3[s5]) ? r3 = s5 + 1 : n3 = s5;
-          }
-          return r3 - 1;
-        }
-        function r2(e3, t3, s4 = 0, i3 = e3.length) {
-          let r3 = s4, n3 = i3;
-          for (; r3 < n3; ) {
-            const s5 = Math.floor((r3 + n3) / 2);
-            t3(e3[s5]) ? n3 = s5 : r3 = s5 + 1;
-          }
-          return r3;
-        }
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.MonotonousArray = void 0, t2.findLast = function(e3, t3) {
-          const i3 = s3(e3, t3);
-          if (-1 !== i3) return e3[i3];
-        }, t2.findLastIdx = s3, t2.findLastMonotonous = function(e3, t3) {
-          const s4 = i2(e3, t3);
-          return -1 === s4 ? void 0 : e3[s4];
-        }, t2.findLastIdxMonotonous = i2, t2.findFirstMonotonous = function(e3, t3) {
-          const s4 = r2(e3, t3);
-          return s4 === e3.length ? void 0 : e3[s4];
-        }, t2.findFirstIdxMonotonousOrArrLen = r2, t2.findFirstIdxMonotonous = function(e3, t3, s4 = 0, i3 = e3.length) {
-          const n3 = r2(e3, t3, s4, i3);
-          return n3 === e3.length ? -1 : n3;
-        }, t2.findFirstMax = o, t2.findLastMax = function(e3, t3) {
-          if (0 === e3.length) return;
-          let s4 = e3[0];
-          for (let i3 = 1; i3 < e3.length; i3++) {
-            const r3 = e3[i3];
-            t3(r3, s4) >= 0 && (s4 = r3);
-          }
-          return s4;
-        }, t2.findFirstMin = function(e3, t3) {
-          return o(e3, ((e4, s4) => -t3(e4, s4)));
-        }, t2.findMaxIdx = function(e3, t3) {
-          if (0 === e3.length) return -1;
-          let s4 = 0;
-          for (let i3 = 1; i3 < e3.length; i3++) t3(e3[i3], e3[s4]) > 0 && (s4 = i3);
-          return s4;
-        }, t2.mapFindFirst = function(e3, t3) {
-          for (const s4 of e3) {
-            const e4 = t3(s4);
-            if (void 0 !== e4) return e4;
-          }
-        };
-        class n2 {
-          static {
-            this.assertInvariants = false;
-          }
-          constructor(e3) {
-            this._array = e3, this._findLastMonotonousLastIdx = 0;
-          }
-          findLastMonotonous(e3) {
-            if (n2.assertInvariants) {
-              if (this._prevFindLastPredicate) {
-                for (const t4 of this._array) if (this._prevFindLastPredicate(t4) && !e3(t4)) throw new Error("MonotonousArray: current predicate must be weaker than (or equal to) the previous predicate.");
-              }
-              this._prevFindLastPredicate = e3;
-            }
-            const t3 = i2(this._array, e3, this._findLastMonotonousLastIdx);
-            return this._findLastMonotonousLastIdx = t3 + 1, -1 === t3 ? void 0 : this._array[t3];
-          }
-        }
-        function o(e3, t3) {
-          if (0 === e3.length) return;
-          let s4 = e3[0];
-          for (let i3 = 1; i3 < e3.length; i3++) {
-            const r3 = e3[i3];
-            t3(r3, s4) > 0 && (s4 = r3);
-          }
-          return s4;
-        }
-        t2.MonotonousArray = n2;
-      }, 9087: (e2, t2) => {
-        var s3;
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.SetWithKey = void 0, t2.groupBy = function(e3, t3) {
-          const s4 = /* @__PURE__ */ Object.create(null);
-          for (const i3 of e3) {
-            const e4 = t3(i3);
-            let r2 = s4[e4];
-            r2 || (r2 = s4[e4] = []), r2.push(i3);
-          }
-          return s4;
-        }, t2.diffSets = function(e3, t3) {
-          const s4 = [], i3 = [];
-          for (const i4 of e3) t3.has(i4) || s4.push(i4);
-          for (const s5 of t3) e3.has(s5) || i3.push(s5);
-          return { removed: s4, added: i3 };
-        }, t2.diffMaps = function(e3, t3) {
-          const s4 = [], i3 = [];
-          for (const [i4, r2] of e3) t3.has(i4) || s4.push(r2);
-          for (const [s5, r2] of t3) e3.has(s5) || i3.push(r2);
-          return { removed: s4, added: i3 };
-        }, t2.intersection = function(e3, t3) {
-          const s4 = /* @__PURE__ */ new Set();
-          for (const i3 of t3) e3.has(i3) && s4.add(i3);
-          return s4;
-        };
-        class i2 {
-          static {
-            s3 = Symbol.toStringTag;
-          }
-          constructor(e3, t3) {
-            this.toKey = t3, this._map = /* @__PURE__ */ new Map(), this[s3] = "SetWithKey";
-            for (const t4 of e3) this.add(t4);
-          }
-          get size() {
-            return this._map.size;
-          }
-          add(e3) {
-            const t3 = this.toKey(e3);
-            return this._map.set(t3, e3), this;
-          }
-          delete(e3) {
-            return this._map.delete(this.toKey(e3));
-          }
-          has(e3) {
-            return this._map.has(this.toKey(e3));
-          }
-          *entries() {
-            for (const e3 of this._map.values()) yield [e3, e3];
-          }
-          keys() {
-            return this.values();
-          }
-          *values() {
-            for (const e3 of this._map.values()) yield e3;
-          }
-          clear() {
-            this._map.clear();
-          }
-          forEach(e3, t3) {
-            this._map.forEach(((s4) => e3.call(t3, s4, s4, this)));
-          }
-          [Symbol.iterator]() {
-            return this.values();
-          }
-        }
-        t2.SetWithKey = i2;
-      }, 9807: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.BugIndicatingError = t2.ErrorNoTelemetry = t2.ExpectedError = t2.NotSupportedError = t2.NotImplementedError = t2.ReadonlyError = t2.CancellationError = t2.errorHandler = t2.ErrorHandler = void 0, t2.setUnexpectedErrorHandler = function(e3) {
-          t2.errorHandler.setUnexpectedErrorHandler(e3);
-        }, t2.isSigPipeError = function(e3) {
-          if (!e3 || "object" != typeof e3) return false;
-          const t3 = e3;
-          return "EPIPE" === t3.code && "WRITE" === t3.syscall?.toUpperCase();
-        }, t2.onUnexpectedError = function(e3) {
-          r2(e3) || t2.errorHandler.onUnexpectedError(e3);
-        }, t2.onUnexpectedExternalError = function(e3) {
-          r2(e3) || t2.errorHandler.onUnexpectedExternalError(e3);
-        }, t2.transformErrorForSerialization = function(e3) {
-          if (e3 instanceof Error) {
-            const { name: t3, message: s4 } = e3;
-            return { $isError: true, name: t3, message: s4, stack: e3.stacktrace || e3.stack, noTelemetry: l.isErrorNoTelemetry(e3) };
-          }
-          return e3;
-        }, t2.transformErrorFromSerialization = function(e3) {
-          let t3;
-          return e3.noTelemetry ? t3 = new l() : (t3 = new Error(), t3.name = e3.name), t3.message = e3.message, t3.stack = e3.stack, t3;
-        }, t2.isCancellationError = r2, t2.canceled = function() {
-          const e3 = new Error(i2);
-          return e3.name = e3.message, e3;
-        }, t2.illegalArgument = function(e3) {
-          return e3 ? new Error(`Illegal argument: ${e3}`) : new Error("Illegal argument");
-        }, t2.illegalState = function(e3) {
-          return e3 ? new Error(`Illegal state: ${e3}`) : new Error("Illegal state");
-        }, t2.getErrorMessage = function(e3) {
-          return e3 ? e3.message ? e3.message : e3.stack ? e3.stack.split("\n")[0] : String(e3) : "Error";
-        };
-        class s3 {
-          constructor() {
-            this.listeners = [], this.unexpectedErrorHandler = function(e3) {
-              setTimeout((() => {
-                if (e3.stack) {
-                  if (l.isErrorNoTelemetry(e3)) throw new l(e3.message + "\n\n" + e3.stack);
-                  throw new Error(e3.message + "\n\n" + e3.stack);
-                }
-                throw e3;
-              }), 0);
-            };
-          }
-          addListener(e3) {
-            return this.listeners.push(e3), () => {
-              this._removeListener(e3);
-            };
-          }
-          emit(e3) {
-            this.listeners.forEach(((t3) => {
-              t3(e3);
-            }));
-          }
-          _removeListener(e3) {
-            this.listeners.splice(this.listeners.indexOf(e3), 1);
-          }
-          setUnexpectedErrorHandler(e3) {
-            this.unexpectedErrorHandler = e3;
-          }
-          getUnexpectedErrorHandler() {
-            return this.unexpectedErrorHandler;
-          }
-          onUnexpectedError(e3) {
-            this.unexpectedErrorHandler(e3), this.emit(e3);
-          }
-          onUnexpectedExternalError(e3) {
-            this.unexpectedErrorHandler(e3);
-          }
-        }
-        t2.ErrorHandler = s3, t2.errorHandler = new s3();
-        const i2 = "Canceled";
-        function r2(e3) {
-          return e3 instanceof n2 || e3 instanceof Error && e3.name === i2 && e3.message === i2;
-        }
-        class n2 extends Error {
-          constructor() {
-            super(i2), this.name = this.message;
-          }
-        }
-        t2.CancellationError = n2;
-        class o extends TypeError {
-          constructor(e3) {
-            super(e3 ? `${e3} is read-only and cannot be changed` : "Cannot change read-only property");
-          }
-        }
-        t2.ReadonlyError = o;
-        class a extends Error {
-          constructor(e3) {
-            super("NotImplemented"), e3 && (this.message = e3);
-          }
-        }
-        t2.NotImplementedError = a;
-        class h extends Error {
-          constructor(e3) {
-            super("NotSupported"), e3 && (this.message = e3);
-          }
-        }
-        t2.NotSupportedError = h;
-        class c extends Error {
-          constructor() {
-            super(...arguments), this.isExpected = true;
-          }
-        }
-        t2.ExpectedError = c;
-        class l extends Error {
-          constructor(e3) {
-            super(e3), this.name = "CodeExpectedError";
-          }
-          static fromError(e3) {
-            if (e3 instanceof l) return e3;
-            const t3 = new l();
-            return t3.message = e3.message, t3.stack = e3.stack, t3;
-          }
-          static isErrorNoTelemetry(e3) {
-            return "CodeExpectedError" === e3.name;
-          }
-        }
-        t2.ErrorNoTelemetry = l;
-        class u extends Error {
-          constructor(e3) {
-            super(e3 || "An unexpected bug occurred."), Object.setPrototypeOf(this, u.prototype);
-          }
-        }
-        t2.BugIndicatingError = u;
-      }, 802: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.ValueWithChangeEvent = t2.Relay = t2.EventBufferer = t2.DynamicListEventMultiplexer = t2.EventMultiplexer = t2.MicrotaskEmitter = t2.DebounceEmitter = t2.PauseableEmitter = t2.AsyncEmitter = t2.createEventDeliveryQueue = t2.Emitter = t2.ListenerRefusalError = t2.ListenerLeakError = t2.EventProfiling = t2.Event = void 0, t2.setGlobalLeakWarningThreshold = function(e3) {
-          const t3 = l;
-          return l = e3, { dispose() {
-            l = t3;
-          } };
-        };
-        const i2 = s3(9807), r2 = s3(8841), n2 = s3(7150), o = s3(6317), a = s3(9725);
-        var h;
-        !(function(e3) {
-          function t3(e4) {
-            return (t4, s5 = null, i4) => {
-              let r4, n3 = false;
-              return r4 = e4(((e5) => {
-                if (!n3) return r4 ? r4.dispose() : n3 = true, t4.call(s5, e5);
-              }), null, i4), n3 && r4.dispose(), r4;
-            };
-          }
-          function s4(e4, t4, s5) {
-            return r3(((s6, i4 = null, r4) => e4(((e5) => s6.call(i4, t4(e5))), null, r4)), s5);
-          }
-          function i3(e4, t4, s5) {
-            return r3(((s6, i4 = null, r4) => e4(((e5) => t4(e5) && s6.call(i4, e5)), null, r4)), s5);
-          }
-          function r3(e4, t4) {
-            let s5;
-            const i4 = new v({ onWillAddFirstListener() {
-              s5 = e4(i4.fire, i4);
-            }, onDidRemoveLastListener() {
-              s5?.dispose();
-            } });
-            return t4?.add(i4), i4.event;
-          }
-          function o2(e4, t4, s5 = 100, i4 = false, r4 = false, n3, o3) {
-            let a3, h3, c3, l2, u2 = 0;
-            const d2 = new v({ leakWarningThreshold: n3, onWillAddFirstListener() {
-              a3 = e4(((e5) => {
-                u2++, h3 = t4(h3, e5), i4 && !c3 && (d2.fire(h3), h3 = void 0), l2 = () => {
-                  const e6 = h3;
-                  h3 = void 0, c3 = void 0, (!i4 || u2 > 1) && d2.fire(e6), u2 = 0;
-                }, "number" == typeof s5 ? (clearTimeout(c3), c3 = setTimeout(l2, s5)) : void 0 === c3 && (c3 = 0, queueMicrotask(l2));
-              }));
-            }, onWillRemoveListener() {
-              r4 && u2 > 0 && l2?.();
-            }, onDidRemoveLastListener() {
-              l2 = void 0, a3.dispose();
-            } });
-            return o3?.add(d2), d2.event;
-          }
-          e3.None = () => n2.Disposable.None, e3.defer = function(e4, t4) {
-            return o2(e4, (() => {
-            }), 0, void 0, true, void 0, t4);
-          }, e3.once = t3, e3.map = s4, e3.forEach = function(e4, t4, s5) {
-            return r3(((s6, i4 = null, r4) => e4(((e5) => {
-              t4(e5), s6.call(i4, e5);
-            }), null, r4)), s5);
-          }, e3.filter = i3, e3.signal = function(e4) {
-            return e4;
-          }, e3.any = function(...e4) {
-            return (t4, s5 = null, i4) => {
-              return r4 = (0, n2.combinedDisposable)(...e4.map(((e5) => e5(((e6) => t4.call(s5, e6)))))), (o3 = i4) instanceof Array ? o3.push(r4) : o3 && o3.add(r4), r4;
-              var r4, o3;
-            };
-          }, e3.reduce = function(e4, t4, i4, r4) {
-            let n3 = i4;
-            return s4(e4, ((e5) => (n3 = t4(n3, e5), n3)), r4);
-          }, e3.debounce = o2, e3.accumulate = function(t4, s5 = 0, i4) {
-            return e3.debounce(t4, ((e4, t5) => e4 ? (e4.push(t5), e4) : [t5]), s5, void 0, true, void 0, i4);
-          }, e3.latch = function(e4, t4 = (e5, t5) => e5 === t5, s5) {
-            let r4, n3 = true;
-            return i3(e4, ((e5) => {
-              const s6 = n3 || !t4(e5, r4);
-              return n3 = false, r4 = e5, s6;
-            }), s5);
-          }, e3.split = function(t4, s5, i4) {
-            return [e3.filter(t4, s5, i4), e3.filter(t4, ((e4) => !s5(e4)), i4)];
-          }, e3.buffer = function(e4, t4 = false, s5 = [], i4) {
-            let r4 = s5.slice(), n3 = e4(((e5) => {
-              r4 ? r4.push(e5) : a3.fire(e5);
-            }));
-            i4 && i4.add(n3);
-            const o3 = () => {
-              r4?.forEach(((e5) => a3.fire(e5))), r4 = null;
-            }, a3 = new v({ onWillAddFirstListener() {
-              n3 || (n3 = e4(((e5) => a3.fire(e5))), i4 && i4.add(n3));
-            }, onDidAddFirstListener() {
-              r4 && (t4 ? setTimeout(o3) : o3());
-            }, onDidRemoveLastListener() {
-              n3 && n3.dispose(), n3 = null;
-            } });
-            return i4 && i4.add(a3), a3.event;
-          }, e3.chain = function(e4, t4) {
-            return (s5, i4, r4) => {
-              const n3 = t4(new h2());
-              return e4((function(e5) {
-                const t5 = n3.evaluate(e5);
-                t5 !== a2 && s5.call(i4, t5);
-              }), void 0, r4);
-            };
-          };
-          const a2 = Symbol("HaltChainable");
-          class h2 {
-            constructor() {
-              this.steps = [];
-            }
-            map(e4) {
-              return this.steps.push(e4), this;
-            }
-            forEach(e4) {
-              return this.steps.push(((t4) => (e4(t4), t4))), this;
-            }
-            filter(e4) {
-              return this.steps.push(((t4) => e4(t4) ? t4 : a2)), this;
-            }
-            reduce(e4, t4) {
-              let s5 = t4;
-              return this.steps.push(((t5) => (s5 = e4(s5, t5), s5))), this;
-            }
-            latch(e4 = (e5, t4) => e5 === t4) {
-              let t4, s5 = true;
-              return this.steps.push(((i4) => {
-                const r4 = s5 || !e4(i4, t4);
-                return s5 = false, t4 = i4, r4 ? i4 : a2;
-              })), this;
-            }
-            evaluate(e4) {
-              for (const t4 of this.steps) if ((e4 = t4(e4)) === a2) break;
-              return e4;
-            }
-          }
-          e3.fromNodeEventEmitter = function(e4, t4, s5 = (e5) => e5) {
-            const i4 = (...e5) => r4.fire(s5(...e5)), r4 = new v({ onWillAddFirstListener: () => e4.on(t4, i4), onDidRemoveLastListener: () => e4.removeListener(t4, i4) });
-            return r4.event;
-          }, e3.fromDOMEventEmitter = function(e4, t4, s5 = (e5) => e5) {
-            const i4 = (...e5) => r4.fire(s5(...e5)), r4 = new v({ onWillAddFirstListener: () => e4.addEventListener(t4, i4), onDidRemoveLastListener: () => e4.removeEventListener(t4, i4) });
-            return r4.event;
-          }, e3.toPromise = function(e4) {
-            return new Promise(((s5) => t3(e4)(s5)));
-          }, e3.fromPromise = function(e4) {
-            const t4 = new v();
-            return e4.then(((e5) => {
-              t4.fire(e5);
-            }), (() => {
-              t4.fire(void 0);
-            })).finally((() => {
-              t4.dispose();
-            })), t4.event;
-          }, e3.forward = function(e4, t4) {
-            return e4(((e5) => t4.fire(e5)));
-          }, e3.runAndSubscribe = function(e4, t4, s5) {
-            return t4(s5), e4(((e5) => t4(e5)));
-          };
-          class c2 {
-            constructor(e4, t4) {
-              this._observable = e4, this._counter = 0, this._hasChanged = false;
-              const s5 = { onWillAddFirstListener: () => {
-                e4.addObserver(this);
-              }, onDidRemoveLastListener: () => {
-                e4.removeObserver(this);
-              } };
-              this.emitter = new v(s5), t4 && t4.add(this.emitter);
-            }
-            beginUpdate(e4) {
-              this._counter++;
-            }
-            handlePossibleChange(e4) {
-            }
-            handleChange(e4, t4) {
-              this._hasChanged = true;
-            }
-            endUpdate(e4) {
-              this._counter--, 0 === this._counter && (this._observable.reportChanges(), this._hasChanged && (this._hasChanged = false, this.emitter.fire(this._observable.get())));
-            }
-          }
-          e3.fromObservable = function(e4, t4) {
-            return new c2(e4, t4).emitter.event;
-          }, e3.fromObservableLight = function(e4) {
-            return (t4, s5, i4) => {
-              let r4 = 0, o3 = false;
-              const a3 = { beginUpdate() {
-                r4++;
-              }, endUpdate() {
-                r4--, 0 === r4 && (e4.reportChanges(), o3 && (o3 = false, t4.call(s5)));
-              }, handlePossibleChange() {
-              }, handleChange() {
-                o3 = true;
-              } };
-              e4.addObserver(a3), e4.reportChanges();
-              const h3 = { dispose() {
-                e4.removeObserver(a3);
-              } };
-              return i4 instanceof n2.DisposableStore ? i4.add(h3) : Array.isArray(i4) && i4.push(h3), h3;
-            };
-          };
-        })(h || (t2.Event = h = {}));
-        class c {
-          static {
-            this.all = /* @__PURE__ */ new Set();
-          }
-          static {
-            this._idPool = 0;
-          }
-          constructor(e3) {
-            this.listenerCount = 0, this.invocationCount = 0, this.elapsedOverall = 0, this.durations = [], this.name = `${e3}_${c._idPool++}`, c.all.add(this);
-          }
-          start(e3) {
-            this._stopWatch = new a.StopWatch(), this.listenerCount = e3;
-          }
-          stop() {
-            if (this._stopWatch) {
-              const e3 = this._stopWatch.elapsed();
-              this.durations.push(e3), this.elapsedOverall += e3, this.invocationCount += 1, this._stopWatch = void 0;
-            }
-          }
-        }
-        t2.EventProfiling = c;
-        let l = -1;
-        class u {
-          static {
-            this._idPool = 1;
-          }
-          constructor(e3, t3, s4 = (u._idPool++).toString(16).padStart(3, "0")) {
-            this._errorHandler = e3, this.threshold = t3, this.name = s4, this._warnCountdown = 0;
-          }
-          dispose() {
-            this._stacks?.clear();
-          }
-          check(e3, t3) {
-            const s4 = this.threshold;
-            if (s4 <= 0 || t3 < s4) return;
-            this._stacks || (this._stacks = /* @__PURE__ */ new Map());
-            const i3 = this._stacks.get(e3.value) || 0;
-            if (this._stacks.set(e3.value, i3 + 1), this._warnCountdown -= 1, this._warnCountdown <= 0) {
-              this._warnCountdown = 0.5 * s4;
-              const [e4, i4] = this.getMostFrequentStack(), r3 = `[${this.name}] potential listener LEAK detected, having ${t3} listeners already. MOST frequent listener (${i4}):`;
-              console.warn(r3), console.warn(e4);
-              const n3 = new f(r3, e4);
-              this._errorHandler(n3);
-            }
-            return () => {
-              const t4 = this._stacks.get(e3.value) || 0;
-              this._stacks.set(e3.value, t4 - 1);
-            };
-          }
-          getMostFrequentStack() {
-            if (!this._stacks) return;
-            let e3, t3 = 0;
-            for (const [s4, i3] of this._stacks) (!e3 || t3 < i3) && (e3 = [s4, i3], t3 = i3);
-            return e3;
-          }
-        }
-        class d {
-          static create() {
-            const e3 = new Error();
-            return new d(e3.stack ?? "");
-          }
-          constructor(e3) {
-            this.value = e3;
-          }
-          print() {
-            console.warn(this.value.split("\n").slice(2).join("\n"));
-          }
-        }
-        class f extends Error {
-          constructor(e3, t3) {
-            super(e3), this.name = "ListenerLeakError", this.stack = t3;
-          }
-        }
-        t2.ListenerLeakError = f;
-        class _ extends Error {
-          constructor(e3, t3) {
-            super(e3), this.name = "ListenerRefusalError", this.stack = t3;
-          }
-        }
-        t2.ListenerRefusalError = _;
-        let p = 0;
-        class g {
-          constructor(e3) {
-            this.value = e3, this.id = p++;
-          }
-        }
-        class v {
-          constructor(e3) {
-            this._size = 0, this._options = e3, this._leakageMon = l > 0 || this._options?.leakWarningThreshold ? new u(e3?.onListenerError ?? i2.onUnexpectedError, this._options?.leakWarningThreshold ?? l) : void 0, this._perfMon = this._options?._profName ? new c(this._options._profName) : void 0, this._deliveryQueue = this._options?.deliveryQueue;
-          }
-          dispose() {
-            this._disposed || (this._disposed = true, this._deliveryQueue?.current === this && this._deliveryQueue.reset(), this._listeners && (this._listeners = void 0, this._size = 0), this._options?.onDidRemoveLastListener?.(), this._leakageMon?.dispose());
-          }
-          get event() {
-            return this._event ??= (e3, t3, s4) => {
-              if (this._leakageMon && this._size > this._leakageMon.threshold ** 2) {
-                const e4 = `[${this._leakageMon.name}] REFUSES to accept new listeners because it exceeded its threshold by far (${this._size} vs ${this._leakageMon.threshold})`;
-                console.warn(e4);
-                const t4 = this._leakageMon.getMostFrequentStack() ?? ["UNKNOWN stack", -1], s5 = new _(`${e4}. HINT: Stack shows most frequent listener (${t4[1]}-times)`, t4[0]);
-                return (this._options?.onListenerError || i2.onUnexpectedError)(s5), n2.Disposable.None;
-              }
-              if (this._disposed) return n2.Disposable.None;
-              t3 && (e3 = e3.bind(t3));
-              const r3 = new g(e3);
-              let o2;
-              this._leakageMon && this._size >= Math.ceil(0.2 * this._leakageMon.threshold) && (r3.stack = d.create(), o2 = this._leakageMon.check(r3.stack, this._size + 1)), this._listeners ? this._listeners instanceof g ? (this._deliveryQueue ??= new m(), this._listeners = [this._listeners, r3]) : this._listeners.push(r3) : (this._options?.onWillAddFirstListener?.(this), this._listeners = r3, this._options?.onDidAddFirstListener?.(this)), this._size++;
-              const a2 = (0, n2.toDisposable)((() => {
-                o2?.(), this._removeListener(r3);
-              }));
-              return s4 instanceof n2.DisposableStore ? s4.add(a2) : Array.isArray(s4) && s4.push(a2), a2;
-            }, this._event;
-          }
-          _removeListener(e3) {
-            if (this._options?.onWillRemoveListener?.(this), !this._listeners) return;
-            if (1 === this._size) return this._listeners = void 0, this._options?.onDidRemoveLastListener?.(this), void (this._size = 0);
-            const t3 = this._listeners, s4 = t3.indexOf(e3);
-            if (-1 === s4) throw console.log("disposed?", this._disposed), console.log("size?", this._size), console.log("arr?", JSON.stringify(this._listeners)), new Error("Attempted to dispose unknown listener");
-            this._size--, t3[s4] = void 0;
-            const i3 = this._deliveryQueue.current === this;
-            if (2 * this._size <= t3.length) {
-              let e4 = 0;
-              for (let s5 = 0; s5 < t3.length; s5++) t3[s5] ? t3[e4++] = t3[s5] : i3 && (this._deliveryQueue.end--, e4 < this._deliveryQueue.i && this._deliveryQueue.i--);
-              t3.length = e4;
-            }
-          }
-          _deliver(e3, t3) {
-            if (!e3) return;
-            const s4 = this._options?.onListenerError || i2.onUnexpectedError;
-            if (s4) try {
-              e3.value(t3);
-            } catch (e4) {
-              s4(e4);
-            }
-            else e3.value(t3);
-          }
-          _deliverQueue(e3) {
-            const t3 = e3.current._listeners;
-            for (; e3.i < e3.end; ) this._deliver(t3[e3.i++], e3.value);
-            e3.reset();
-          }
-          fire(e3) {
-            if (this._deliveryQueue?.current && (this._deliverQueue(this._deliveryQueue), this._perfMon?.stop()), this._perfMon?.start(this._size), this._listeners) if (this._listeners instanceof g) this._deliver(this._listeners, e3);
-            else {
-              const t3 = this._deliveryQueue;
-              t3.enqueue(this, e3, this._listeners.length), this._deliverQueue(t3);
-            }
-            this._perfMon?.stop();
-          }
-          hasListeners() {
-            return this._size > 0;
-          }
-        }
-        t2.Emitter = v, t2.createEventDeliveryQueue = () => new m();
-        class m {
-          constructor() {
-            this.i = -1, this.end = 0;
-          }
-          enqueue(e3, t3, s4) {
-            this.i = 0, this.end = s4, this.current = e3, this.value = t3;
-          }
-          reset() {
-            this.i = this.end, this.current = void 0, this.value = void 0;
-          }
-        }
-        t2.AsyncEmitter = class extends v {
-          async fireAsync(e3, t3, s4) {
-            if (this._listeners) for (this._asyncDeliveryQueue || (this._asyncDeliveryQueue = new o.LinkedList()), ((e4, t4) => {
-              if (e4 instanceof g) t4(e4);
-              else for (let s5 = 0; s5 < e4.length; s5++) {
-                const i3 = e4[s5];
-                i3 && t4(i3);
-              }
-            })(this._listeners, ((t4) => this._asyncDeliveryQueue.push([t4.value, e3]))); this._asyncDeliveryQueue.size > 0 && !t3.isCancellationRequested; ) {
-              const [e4, r3] = this._asyncDeliveryQueue.shift(), n3 = [], o2 = { ...r3, token: t3, waitUntil: (t4) => {
-                if (Object.isFrozen(n3)) throw new Error("waitUntil can NOT be called asynchronous");
-                s4 && (t4 = s4(t4, e4)), n3.push(t4);
-              } };
-              try {
-                e4(o2);
-              } catch (e5) {
-                (0, i2.onUnexpectedError)(e5);
-                continue;
-              }
-              Object.freeze(n3), await Promise.allSettled(n3).then(((e5) => {
-                for (const t4 of e5) "rejected" === t4.status && (0, i2.onUnexpectedError)(t4.reason);
-              }));
-            }
-          }
-        };
-        class b extends v {
-          get isPaused() {
-            return 0 !== this._isPaused;
-          }
-          constructor(e3) {
-            super(e3), this._isPaused = 0, this._eventQueue = new o.LinkedList(), this._mergeFn = e3?.merge;
-          }
-          pause() {
-            this._isPaused++;
-          }
-          resume() {
-            if (0 !== this._isPaused && 0 == --this._isPaused) if (this._mergeFn) {
-              if (this._eventQueue.size > 0) {
-                const e3 = Array.from(this._eventQueue);
-                this._eventQueue.clear(), super.fire(this._mergeFn(e3));
-              }
-            } else for (; !this._isPaused && 0 !== this._eventQueue.size; ) super.fire(this._eventQueue.shift());
-          }
-          fire(e3) {
-            this._size && (0 !== this._isPaused ? this._eventQueue.push(e3) : super.fire(e3));
-          }
-        }
-        t2.PauseableEmitter = b, t2.DebounceEmitter = class extends b {
-          constructor(e3) {
-            super(e3), this._delay = e3.delay ?? 100;
-          }
-          fire(e3) {
-            this._handle || (this.pause(), this._handle = setTimeout((() => {
-              this._handle = void 0, this.resume();
-            }), this._delay)), super.fire(e3);
-          }
-        }, t2.MicrotaskEmitter = class extends v {
-          constructor(e3) {
-            super(e3), this._queuedEvents = [], this._mergeFn = e3?.merge;
-          }
-          fire(e3) {
-            this.hasListeners() && (this._queuedEvents.push(e3), 1 === this._queuedEvents.length && queueMicrotask((() => {
-              this._mergeFn ? super.fire(this._mergeFn(this._queuedEvents)) : this._queuedEvents.forEach(((e4) => super.fire(e4))), this._queuedEvents = [];
-            })));
-          }
-        };
-        class S {
-          constructor() {
-            this.hasListeners = false, this.events = [], this.emitter = new v({ onWillAddFirstListener: () => this.onFirstListenerAdd(), onDidRemoveLastListener: () => this.onLastListenerRemove() });
-          }
-          get event() {
-            return this.emitter.event;
-          }
-          add(e3) {
-            const t3 = { event: e3, listener: null };
-            return this.events.push(t3), this.hasListeners && this.hook(t3), (0, n2.toDisposable)((0, r2.createSingleCallFunction)((() => {
-              this.hasListeners && this.unhook(t3);
-              const e4 = this.events.indexOf(t3);
-              this.events.splice(e4, 1);
-            })));
-          }
-          onFirstListenerAdd() {
-            this.hasListeners = true, this.events.forEach(((e3) => this.hook(e3)));
-          }
-          onLastListenerRemove() {
-            this.hasListeners = false, this.events.forEach(((e3) => this.unhook(e3)));
-          }
-          hook(e3) {
-            e3.listener = e3.event(((e4) => this.emitter.fire(e4)));
-          }
-          unhook(e3) {
-            e3.listener?.dispose(), e3.listener = null;
-          }
-          dispose() {
-            this.emitter.dispose();
-            for (const e3 of this.events) e3.listener?.dispose();
-            this.events = [];
-          }
-        }
-        t2.EventMultiplexer = S, t2.DynamicListEventMultiplexer = class {
-          constructor(e3, t3, s4, i3) {
-            this._store = new n2.DisposableStore();
-            const r3 = this._store.add(new S()), o2 = this._store.add(new n2.DisposableMap());
-            function a2(e4) {
-              o2.set(e4, r3.add(i3(e4)));
-            }
-            for (const t4 of e3) a2(t4);
-            this._store.add(t3(((e4) => {
-              a2(e4);
-            }))), this._store.add(s4(((e4) => {
-              o2.deleteAndDispose(e4);
-            }))), this.event = r3.event;
-          }
-          dispose() {
-            this._store.dispose();
-          }
-        }, t2.EventBufferer = class {
-          constructor() {
-            this.data = [];
-          }
-          wrapEvent(e3, t3, s4) {
-            return (i3, r3, n3) => e3(((e4) => {
-              const n4 = this.data[this.data.length - 1];
-              if (!t3) return void (n4 ? n4.buffers.push((() => i3.call(r3, e4))) : i3.call(r3, e4));
-              const o2 = n4;
-              o2 ? (o2.items ??= [], o2.items.push(e4), 0 === o2.buffers.length && n4.buffers.push((() => {
-                o2.reducedResult ??= s4 ? o2.items.reduce(t3, s4) : o2.items.reduce(t3), i3.call(r3, o2.reducedResult);
-              }))) : i3.call(r3, t3(s4, e4));
-            }), void 0, n3);
-          }
-          bufferEvents(e3) {
-            const t3 = { buffers: new Array() };
-            this.data.push(t3);
-            const s4 = e3();
-            return this.data.pop(), t3.buffers.forEach(((e4) => e4())), s4;
-          }
-        }, t2.Relay = class {
-          constructor() {
-            this.listening = false, this.inputEvent = h.None, this.inputEventListener = n2.Disposable.None, this.emitter = new v({ onDidAddFirstListener: () => {
-              this.listening = true, this.inputEventListener = this.inputEvent(this.emitter.fire, this.emitter);
-            }, onDidRemoveLastListener: () => {
-              this.listening = false, this.inputEventListener.dispose();
-            } }), this.event = this.emitter.event;
-          }
-          set input(e3) {
-            this.inputEvent = e3, this.listening && (this.inputEventListener.dispose(), this.inputEventListener = e3(this.emitter.fire, this.emitter));
-          }
-          dispose() {
-            this.inputEventListener.dispose(), this.emitter.dispose();
-          }
-        }, t2.ValueWithChangeEvent = class {
-          static const(e3) {
-            return new y(e3);
-          }
-          constructor(e3) {
-            this._value = e3, this._onDidChange = new v(), this.onDidChange = this._onDidChange.event;
-          }
-          get value() {
-            return this._value;
-          }
-          set value(e3) {
-            e3 !== this._value && (this._value = e3, this._onDidChange.fire(void 0));
-          }
-        };
-        class y {
-          constructor(e3) {
-            this.value = e3, this.onDidChange = h.None;
-          }
-        }
-      }, 8841: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.createSingleCallFunction = function(e3, t3) {
-          const s3 = this;
-          let i2, r2 = false;
-          return function() {
-            if (r2) return i2;
-            if (r2 = true, t3) try {
-              i2 = e3.apply(s3, arguments);
-            } finally {
-              t3();
-            }
-            else i2 = e3.apply(s3, arguments);
-            return i2;
-          };
-        };
-      }, 4218: (e2, t2) => {
-        var s3;
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.Iterable = void 0, (function(e3) {
-          function t3(e4) {
-            return e4 && "object" == typeof e4 && "function" == typeof e4[Symbol.iterator];
-          }
-          e3.is = t3;
-          const s4 = Object.freeze([]);
-          function* i2(e4) {
-            yield e4;
-          }
-          e3.empty = function() {
-            return s4;
-          }, e3.single = i2, e3.wrap = function(e4) {
-            return t3(e4) ? e4 : i2(e4);
-          }, e3.from = function(e4) {
-            return e4 || s4;
-          }, e3.reverse = function* (e4) {
-            for (let t4 = e4.length - 1; t4 >= 0; t4--) yield e4[t4];
-          }, e3.isEmpty = function(e4) {
-            return !e4 || true === e4[Symbol.iterator]().next().done;
-          }, e3.first = function(e4) {
-            return e4[Symbol.iterator]().next().value;
-          }, e3.some = function(e4, t4) {
-            let s5 = 0;
-            for (const i3 of e4) if (t4(i3, s5++)) return true;
-            return false;
-          }, e3.find = function(e4, t4) {
-            for (const s5 of e4) if (t4(s5)) return s5;
-          }, e3.filter = function* (e4, t4) {
-            for (const s5 of e4) t4(s5) && (yield s5);
-          }, e3.map = function* (e4, t4) {
-            let s5 = 0;
-            for (const i3 of e4) yield t4(i3, s5++);
-          }, e3.flatMap = function* (e4, t4) {
-            let s5 = 0;
-            for (const i3 of e4) yield* t4(i3, s5++);
-          }, e3.concat = function* (...e4) {
-            for (const t4 of e4) yield* t4;
-          }, e3.reduce = function(e4, t4, s5) {
-            let i3 = s5;
-            for (const s6 of e4) i3 = t4(i3, s6);
-            return i3;
-          }, e3.slice = function* (e4, t4, s5 = e4.length) {
-            for (t4 < 0 && (t4 += e4.length), s5 < 0 ? s5 += e4.length : s5 > e4.length && (s5 = e4.length); t4 < s5; t4++) yield e4[t4];
-          }, e3.consume = function(t4, s5 = Number.POSITIVE_INFINITY) {
-            const i3 = [];
-            if (0 === s5) return [i3, t4];
-            const r2 = t4[Symbol.iterator]();
-            for (let t5 = 0; t5 < s5; t5++) {
-              const t6 = r2.next();
-              if (t6.done) return [i3, e3.empty()];
-              i3.push(t6.value);
-            }
-            return [i3, { [Symbol.iterator]: () => r2 }];
-          }, e3.asyncToArray = async function(e4) {
-            const t4 = [];
-            for await (const s5 of e4) t4.push(s5);
-            return Promise.resolve(t4);
-          };
-        })(s3 || (t2.Iterable = s3 = {}));
-      }, 7150: (e2, t2, s3) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.DisposableMap = t2.ImmortalReference = t2.AsyncReferenceCollection = t2.ReferenceCollection = t2.SafeDisposable = t2.RefCountedDisposable = t2.MandatoryMutableDisposable = t2.MutableDisposable = t2.Disposable = t2.DisposableStore = t2.DisposableTracker = void 0, t2.setDisposableTracker = function(e3) {
-          h = e3;
-        }, t2.trackDisposable = l, t2.markAsDisposed = u, t2.markAsSingleton = function(e3) {
-          return h?.markAsSingleton(e3), e3;
-        }, t2.isDisposable = f, t2.dispose = _, t2.disposeIfDisposable = function(e3) {
-          for (const t3 of e3) f(t3) && t3.dispose();
-          return [];
-        }, t2.combinedDisposable = function(...e3) {
-          const t3 = p((() => _(e3)));
-          return (function(e4, t4) {
-            if (h) for (const s4 of e4) h.setParent(s4, t4);
-          })(e3, t3), t3;
-        }, t2.toDisposable = p, t2.disposeOnReturn = function(e3) {
-          const t3 = new g();
-          try {
-            e3(t3);
-          } finally {
-            t3.dispose();
-          }
-        };
-        const i2 = s3(3058), r2 = s3(9087), n2 = s3(2608), o = s3(8841), a = s3(4218);
-        let h = null;
-        class c {
-          constructor() {
-            this.livingDisposables = /* @__PURE__ */ new Map();
-          }
-          static {
-            this.idx = 0;
-          }
-          getDisposableData(e3) {
-            let t3 = this.livingDisposables.get(e3);
-            return t3 || (t3 = { parent: null, source: null, isSingleton: false, value: e3, idx: c.idx++ }, this.livingDisposables.set(e3, t3)), t3;
-          }
-          trackDisposable(e3) {
-            const t3 = this.getDisposableData(e3);
-            t3.source || (t3.source = new Error().stack);
-          }
-          setParent(e3, t3) {
-            this.getDisposableData(e3).parent = t3;
-          }
-          markAsDisposed(e3) {
-            this.livingDisposables.delete(e3);
-          }
-          markAsSingleton(e3) {
-            this.getDisposableData(e3).isSingleton = true;
-          }
-          getRootParent(e3, t3) {
-            const s4 = t3.get(e3);
-            if (s4) return s4;
-            const i3 = e3.parent ? this.getRootParent(this.getDisposableData(e3.parent), t3) : e3;
-            return t3.set(e3, i3), i3;
-          }
-          getTrackedDisposables() {
-            const e3 = /* @__PURE__ */ new Map();
-            return [...this.livingDisposables.entries()].filter((([, t3]) => null !== t3.source && !this.getRootParent(t3, e3).isSingleton)).flatMap((([e4]) => e4));
-          }
-          computeLeakingDisposables(e3 = 10, t3) {
-            let s4;
-            if (t3) s4 = t3;
-            else {
-              const e4 = /* @__PURE__ */ new Map(), t4 = [...this.livingDisposables.values()].filter(((t5) => null !== t5.source && !this.getRootParent(t5, e4).isSingleton));
-              if (0 === t4.length) return;
-              const i3 = new Set(t4.map(((e5) => e5.value)));
-              if (s4 = t4.filter(((e5) => !(e5.parent && i3.has(e5.parent)))), 0 === s4.length) throw new Error("There are cyclic diposable chains!");
-            }
-            if (!s4) return;
-            function o2(e4) {
-              const t4 = e4.source.split("\n").map(((e5) => e5.trim().replace("at ", ""))).filter(((e5) => "" !== e5));
-              return (function(e5, t5) {
-                for (; e5.length > 0 && t5.some(((t6) => "string" == typeof t6 ? t6 === e5[0] : e5[0].match(t6))); ) e5.shift();
-              })(t4, ["Error", /^trackDisposable \(.*\)$/, /^DisposableTracker.trackDisposable \(.*\)$/]), t4.reverse();
-            }
-            const a2 = new n2.SetMap();
-            for (const e4 of s4) {
-              const t4 = o2(e4);
-              for (let s5 = 0; s5 <= t4.length; s5++) a2.add(t4.slice(0, s5).join("\n"), e4);
-            }
-            s4.sort((0, i2.compareBy)(((e4) => e4.idx), i2.numberComparator));
-            let h2 = "", c2 = 0;
-            for (const t4 of s4.slice(0, e3)) {
-              c2++;
-              const e4 = o2(t4), i3 = [];
-              for (let t5 = 0; t5 < e4.length; t5++) {
-                let n3 = e4[t5];
-                n3 = `(shared with ${a2.get(e4.slice(0, t5 + 1).join("\n")).size}/${s4.length} leaks) at ${n3}`;
-                const h3 = a2.get(e4.slice(0, t5).join("\n")), c3 = (0, r2.groupBy)([...h3].map(((e5) => o2(e5)[t5])), ((e5) => e5));
-                delete c3[e4[t5]];
-                for (const [e5, t6] of Object.entries(c3)) i3.unshift(`    - stacktraces of ${t6.length} other leaks continue with ${e5}`);
-                i3.unshift(n3);
-              }
-              h2 += `
-
-
-==================== Leaking disposable ${c2}/${s4.length}: ${t4.value.constructor.name} ====================
-${i3.join("\n")}
-============================================================
-
-`;
-            }
-            return s4.length > e3 && (h2 += `
-
-
-... and ${s4.length - e3} more leaking disposables
-
-`), { leaks: s4, details: h2 };
-          }
-        }
-        function l(e3) {
-          return h?.trackDisposable(e3), e3;
-        }
-        function u(e3) {
-          h?.markAsDisposed(e3);
-        }
-        function d(e3, t3) {
-          h?.setParent(e3, t3);
-        }
-        function f(e3) {
-          return "object" == typeof e3 && null !== e3 && "function" == typeof e3.dispose && 0 === e3.dispose.length;
-        }
-        function _(e3) {
-          if (a.Iterable.is(e3)) {
-            const t3 = [];
-            for (const s4 of e3) if (s4) try {
-              s4.dispose();
-            } catch (e4) {
-              t3.push(e4);
-            }
-            if (1 === t3.length) throw t3[0];
-            if (t3.length > 1) throw new AggregateError(t3, "Encountered errors while disposing of store");
-            return Array.isArray(e3) ? [] : e3;
-          }
-          if (e3) return e3.dispose(), e3;
-        }
-        function p(e3) {
-          const t3 = l({ dispose: (0, o.createSingleCallFunction)((() => {
-            u(t3), e3();
-          })) });
-          return t3;
-        }
-        t2.DisposableTracker = c;
-        class g {
-          static {
-            this.DISABLE_DISPOSED_WARNING = false;
-          }
-          constructor() {
-            this._toDispose = /* @__PURE__ */ new Set(), this._isDisposed = false, l(this);
-          }
-          dispose() {
-            this._isDisposed || (u(this), this._isDisposed = true, this.clear());
-          }
-          get isDisposed() {
-            return this._isDisposed;
-          }
-          clear() {
-            if (0 !== this._toDispose.size) try {
-              _(this._toDispose);
-            } finally {
-              this._toDispose.clear();
-            }
-          }
-          add(e3) {
-            if (!e3) return e3;
-            if (e3 === this) throw new Error("Cannot register a disposable on itself!");
-            return d(e3, this), this._isDisposed ? g.DISABLE_DISPOSED_WARNING || console.warn(new Error("Trying to add a disposable to a DisposableStore that has already been disposed of. The added object will be leaked!").stack) : this._toDispose.add(e3), e3;
-          }
-          delete(e3) {
-            if (e3) {
-              if (e3 === this) throw new Error("Cannot dispose a disposable on itself!");
-              this._toDispose.delete(e3), e3.dispose();
-            }
-          }
-          deleteAndLeak(e3) {
-            e3 && this._toDispose.has(e3) && (this._toDispose.delete(e3), d(e3, null));
-          }
-        }
-        t2.DisposableStore = g;
-        class v {
-          static {
-            this.None = Object.freeze({ dispose() {
-            } });
-          }
-          constructor() {
-            this._store = new g(), l(this), d(this._store, this);
-          }
-          dispose() {
-            u(this), this._store.dispose();
-          }
-          _register(e3) {
-            if (e3 === this) throw new Error("Cannot register a disposable on itself!");
-            return this._store.add(e3);
-          }
-        }
-        t2.Disposable = v;
-        class m {
-          constructor() {
-            this._isDisposed = false, l(this);
-          }
-          get value() {
-            return this._isDisposed ? void 0 : this._value;
-          }
-          set value(e3) {
-            this._isDisposed || e3 === this._value || (this._value?.dispose(), e3 && d(e3, this), this._value = e3);
-          }
-          clear() {
-            this.value = void 0;
-          }
-          dispose() {
-            this._isDisposed = true, u(this), this._value?.dispose(), this._value = void 0;
-          }
-          clearAndLeak() {
-            const e3 = this._value;
-            return this._value = void 0, e3 && d(e3, null), e3;
-          }
-        }
-        t2.MutableDisposable = m, t2.MandatoryMutableDisposable = class {
-          constructor(e3) {
-            this._disposable = new m(), this._isDisposed = false, this._disposable.value = e3;
-          }
-          get value() {
-            return this._disposable.value;
-          }
-          set value(e3) {
-            this._isDisposed || e3 === this._disposable.value || (this._disposable.value = e3);
-          }
-          dispose() {
-            this._isDisposed = true, this._disposable.dispose();
-          }
-        }, t2.RefCountedDisposable = class {
-          constructor(e3) {
-            this._disposable = e3, this._counter = 1;
-          }
-          acquire() {
-            return this._counter++, this;
-          }
-          release() {
-            return 0 == --this._counter && this._disposable.dispose(), this;
-          }
-        }, t2.SafeDisposable = class {
-          constructor() {
-            this.dispose = () => {
-            }, this.unset = () => {
-            }, this.isset = () => false, l(this);
-          }
-          set(e3) {
-            let t3 = e3;
-            return this.unset = () => t3 = void 0, this.isset = () => void 0 !== t3, this.dispose = () => {
-              t3 && (t3(), t3 = void 0, u(this));
-            }, this;
-          }
-        }, t2.ReferenceCollection = class {
-          constructor() {
-            this.references = /* @__PURE__ */ new Map();
-          }
-          acquire(e3, ...t3) {
-            let s4 = this.references.get(e3);
-            s4 || (s4 = { counter: 0, object: this.createReferencedObject(e3, ...t3) }, this.references.set(e3, s4));
-            const { object: i3 } = s4, r3 = (0, o.createSingleCallFunction)((() => {
-              0 == --s4.counter && (this.destroyReferencedObject(e3, s4.object), this.references.delete(e3));
-            }));
-            return s4.counter++, { object: i3, dispose: r3 };
-          }
-        }, t2.AsyncReferenceCollection = class {
-          constructor(e3) {
-            this.referenceCollection = e3;
-          }
-          async acquire(e3, ...t3) {
-            const s4 = this.referenceCollection.acquire(e3, ...t3);
-            try {
-              return { object: await s4.object, dispose: () => s4.dispose() };
-            } catch (e4) {
-              throw s4.dispose(), e4;
-            }
-          }
-        }, t2.ImmortalReference = class {
-          constructor(e3) {
-            this.object = e3;
-          }
-          dispose() {
-          }
-        };
-        class b {
-          constructor() {
-            this._store = /* @__PURE__ */ new Map(), this._isDisposed = false, l(this);
-          }
-          dispose() {
-            u(this), this._isDisposed = true, this.clearAndDisposeAll();
-          }
-          clearAndDisposeAll() {
-            if (this._store.size) try {
-              _(this._store.values());
-            } finally {
-              this._store.clear();
-            }
-          }
-          has(e3) {
-            return this._store.has(e3);
-          }
-          get size() {
-            return this._store.size;
-          }
-          get(e3) {
-            return this._store.get(e3);
-          }
-          set(e3, t3, s4 = false) {
-            this._isDisposed && console.warn(new Error("Trying to add a disposable to a DisposableMap that has already been disposed of. The added object will be leaked!").stack), s4 || this._store.get(e3)?.dispose(), this._store.set(e3, t3);
-          }
-          deleteAndDispose(e3) {
-            this._store.get(e3)?.dispose(), this._store.delete(e3);
-          }
-          deleteAndLeak(e3) {
-            const t3 = this._store.get(e3);
-            return this._store.delete(e3), t3;
-          }
-          keys() {
-            return this._store.keys();
-          }
-          values() {
-            return this._store.values();
-          }
-          [Symbol.iterator]() {
-            return this._store[Symbol.iterator]();
-          }
-        }
-        t2.DisposableMap = b;
-      }, 6317: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.LinkedList = void 0;
-        class s3 {
-          static {
-            this.Undefined = new s3(void 0);
-          }
-          constructor(e3) {
-            this.element = e3, this.next = s3.Undefined, this.prev = s3.Undefined;
-          }
-        }
-        class i2 {
-          constructor() {
-            this._first = s3.Undefined, this._last = s3.Undefined, this._size = 0;
-          }
-          get size() {
-            return this._size;
-          }
-          isEmpty() {
-            return this._first === s3.Undefined;
-          }
-          clear() {
-            let e3 = this._first;
-            for (; e3 !== s3.Undefined; ) {
-              const t3 = e3.next;
-              e3.prev = s3.Undefined, e3.next = s3.Undefined, e3 = t3;
-            }
-            this._first = s3.Undefined, this._last = s3.Undefined, this._size = 0;
-          }
-          unshift(e3) {
-            return this._insert(e3, false);
-          }
-          push(e3) {
-            return this._insert(e3, true);
-          }
-          _insert(e3, t3) {
-            const i3 = new s3(e3);
-            if (this._first === s3.Undefined) this._first = i3, this._last = i3;
-            else if (t3) {
-              const e4 = this._last;
-              this._last = i3, i3.prev = e4, e4.next = i3;
-            } else {
-              const e4 = this._first;
-              this._first = i3, i3.next = e4, e4.prev = i3;
-            }
-            this._size += 1;
-            let r2 = false;
-            return () => {
-              r2 || (r2 = true, this._remove(i3));
-            };
-          }
-          shift() {
-            if (this._first !== s3.Undefined) {
-              const e3 = this._first.element;
-              return this._remove(this._first), e3;
-            }
-          }
-          pop() {
-            if (this._last !== s3.Undefined) {
-              const e3 = this._last.element;
-              return this._remove(this._last), e3;
-            }
-          }
-          _remove(e3) {
-            if (e3.prev !== s3.Undefined && e3.next !== s3.Undefined) {
-              const t3 = e3.prev;
-              t3.next = e3.next, e3.next.prev = t3;
-            } else e3.prev === s3.Undefined && e3.next === s3.Undefined ? (this._first = s3.Undefined, this._last = s3.Undefined) : e3.next === s3.Undefined ? (this._last = this._last.prev, this._last.next = s3.Undefined) : e3.prev === s3.Undefined && (this._first = this._first.next, this._first.prev = s3.Undefined);
-            this._size -= 1;
-          }
-          *[Symbol.iterator]() {
-            let e3 = this._first;
-            for (; e3 !== s3.Undefined; ) yield e3.element, e3 = e3.next;
-          }
-        }
-        t2.LinkedList = i2;
-      }, 2608: (e2, t2) => {
-        var s3;
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.SetMap = t2.BidirectionalMap = t2.CounterSet = t2.Touch = void 0, t2.getOrSet = function(e3, t3, s4) {
-          let i2 = e3.get(t3);
-          return void 0 === i2 && (i2 = s4, e3.set(t3, i2)), i2;
-        }, t2.mapToString = function(e3) {
-          const t3 = [];
-          return e3.forEach(((e4, s4) => {
-            t3.push(`${s4} => ${e4}`);
-          })), `Map(${e3.size}) {${t3.join(", ")}}`;
-        }, t2.setToString = function(e3) {
-          const t3 = [];
-          return e3.forEach(((e4) => {
-            t3.push(e4);
-          })), `Set(${e3.size}) {${t3.join(", ")}}`;
-        }, t2.mapsStrictEqualIgnoreOrder = function(e3, t3) {
-          if (e3 === t3) return true;
-          if (e3.size !== t3.size) return false;
-          for (const [s4, i2] of e3) if (!t3.has(s4) || t3.get(s4) !== i2) return false;
-          for (const [s4] of t3) if (!e3.has(s4)) return false;
-          return true;
-        }, (function(e3) {
-          e3[e3.None = 0] = "None", e3[e3.AsOld = 1] = "AsOld", e3[e3.AsNew = 2] = "AsNew";
-        })(s3 || (t2.Touch = s3 = {})), t2.CounterSet = class {
-          constructor() {
-            this.map = /* @__PURE__ */ new Map();
-          }
-          add(e3) {
-            return this.map.set(e3, (this.map.get(e3) || 0) + 1), this;
-          }
-          delete(e3) {
-            let t3 = this.map.get(e3) || 0;
-            return 0 !== t3 && (t3--, 0 === t3 ? this.map.delete(e3) : this.map.set(e3, t3), true);
-          }
-          has(e3) {
-            return this.map.has(e3);
-          }
-        }, t2.BidirectionalMap = class {
-          constructor(e3) {
-            if (this._m1 = /* @__PURE__ */ new Map(), this._m2 = /* @__PURE__ */ new Map(), e3) for (const [t3, s4] of e3) this.set(t3, s4);
-          }
-          clear() {
-            this._m1.clear(), this._m2.clear();
-          }
-          set(e3, t3) {
-            this._m1.set(e3, t3), this._m2.set(t3, e3);
-          }
-          get(e3) {
-            return this._m1.get(e3);
-          }
-          getKey(e3) {
-            return this._m2.get(e3);
-          }
-          delete(e3) {
-            const t3 = this._m1.get(e3);
-            return void 0 !== t3 && (this._m1.delete(e3), this._m2.delete(t3), true);
-          }
-          forEach(e3, t3) {
-            this._m1.forEach(((s4, i2) => {
-              e3.call(t3, s4, i2, this);
-            }));
-          }
-          keys() {
-            return this._m1.keys();
-          }
-          values() {
-            return this._m1.values();
-          }
-        }, t2.SetMap = class {
-          constructor() {
-            this.map = /* @__PURE__ */ new Map();
-          }
-          add(e3, t3) {
-            let s4 = this.map.get(e3);
-            s4 || (s4 = /* @__PURE__ */ new Set(), this.map.set(e3, s4)), s4.add(t3);
-          }
-          delete(e3, t3) {
-            const s4 = this.map.get(e3);
-            s4 && (s4.delete(t3), 0 === s4.size && this.map.delete(e3));
-          }
-          forEach(e3, t3) {
-            const s4 = this.map.get(e3);
-            s4 && s4.forEach(t3);
-          }
-          get(e3) {
-            return this.map.get(e3) || /* @__PURE__ */ new Set();
-          }
-        };
-      }, 9725: (e2, t2) => {
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.StopWatch = void 0;
-        const s3 = globalThis.performance && "function" == typeof globalThis.performance.now;
-        class i2 {
-          static create(e3) {
-            return new i2(e3);
-          }
-          constructor(e3) {
-            this._now = s3 && false === e3 ? Date.now : globalThis.performance.now.bind(globalThis.performance), this._startTime = this._now(), this._stopTime = -1;
-          }
-          stop() {
-            this._stopTime = this._now();
-          }
-          reset() {
-            this._startTime = this._now(), this._stopTime = -1;
-          }
-          elapsed() {
-            return -1 !== this._stopTime ? this._stopTime - this._startTime : this._now() - this._startTime;
-          }
-        }
-        t2.StopWatch = i2;
-      } }, t = {};
-      function s2(i2) {
-        var r2 = t[i2];
-        if (void 0 !== r2) return r2.exports;
-        var n2 = t[i2] = { exports: {} };
-        return e[i2].call(n2.exports, n2, n2.exports, s2), n2.exports;
-      }
-      var i = {};
-      (() => {
-        var e2 = i;
-        Object.defineProperty(e2, "__esModule", { value: true }), e2.Terminal = void 0;
-        const t2 = s2(5101), r2 = s2(6097), n2 = s2(4335), o = s2(5856), a = s2(3027), h = s2(7150), c = ["cols", "rows"];
-        class l extends h.Disposable {
-          constructor(e3) {
-            super(), this._core = this._register(new o.Terminal(e3)), this._addonManager = this._register(new a.AddonManager()), this._publicOptions = { ...this._core.options };
-            const t3 = (e4) => this._core.options[e4], s3 = (e4, t4) => {
-              this._checkReadonlyOptions(e4), this._core.options[e4] = t4;
-            };
-            for (const e4 in this._core.options) {
-              Object.defineProperty(this._publicOptions, e4, { get: () => this._core.options[e4], set: (t4) => {
-                this._checkReadonlyOptions(e4), this._core.options[e4] = t4;
-              } });
-              const i2 = { get: t3.bind(this, e4), set: s3.bind(this, e4) };
-              Object.defineProperty(this._publicOptions, e4, i2);
-            }
-          }
-          _checkReadonlyOptions(e3) {
-            if (c.includes(e3)) throw new Error(`Option "${e3}" can only be set in the constructor`);
-          }
-          _checkProposedApi() {
-            if (!this._core.optionsService.options.allowProposedApi) throw new Error("You must set the allowProposedApi option to true to use proposed API");
-          }
-          get onBell() {
-            return this._core.onBell;
-          }
-          get onBinary() {
-            return this._core.onBinary;
-          }
-          get onCursorMove() {
-            return this._core.onCursorMove;
-          }
-          get onData() {
-            return this._core.onData;
-          }
-          get onLineFeed() {
-            return this._core.onLineFeed;
-          }
-          get onResize() {
-            return this._core.onResize;
-          }
-          get onScroll() {
-            return this._core.onScroll;
-          }
-          get onTitleChange() {
-            return this._core.onTitleChange;
-          }
-          get onWriteParsed() {
-            return this._core.onWriteParsed;
-          }
-          get parser() {
-            return this._checkProposedApi(), this._parser || (this._parser = new r2.ParserApi(this._core)), this._parser;
-          }
-          get unicode() {
-            return this._checkProposedApi(), new n2.UnicodeApi(this._core);
-          }
-          get rows() {
-            return this._core.rows;
-          }
-          get cols() {
-            return this._core.cols;
-          }
-          get buffer() {
-            return this._checkProposedApi(), this._buffer || (this._buffer = this._register(new t2.BufferNamespaceApi(this._core))), this._buffer;
-          }
-          get markers() {
-            return this._checkProposedApi(), this._core.markers;
-          }
-          get modes() {
-            const e3 = this._core.coreService.decPrivateModes;
-            let t3 = "none";
-            switch (this._core.coreMouseService.activeProtocol) {
-              case "X10":
-                t3 = "x10";
-                break;
-              case "VT200":
-                t3 = "vt200";
-                break;
-              case "DRAG":
-                t3 = "drag";
-                break;
-              case "ANY":
-                t3 = "any";
-            }
-            return { applicationCursorKeysMode: e3.applicationCursorKeys, applicationKeypadMode: e3.applicationKeypad, bracketedPasteMode: e3.bracketedPasteMode, insertMode: this._core.coreService.modes.insertMode, mouseTrackingMode: t3, originMode: e3.origin, reverseWraparoundMode: e3.reverseWraparound, sendFocusMode: e3.sendFocus, synchronizedOutputMode: e3.synchronizedOutput, wraparoundMode: e3.wraparound };
-          }
-          get options() {
-            return this._publicOptions;
-          }
-          set options(e3) {
-            for (const t3 in e3) this._publicOptions[t3] = e3[t3];
-          }
-          input(e3, t3 = true) {
-            this._core.input(e3, t3);
-          }
-          resize(e3, t3) {
-            this._verifyIntegers(e3, t3), this._core.resize(e3, t3);
-          }
-          registerMarker(e3 = 0) {
-            return this._checkProposedApi(), this._verifyIntegers(e3), this._core.addMarker(e3);
-          }
-          addMarker(e3) {
-            return this.registerMarker(e3);
-          }
-          dispose() {
-            super.dispose();
-          }
-          scrollLines(e3) {
-            this._verifyIntegers(e3), this._core.scrollLines(e3);
-          }
-          scrollPages(e3) {
-            this._verifyIntegers(e3), this._core.scrollPages(e3);
-          }
-          scrollToTop() {
-            this._core.scrollToTop();
-          }
-          scrollToBottom() {
-            this._core.scrollToBottom();
-          }
-          scrollToLine(e3) {
-            this._verifyIntegers(e3), this._core.scrollToLine(e3);
-          }
-          clear() {
-            this._core.clear();
-          }
-          write(e3, t3) {
-            this._core.write(e3, t3);
-          }
-          writeln(e3, t3) {
-            this._core.write(e3), this._core.write("\r\n", t3);
-          }
-          reset() {
-            this._core.reset();
-          }
-          loadAddon(e3) {
-            this._addonManager.loadAddon(this, e3);
-          }
-          _verifyIntegers(...e3) {
-            for (const t3 of e3) if (t3 === 1 / 0 || isNaN(t3) || t3 % 1 != 0) throw new Error("This API only accepts integers");
-          }
-        }
-        e2.Terminal = l;
-      })();
-      var r = exports;
-      for (var n in i) r[n] = i[n];
-      i.__esModule && Object.defineProperty(r, "__esModule", { value: true });
-    })();
-  }
-});
-
-// node_modules/@xterm/addon-serialize/lib/addon-serialize.js
-var require_addon_serialize = __commonJS({
-  "node_modules/@xterm/addon-serialize/lib/addon-serialize.js"(exports, module) {
-    !(function(t, e) {
-      "object" == typeof exports && "object" == typeof module ? module.exports = e() : "function" == typeof define && define.amd ? define([], e) : "object" == typeof exports ? exports.SerializeAddon = e() : t.SerializeAddon = e();
-    })(globalThis, (() => (() => {
-      "use strict";
-      var t = { 992: (t2, e2, s3) => {
-        Object.defineProperty(e2, "__esModule", { value: true }), e2.DEFAULT_ANSI_COLORS = void 0;
-        const r2 = s3(993);
-        e2.DEFAULT_ANSI_COLORS = Object.freeze((() => {
-          const t3 = [r2.css.toColor("#2e3436"), r2.css.toColor("#cc0000"), r2.css.toColor("#4e9a06"), r2.css.toColor("#c4a000"), r2.css.toColor("#3465a4"), r2.css.toColor("#75507b"), r2.css.toColor("#06989a"), r2.css.toColor("#d3d7cf"), r2.css.toColor("#555753"), r2.css.toColor("#ef2929"), r2.css.toColor("#8ae234"), r2.css.toColor("#fce94f"), r2.css.toColor("#729fcf"), r2.css.toColor("#ad7fa8"), r2.css.toColor("#34e2e2"), r2.css.toColor("#eeeeec")], e3 = [0, 95, 135, 175, 215, 255];
-          for (let s4 = 0; s4 < 216; s4++) {
-            const i = e3[s4 / 36 % 6 | 0], o = e3[s4 / 6 % 6 | 0], n = e3[s4 % 6];
-            t3.push({ css: r2.channels.toCss(i, o, n), rgba: r2.channels.toRgba(i, o, n) });
-          }
-          for (let e4 = 0; e4 < 24; e4++) {
-            const s4 = 8 + 10 * e4;
-            t3.push({ css: r2.channels.toCss(s4, s4, s4), rgba: r2.channels.toRgba(s4, s4, s4) });
-          }
-          return t3;
-        })());
-      }, 993: (t2, e2) => {
-        Object.defineProperty(e2, "__esModule", { value: true }), e2.rgba = e2.rgb = e2.css = e2.color = e2.channels = e2.NULL_COLOR = void 0, e2.toPaddedHex = c, e2.contrastRatio = _;
-        let s3 = 0, r2 = 0, i = 0, o = 0;
-        var n, l, a, u, h;
-        function c(t3) {
-          const e3 = t3.toString(16);
-          return e3.length < 2 ? "0" + e3 : e3;
-        }
-        function _(t3, e3) {
-          return t3 < e3 ? (e3 + 0.05) / (t3 + 0.05) : (t3 + 0.05) / (e3 + 0.05);
-        }
-        e2.NULL_COLOR = { css: "#00000000", rgba: 0 }, (function(t3) {
-          t3.toCss = function(t4, e3, s4, r3) {
-            return void 0 !== r3 ? `#${c(t4)}${c(e3)}${c(s4)}${c(r3)}` : `#${c(t4)}${c(e3)}${c(s4)}`;
-          }, t3.toRgba = function(t4, e3, s4, r3 = 255) {
-            return (t4 << 24 | e3 << 16 | s4 << 8 | r3) >>> 0;
-          }, t3.toColor = function(e3, s4, r3, i2) {
-            return { css: t3.toCss(e3, s4, r3, i2), rgba: t3.toRgba(e3, s4, r3, i2) };
-          };
-        })(n || (e2.channels = n = {})), (function(t3) {
-          function e3(t4, e4) {
-            return o = Math.round(255 * e4), [s3, r2, i] = h.toChannels(t4.rgba), { css: n.toCss(s3, r2, i, o), rgba: n.toRgba(s3, r2, i, o) };
-          }
-          t3.blend = function(t4, e4) {
-            if (o = (255 & e4.rgba) / 255, 1 === o) return { css: e4.css, rgba: e4.rgba };
-            const l2 = e4.rgba >> 24 & 255, a2 = e4.rgba >> 16 & 255, u2 = e4.rgba >> 8 & 255, h2 = t4.rgba >> 24 & 255, c2 = t4.rgba >> 16 & 255, _2 = t4.rgba >> 8 & 255;
-            return s3 = h2 + Math.round((l2 - h2) * o), r2 = c2 + Math.round((a2 - c2) * o), i = _2 + Math.round((u2 - _2) * o), { css: n.toCss(s3, r2, i), rgba: n.toRgba(s3, r2, i) };
-          }, t3.isOpaque = function(t4) {
-            return !(255 & ~t4.rgba);
-          }, t3.ensureContrastRatio = function(t4, e4, s4) {
-            const r3 = h.ensureContrastRatio(t4.rgba, e4.rgba, s4);
-            if (r3) return n.toColor(r3 >> 24 & 255, r3 >> 16 & 255, r3 >> 8 & 255);
-          }, t3.opaque = function(t4) {
-            const e4 = (255 | t4.rgba) >>> 0;
-            return [s3, r2, i] = h.toChannels(e4), { css: n.toCss(s3, r2, i), rgba: e4 };
-          }, t3.opacity = e3, t3.multiplyOpacity = function(t4, s4) {
-            return o = 255 & t4.rgba, e3(t4, o * s4 / 255);
-          }, t3.toColorRGB = function(t4) {
-            return [t4.rgba >> 24 & 255, t4.rgba >> 16 & 255, t4.rgba >> 8 & 255];
-          };
-        })(l || (e2.color = l = {})), (function(t3) {
-          let e3, l2;
-          try {
-            const t4 = document.createElement("canvas");
-            t4.width = 1, t4.height = 1;
-            const s4 = t4.getContext("2d", { willReadFrequently: true });
-            s4 && (e3 = s4, e3.globalCompositeOperation = "copy", l2 = e3.createLinearGradient(0, 0, 1, 1));
-          } catch {
-          }
-          t3.toColor = function(t4) {
-            if (t4.match(/#[\da-f]{3,8}/i)) switch (t4.length) {
-              case 4:
-                return s3 = parseInt(t4.slice(1, 2).repeat(2), 16), r2 = parseInt(t4.slice(2, 3).repeat(2), 16), i = parseInt(t4.slice(3, 4).repeat(2), 16), n.toColor(s3, r2, i);
-              case 5:
-                return s3 = parseInt(t4.slice(1, 2).repeat(2), 16), r2 = parseInt(t4.slice(2, 3).repeat(2), 16), i = parseInt(t4.slice(3, 4).repeat(2), 16), o = parseInt(t4.slice(4, 5).repeat(2), 16), n.toColor(s3, r2, i, o);
-              case 7:
-                return { css: t4, rgba: (parseInt(t4.slice(1), 16) << 8 | 255) >>> 0 };
-              case 9:
-                return { css: t4, rgba: parseInt(t4.slice(1), 16) >>> 0 };
-            }
-            const a2 = t4.match(/rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(,\s*(0|1|\d?\.(\d+))\s*)?\)/);
-            if (a2) return s3 = parseInt(a2[1]), r2 = parseInt(a2[2]), i = parseInt(a2[3]), o = Math.round(255 * (void 0 === a2[5] ? 1 : parseFloat(a2[5]))), n.toColor(s3, r2, i, o);
-            if (!e3 || !l2) throw new Error("css.toColor: Unsupported css format");
-            if (e3.fillStyle = l2, e3.fillStyle = t4, "string" != typeof e3.fillStyle) throw new Error("css.toColor: Unsupported css format");
-            if (e3.fillRect(0, 0, 1, 1), [s3, r2, i, o] = e3.getImageData(0, 0, 1, 1).data, 255 !== o) throw new Error("css.toColor: Unsupported css format");
-            return { rgba: n.toRgba(s3, r2, i, o), css: t4 };
-          };
-        })(a || (e2.css = a = {})), (function(t3) {
-          function e3(t4, e4, s4) {
-            const r3 = t4 / 255, i2 = e4 / 255, o2 = s4 / 255;
-            return 0.2126 * (r3 <= 0.03928 ? r3 / 12.92 : Math.pow((r3 + 0.055) / 1.055, 2.4)) + 0.7152 * (i2 <= 0.03928 ? i2 / 12.92 : Math.pow((i2 + 0.055) / 1.055, 2.4)) + 0.0722 * (o2 <= 0.03928 ? o2 / 12.92 : Math.pow((o2 + 0.055) / 1.055, 2.4));
-          }
-          t3.relativeLuminance = function(t4) {
-            return e3(t4 >> 16 & 255, t4 >> 8 & 255, 255 & t4);
-          }, t3.relativeLuminance2 = e3;
-        })(u || (e2.rgb = u = {})), (function(t3) {
-          function e3(t4, e4, s4) {
-            const r3 = t4 >> 24 & 255, i2 = t4 >> 16 & 255, o2 = t4 >> 8 & 255;
-            let n2 = e4 >> 24 & 255, l3 = e4 >> 16 & 255, a2 = e4 >> 8 & 255, h2 = _(u.relativeLuminance2(n2, l3, a2), u.relativeLuminance2(r3, i2, o2));
-            for (; h2 < s4 && (n2 > 0 || l3 > 0 || a2 > 0); ) n2 -= Math.max(0, Math.ceil(0.1 * n2)), l3 -= Math.max(0, Math.ceil(0.1 * l3)), a2 -= Math.max(0, Math.ceil(0.1 * a2)), h2 = _(u.relativeLuminance2(n2, l3, a2), u.relativeLuminance2(r3, i2, o2));
-            return (n2 << 24 | l3 << 16 | a2 << 8 | 255) >>> 0;
-          }
-          function l2(t4, e4, s4) {
-            const r3 = t4 >> 24 & 255, i2 = t4 >> 16 & 255, o2 = t4 >> 8 & 255;
-            let n2 = e4 >> 24 & 255, l3 = e4 >> 16 & 255, a2 = e4 >> 8 & 255, h2 = _(u.relativeLuminance2(n2, l3, a2), u.relativeLuminance2(r3, i2, o2));
-            for (; h2 < s4 && (n2 < 255 || l3 < 255 || a2 < 255); ) n2 = Math.min(255, n2 + Math.ceil(0.1 * (255 - n2))), l3 = Math.min(255, l3 + Math.ceil(0.1 * (255 - l3))), a2 = Math.min(255, a2 + Math.ceil(0.1 * (255 - a2))), h2 = _(u.relativeLuminance2(n2, l3, a2), u.relativeLuminance2(r3, i2, o2));
-            return (n2 << 24 | l3 << 16 | a2 << 8 | 255) >>> 0;
-          }
-          t3.blend = function(t4, e4) {
-            if (o = (255 & e4) / 255, 1 === o) return e4;
-            const l3 = e4 >> 24 & 255, a2 = e4 >> 16 & 255, u2 = e4 >> 8 & 255, h2 = t4 >> 24 & 255, c2 = t4 >> 16 & 255, _2 = t4 >> 8 & 255;
-            return s3 = h2 + Math.round((l3 - h2) * o), r2 = c2 + Math.round((a2 - c2) * o), i = _2 + Math.round((u2 - _2) * o), n.toRgba(s3, r2, i);
-          }, t3.ensureContrastRatio = function(t4, s4, r3) {
-            const i2 = u.relativeLuminance(t4 >> 8), o2 = u.relativeLuminance(s4 >> 8);
-            if (_(i2, o2) < r3) {
-              if (o2 < i2) {
-                const o3 = e3(t4, s4, r3), n3 = _(i2, u.relativeLuminance(o3 >> 8));
-                if (n3 < r3) {
-                  const e4 = l2(t4, s4, r3);
-                  return n3 > _(i2, u.relativeLuminance(e4 >> 8)) ? o3 : e4;
-                }
-                return o3;
-              }
-              const n2 = l2(t4, s4, r3), a2 = _(i2, u.relativeLuminance(n2 >> 8));
-              if (a2 < r3) {
-                const o3 = e3(t4, s4, r3);
-                return a2 > _(i2, u.relativeLuminance(o3 >> 8)) ? n2 : o3;
-              }
-              return n2;
-            }
-          }, t3.reduceLuminance = e3, t3.increaseLuminance = l2, t3.toChannels = function(t4) {
-            return [t4 >> 24 & 255, t4 >> 16 & 255, t4 >> 8 & 255, 255 & t4];
-          };
-        })(h || (e2.rgba = h = {}));
-      } }, e = {};
-      function s2(r2) {
-        var i = e[r2];
-        if (void 0 !== i) return i.exports;
-        var o = e[r2] = { exports: {} };
-        return t[r2](o, o.exports, s2), o.exports;
-      }
-      var r = {};
-      return (() => {
-        var t2 = r;
-        Object.defineProperty(t2, "__esModule", { value: true }), t2.HTMLSerializeHandler = t2.SerializeAddon = void 0;
-        const e2 = s2(992);
-        function i(t3, e3, s3) {
-          return Math.max(e3, Math.min(t3, s3));
-        }
-        class o {
-          constructor(t3) {
-            this._buffer = t3;
-          }
-          serialize(t3, e3) {
-            const s3 = this._buffer.getNullCell(), r2 = this._buffer.getNullCell();
-            let i2 = s3;
-            const o2 = t3.start.y, n2 = t3.end.y, l2 = t3.start.x, a2 = t3.end.x;
-            this._beforeSerialize(n2 - o2, o2, n2);
-            for (let e4 = o2; e4 <= n2; e4++) {
-              const o3 = this._buffer.getLine(e4);
-              if (o3) {
-                const n3 = e4 === t3.start.y ? l2 : 0, u2 = e4 === t3.end.y ? a2 : o3.length;
-                for (let t4 = n3; t4 < u2; t4++) {
-                  const n4 = o3.getCell(t4, i2 === s3 ? r2 : s3);
-                  n4 ? (this._nextCell(n4, i2, e4, t4), i2 = n4) : console.warn(`Can't get cell at row=${e4}, col=${t4}`);
-                }
-              }
-              this._rowEnd(e4, e4 === n2);
-            }
-            return this._afterSerialize(), this._serializeString(e3);
-          }
-          _nextCell(t3, e3, s3, r2) {
-          }
-          _rowEnd(t3, e3) {
-          }
-          _beforeSerialize(t3, e3, s3) {
-          }
-          _afterSerialize() {
-          }
-          _serializeString(t3) {
-            return "";
-          }
-        }
-        function n(t3, e3) {
-          return t3.getFgColorMode() === e3.getFgColorMode() && t3.getFgColor() === e3.getFgColor();
-        }
-        function l(t3, e3) {
-          return t3.getBgColorMode() === e3.getBgColorMode() && t3.getBgColor() === e3.getBgColor();
-        }
-        function a(t3, e3) {
-          return t3.isInverse() === e3.isInverse() && t3.isBold() === e3.isBold() && t3.isUnderline() === e3.isUnderline() && t3.isOverline() === e3.isOverline() && t3.isBlink() === e3.isBlink() && t3.isInvisible() === e3.isInvisible() && t3.isItalic() === e3.isItalic() && t3.isDim() === e3.isDim() && t3.isStrikethrough() === e3.isStrikethrough();
-        }
-        class u extends o {
-          constructor(t3, e3) {
-            super(t3), this._terminal = e3, this._rowIndex = 0, this._allRows = new Array(), this._allRowSeparators = new Array(), this._currentRow = "", this._nullCellCount = 0, this._cursorStyle = this._buffer.getNullCell(), this._cursorStyleRow = 0, this._cursorStyleCol = 0, this._backgroundCell = this._buffer.getNullCell(), this._firstRow = 0, this._lastCursorRow = 0, this._lastCursorCol = 0, this._lastContentCursorRow = 0, this._lastContentCursorCol = 0, this._thisRowLastChar = this._buffer.getNullCell(), this._thisRowLastSecondChar = this._buffer.getNullCell(), this._nextRowFirstChar = this._buffer.getNullCell();
-          }
-          _beforeSerialize(t3, e3, s3) {
-            this._allRows = new Array(t3), this._lastContentCursorRow = e3, this._lastCursorRow = e3, this._firstRow = e3;
-          }
-          _rowEnd(t3, e3) {
-            this._nullCellCount > 0 && !l(this._cursorStyle, this._backgroundCell) && (this._currentRow += `\x1B[${this._nullCellCount}X`);
-            let s3 = "";
-            if (!e3) {
-              t3 - this._firstRow >= this._terminal.rows && this._buffer.getLine(this._cursorStyleRow)?.getCell(this._cursorStyleCol, this._backgroundCell);
-              const e4 = this._buffer.getLine(t3), r2 = this._buffer.getLine(t3 + 1);
-              if (r2.isWrapped) {
-                s3 = "";
-                const i2 = e4.getCell(e4.length - 1, this._thisRowLastChar), o2 = e4.getCell(e4.length - 2, this._thisRowLastSecondChar), n2 = r2.getCell(0, this._nextRowFirstChar), a2 = n2.getWidth() > 1;
-                let u2 = false;
-                (n2.getChars() && a2 ? this._nullCellCount <= 1 : this._nullCellCount <= 0) && ((i2.getChars() || 0 === i2.getWidth()) && l(i2, n2) && (u2 = true), a2 && (o2.getChars() || 0 === o2.getWidth()) && l(i2, n2) && l(o2, n2) && (u2 = true)), u2 || (s3 = "-".repeat(this._nullCellCount + 1), s3 += "\x1B[1D\x1B[1X", this._nullCellCount > 0 && (s3 += "\x1B[A", s3 += `\x1B[${e4.length - this._nullCellCount}C`, s3 += `\x1B[${this._nullCellCount}X`, s3 += `\x1B[${e4.length - this._nullCellCount}D`, s3 += "\x1B[B"), this._lastContentCursorRow = t3 + 1, this._lastContentCursorCol = 0, this._lastCursorRow = t3 + 1, this._lastCursorCol = 0);
-              } else s3 = "\r\n", this._lastCursorRow = t3 + 1, this._lastCursorCol = 0;
-            }
-            this._allRows[this._rowIndex] = this._currentRow, this._allRowSeparators[this._rowIndex++] = s3, this._currentRow = "", this._nullCellCount = 0;
-          }
-          _diffStyle(t3, e3) {
-            const s3 = [], r2 = !n(t3, e3), i2 = !l(t3, e3), o2 = !a(t3, e3);
-            if (r2 || i2 || o2) if (t3.isAttributeDefault()) e3.isAttributeDefault() || s3.push(0);
-            else {
-              if (r2) {
-                const e4 = t3.getFgColor();
-                t3.isFgRGB() ? s3.push(38, 2, e4 >>> 16 & 255, e4 >>> 8 & 255, 255 & e4) : t3.isFgPalette() ? e4 >= 16 ? s3.push(38, 5, e4) : s3.push(8 & e4 ? 90 + (7 & e4) : 30 + (7 & e4)) : s3.push(39);
-              }
-              if (i2) {
-                const e4 = t3.getBgColor();
-                t3.isBgRGB() ? s3.push(48, 2, e4 >>> 16 & 255, e4 >>> 8 & 255, 255 & e4) : t3.isBgPalette() ? e4 >= 16 ? s3.push(48, 5, e4) : s3.push(8 & e4 ? 100 + (7 & e4) : 40 + (7 & e4)) : s3.push(49);
-              }
-              o2 && (t3.isInverse() !== e3.isInverse() && s3.push(t3.isInverse() ? 7 : 27), t3.isBold() !== e3.isBold() && s3.push(t3.isBold() ? 1 : 22), t3.isUnderline() !== e3.isUnderline() && s3.push(t3.isUnderline() ? 4 : 24), t3.isOverline() !== e3.isOverline() && s3.push(t3.isOverline() ? 53 : 55), t3.isBlink() !== e3.isBlink() && s3.push(t3.isBlink() ? 5 : 25), t3.isInvisible() !== e3.isInvisible() && s3.push(t3.isInvisible() ? 8 : 28), t3.isItalic() !== e3.isItalic() && s3.push(t3.isItalic() ? 3 : 23), t3.isDim() !== e3.isDim() && s3.push(t3.isDim() ? 2 : 22), t3.isStrikethrough() !== e3.isStrikethrough() && s3.push(t3.isStrikethrough() ? 9 : 29));
-            }
-            return s3;
-          }
-          _nextCell(t3, e3, s3, r2) {
-            if (0 === t3.getWidth()) return;
-            const i2 = "" === t3.getChars(), o2 = this._diffStyle(t3, this._cursorStyle);
-            if (i2 ? !l(this._cursorStyle, t3) : o2.length > 0) {
-              this._nullCellCount > 0 && (l(this._cursorStyle, this._backgroundCell) || (this._currentRow += `\x1B[${this._nullCellCount}X`), this._currentRow += `\x1B[${this._nullCellCount}C`, this._nullCellCount = 0), this._lastContentCursorRow = this._lastCursorRow = s3, this._lastContentCursorCol = this._lastCursorCol = r2, this._currentRow += `\x1B[${o2.join(";")}m`;
-              const t4 = this._buffer.getLine(s3);
-              void 0 !== t4 && (t4.getCell(r2, this._cursorStyle), this._cursorStyleRow = s3, this._cursorStyleCol = r2);
-            }
-            i2 ? this._nullCellCount += t3.getWidth() : (this._nullCellCount > 0 && (l(this._cursorStyle, this._backgroundCell) || (this._currentRow += `\x1B[${this._nullCellCount}X`), this._currentRow += `\x1B[${this._nullCellCount}C`, this._nullCellCount = 0), this._currentRow += t3.getChars(), this._lastContentCursorRow = this._lastCursorRow = s3, this._lastContentCursorCol = this._lastCursorCol = r2 + t3.getWidth());
-          }
-          _serializeString(t3) {
-            let e3 = this._allRows.length;
-            this._buffer.length - this._firstRow <= this._terminal.rows && (e3 = this._lastContentCursorRow + 1 - this._firstRow, this._lastCursorCol = this._lastContentCursorCol, this._lastCursorRow = this._lastContentCursorRow);
-            let s3 = "";
-            for (let t4 = 0; t4 < e3; t4++) s3 += this._allRows[t4], t4 + 1 < e3 && (s3 += this._allRowSeparators[t4]);
-            if (!t3) {
-              const t4 = this._buffer.baseY + this._buffer.cursorY, e4 = this._buffer.cursorX, i3 = (t5) => {
-                t5 > 0 ? s3 += `\x1B[${t5}C` : t5 < 0 && (s3 += `\x1B[${-t5}D`);
-              };
-              (t4 !== this._lastCursorRow || e4 !== this._lastCursorCol) && ((r2 = t4 - this._lastCursorRow) > 0 ? s3 += `\x1B[${r2}B` : r2 < 0 && (s3 += `\x1B[${-r2}A`), i3(e4 - this._lastCursorCol));
-            }
-            var r2;
-            const i2 = this._terminal._core._inputHandler._curAttrData, o2 = this._diffStyle(i2, this._cursorStyle);
-            return o2.length > 0 && (s3 += `\x1B[${o2.join(";")}m`), s3;
-          }
-        }
-        t2.SerializeAddon = class {
-          activate(t3) {
-            this._terminal = t3;
-          }
-          _serializeBufferByScrollback(t3, e3, s3) {
-            const r2 = e3.length, o2 = void 0 === s3 ? r2 : i(s3 + t3.rows, 0, r2);
-            return this._serializeBufferByRange(t3, e3, { start: r2 - o2, end: r2 - 1 }, false);
-          }
-          _serializeBufferByRange(t3, e3, s3, r2) {
-            return new u(e3, t3).serialize({ start: { x: 0, y: "number" == typeof s3.start ? s3.start : s3.start.line }, end: { x: t3.cols, y: "number" == typeof s3.end ? s3.end : s3.end.line } }, r2);
-          }
-          _serializeBufferAsHTML(t3, e3) {
-            const s3 = t3.buffer.active, r2 = new h(s3, t3, e3), o2 = e3.onlySelection ?? false, n2 = e3.range;
-            if (n2) return r2.serialize({ start: { x: n2.startCol, y: (n2.startLine, n2.startLine) }, end: { x: t3.cols, y: (n2.endLine, n2.endLine) } });
-            if (!o2) {
-              const o3 = s3.length, n3 = e3.scrollback, l3 = void 0 === n3 ? o3 : i(n3 + t3.rows, 0, o3);
-              return r2.serialize({ start: { x: 0, y: o3 - l3 }, end: { x: t3.cols, y: o3 - 1 } });
-            }
-            const l2 = this._terminal?.getSelectionPosition();
-            return void 0 !== l2 ? r2.serialize({ start: { x: l2.start.x, y: l2.start.y }, end: { x: l2.end.x, y: l2.end.y } }) : "";
-          }
-          _serializeModes(t3) {
-            let e3 = "";
-            const s3 = t3.modes;
-            if (s3.applicationCursorKeysMode && (e3 += "\x1B[?1h"), s3.applicationKeypadMode && (e3 += "\x1B[?66h"), s3.bracketedPasteMode && (e3 += "\x1B[?2004h"), s3.insertMode && (e3 += "\x1B[4h"), s3.originMode && (e3 += "\x1B[?6h"), s3.reverseWraparoundMode && (e3 += "\x1B[?45h"), s3.sendFocusMode && (e3 += "\x1B[?1004h"), false === s3.wraparoundMode && (e3 += "\x1B[?7l"), "none" !== s3.mouseTrackingMode) switch (s3.mouseTrackingMode) {
-              case "x10":
-                e3 += "\x1B[?9h";
-                break;
-              case "vt200":
-                e3 += "\x1B[?1000h";
-                break;
-              case "drag":
-                e3 += "\x1B[?1002h";
-                break;
-              case "any":
-                e3 += "\x1B[?1003h";
-            }
-            return e3;
-          }
-          serialize(t3) {
-            if (!this._terminal) throw new Error("Cannot use addon until it has been loaded");
-            let e3 = t3?.range ? this._serializeBufferByRange(this._terminal, this._terminal.buffer.normal, t3.range, true) : this._serializeBufferByScrollback(this._terminal, this._terminal.buffer.normal, t3?.scrollback);
-            return t3?.excludeAltBuffer || "alternate" !== this._terminal.buffer.active.type || (e3 += `\x1B[?1049h\x1B[H${this._serializeBufferByScrollback(this._terminal, this._terminal.buffer.alternate, void 0)}`), t3?.excludeModes || (e3 += this._serializeModes(this._terminal)), e3;
-          }
-          serializeAsHTML(t3) {
-            if (!this._terminal) throw new Error("Cannot use addon until it has been loaded");
-            return this._serializeBufferAsHTML(this._terminal, t3 || {});
-          }
-          dispose() {
-          }
-        };
-        class h extends o {
-          constructor(t3, s3, r2) {
-            super(t3), this._terminal = s3, this._options = r2, this._currentRow = "", this._htmlContent = "", s3._core._themeService ? this._ansiColors = s3._core._themeService.colors.ansi : this._ansiColors = e2.DEFAULT_ANSI_COLORS;
-          }
-          _padStart(t3, e3, s3) {
-            return e3 |= 0, s3 = s3 ?? " ", t3.length > e3 ? t3 : ((e3 -= t3.length) > s3.length && (s3 += s3.repeat(e3 / s3.length)), s3.slice(0, e3) + t3);
-          }
-          _beforeSerialize(t3, e3, s3) {
-            this._htmlContent += "<html><body><!--StartFragment--><pre>";
-            let r2 = "#000000", i2 = "#ffffff";
-            this._options.includeGlobalBackground && (r2 = this._terminal.options.theme?.foreground ?? "#ffffff", i2 = this._terminal.options.theme?.background ?? "#000000");
-            const o2 = [];
-            o2.push("color: " + r2 + ";"), o2.push("background-color: " + i2 + ";"), o2.push("font-family: " + this._terminal.options.fontFamily + ";"), o2.push("font-size: " + this._terminal.options.fontSize + "px;"), this._htmlContent += "<div style='" + o2.join(" ") + "'>";
-          }
-          _afterSerialize() {
-            this._htmlContent += "</div>", this._htmlContent += "</pre><!--EndFragment--></body></html>";
-          }
-          _rowEnd(t3, e3) {
-            this._htmlContent += "<div><span>" + this._currentRow + "</span></div>", this._currentRow = "";
-          }
-          _getHexColor(t3, e3) {
-            const s3 = e3 ? t3.getFgColor() : t3.getBgColor();
-            return (e3 ? t3.isFgRGB() : t3.isBgRGB()) ? "#" + [s3 >> 16 & 255, s3 >> 8 & 255, 255 & s3].map(((t4) => this._padStart(t4.toString(16), 2, "0"))).join("") : (e3 ? t3.isFgPalette() : t3.isBgPalette()) ? this._ansiColors[s3].css : void 0;
-          }
-          _diffStyle(t3, e3) {
-            const s3 = [], r2 = !n(t3, e3), i2 = !l(t3, e3), o2 = !a(t3, e3);
-            if (r2 || i2 || o2) {
-              const e4 = this._getHexColor(t3, true);
-              e4 && s3.push("color: " + e4 + ";");
-              const r3 = this._getHexColor(t3, false);
-              return r3 && s3.push("background-color: " + r3 + ";"), t3.isInverse() && s3.push("color: #000000; background-color: #BFBFBF;"), t3.isBold() && s3.push("font-weight: bold;"), t3.isUnderline() && t3.isOverline() ? s3.push("text-decoration: overline underline;") : t3.isUnderline() ? s3.push("text-decoration: underline;") : t3.isOverline() && s3.push("text-decoration: overline;"), t3.isBlink() && s3.push("text-decoration: blink;"), t3.isInvisible() && s3.push("visibility: hidden;"), t3.isItalic() && s3.push("font-style: italic;"), t3.isDim() && s3.push("opacity: 0.5;"), t3.isStrikethrough() && s3.push("text-decoration: line-through;"), s3;
-            }
-          }
-          _nextCell(t3, e3, s3, r2) {
-            if (0 === t3.getWidth()) return;
-            const i2 = "" === t3.getChars(), o2 = this._diffStyle(t3, e3);
-            o2 && (this._currentRow += 0 === o2.length ? "</span><span>" : "</span><span style='" + o2.join(" ") + "'>"), this._currentRow += i2 ? " " : (function(t4) {
-              switch (t4) {
-                case "&":
-                  return "&amp;";
-                case "<":
-                  return "&lt;";
-              }
-              return t4;
-            })(t3.getChars());
-          }
-          _serializeString() {
-            return this._htmlContent;
-          }
-        }
-        t2.HTMLSerializeHandler = h;
-      })(), r;
-    })()));
-  }
-});
-
-// node_modules/zod/v3/external.js
-var external_exports = {};
-__export(external_exports, {
-  BRAND: () => BRAND,
-  DIRTY: () => DIRTY,
-  EMPTY_PATH: () => EMPTY_PATH,
-  INVALID: () => INVALID,
-  NEVER: () => NEVER,
-  OK: () => OK,
-  ParseStatus: () => ParseStatus,
-  Schema: () => ZodType,
-  ZodAny: () => ZodAny,
-  ZodArray: () => ZodArray,
-  ZodBigInt: () => ZodBigInt,
-  ZodBoolean: () => ZodBoolean,
-  ZodBranded: () => ZodBranded,
-  ZodCatch: () => ZodCatch,
-  ZodDate: () => ZodDate,
-  ZodDefault: () => ZodDefault,
-  ZodDiscriminatedUnion: () => ZodDiscriminatedUnion,
-  ZodEffects: () => ZodEffects,
-  ZodEnum: () => ZodEnum,
-  ZodError: () => ZodError,
-  ZodFirstPartyTypeKind: () => ZodFirstPartyTypeKind,
-  ZodFunction: () => ZodFunction,
-  ZodIntersection: () => ZodIntersection,
-  ZodIssueCode: () => ZodIssueCode,
-  ZodLazy: () => ZodLazy,
-  ZodLiteral: () => ZodLiteral,
-  ZodMap: () => ZodMap,
-  ZodNaN: () => ZodNaN,
-  ZodNativeEnum: () => ZodNativeEnum,
-  ZodNever: () => ZodNever,
-  ZodNull: () => ZodNull,
-  ZodNullable: () => ZodNullable,
-  ZodNumber: () => ZodNumber,
-  ZodObject: () => ZodObject,
-  ZodOptional: () => ZodOptional,
-  ZodParsedType: () => ZodParsedType,
-  ZodPipeline: () => ZodPipeline,
-  ZodPromise: () => ZodPromise,
-  ZodReadonly: () => ZodReadonly,
-  ZodRecord: () => ZodRecord,
-  ZodSchema: () => ZodType,
-  ZodSet: () => ZodSet,
-  ZodString: () => ZodString,
-  ZodSymbol: () => ZodSymbol,
-  ZodTransformer: () => ZodEffects,
-  ZodTuple: () => ZodTuple,
-  ZodType: () => ZodType,
-  ZodUndefined: () => ZodUndefined,
-  ZodUnion: () => ZodUnion,
-  ZodUnknown: () => ZodUnknown,
-  ZodVoid: () => ZodVoid,
-  addIssueToContext: () => addIssueToContext,
-  any: () => anyType,
-  array: () => arrayType,
-  bigint: () => bigIntType,
-  boolean: () => booleanType,
-  coerce: () => coerce,
-  custom: () => custom,
-  date: () => dateType,
-  datetimeRegex: () => datetimeRegex,
-  defaultErrorMap: () => en_default,
-  discriminatedUnion: () => discriminatedUnionType,
-  effect: () => effectsType,
-  enum: () => enumType,
-  function: () => functionType,
-  getErrorMap: () => getErrorMap,
-  getParsedType: () => getParsedType,
-  instanceof: () => instanceOfType,
-  intersection: () => intersectionType,
-  isAborted: () => isAborted,
-  isAsync: () => isAsync,
-  isDirty: () => isDirty,
-  isValid: () => isValid,
-  late: () => late,
-  lazy: () => lazyType,
-  literal: () => literalType,
-  makeIssue: () => makeIssue,
-  map: () => mapType,
-  nan: () => nanType,
-  nativeEnum: () => nativeEnumType,
-  never: () => neverType,
-  null: () => nullType,
-  nullable: () => nullableType,
-  number: () => numberType,
-  object: () => objectType,
-  objectUtil: () => objectUtil,
-  oboolean: () => oboolean,
-  onumber: () => onumber,
-  optional: () => optionalType,
-  ostring: () => ostring,
-  pipeline: () => pipelineType,
-  preprocess: () => preprocessType,
-  promise: () => promiseType,
-  quotelessJson: () => quotelessJson,
-  record: () => recordType,
-  set: () => setType,
-  setErrorMap: () => setErrorMap,
-  strictObject: () => strictObjectType,
-  string: () => stringType,
-  symbol: () => symbolType,
-  transformer: () => effectsType,
-  tuple: () => tupleType,
-  undefined: () => undefinedType,
-  union: () => unionType,
-  unknown: () => unknownType,
-  util: () => util,
-  void: () => voidType
-});
-
-// node_modules/zod/v3/helpers/util.js
+// node_modules/zod/lib/index.mjs
 var util;
 (function(util2) {
-  util2.assertEqual = (_) => {
-  };
+  util2.assertEqual = (val) => val;
   function assertIs(_arg) {
   }
   util2.assertIs = assertIs;
@@ -5599,7 +45,7 @@ var util;
     }
     return void 0;
   };
-  util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && Number.isFinite(val) && Math.floor(val) === val;
+  util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && isFinite(val) && Math.floor(val) === val;
   function joinValues(array3, separator = " | ") {
     return array3.map((val) => typeof val === "string" ? `'${val}'` : val).join(separator);
   }
@@ -5651,7 +97,7 @@ var getParsedType = (data2) => {
     case "string":
       return ZodParsedType.string;
     case "number":
-      return Number.isNaN(data2) ? ZodParsedType.nan : ZodParsedType.number;
+      return isNaN(data2) ? ZodParsedType.nan : ZodParsedType.number;
     case "boolean":
       return ZodParsedType.boolean;
     case "function":
@@ -5684,8 +130,6 @@ var getParsedType = (data2) => {
       return ZodParsedType.unknown;
   }
 };
-
-// node_modules/zod/v3/ZodError.js
 var ZodIssueCode = util.arrayToEnum([
   "invalid_type",
   "invalid_literal",
@@ -5785,9 +229,8 @@ var ZodError = class _ZodError extends Error {
     const formErrors = [];
     for (const sub of this.issues) {
       if (sub.path.length > 0) {
-        const firstEl = sub.path[0];
-        fieldErrors[firstEl] = fieldErrors[firstEl] || [];
-        fieldErrors[firstEl].push(mapper(sub));
+        fieldErrors[sub.path[0]] = fieldErrors[sub.path[0]] || [];
+        fieldErrors[sub.path[0]].push(mapper(sub));
       } else {
         formErrors.push(mapper(sub));
       }
@@ -5802,8 +245,6 @@ ZodError.create = (issues) => {
   const error = new ZodError(issues);
   return error;
 };
-
-// node_modules/zod/v3/locales/en.js
 var errorMap = (issue, _ctx) => {
   let message;
   switch (issue.code) {
@@ -5865,8 +306,6 @@ var errorMap = (issue, _ctx) => {
         message = `String must contain ${issue.exact ? "exactly" : issue.inclusive ? `at least` : `over`} ${issue.minimum} character(s)`;
       else if (issue.type === "number")
         message = `Number must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${issue.minimum}`;
-      else if (issue.type === "bigint")
-        message = `Number must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${issue.minimum}`;
       else if (issue.type === "date")
         message = `Date must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${new Date(Number(issue.minimum))}`;
       else
@@ -5904,18 +343,13 @@ var errorMap = (issue, _ctx) => {
   }
   return { message };
 };
-var en_default = errorMap;
-
-// node_modules/zod/v3/errors.js
-var overrideErrorMap = en_default;
+var overrideErrorMap = errorMap;
 function setErrorMap(map) {
   overrideErrorMap = map;
 }
 function getErrorMap() {
   return overrideErrorMap;
 }
-
-// node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
   const { data: data2, path, errorMaps, issueData } = params;
   const fullPath = [...path, ...issueData.path || []];
@@ -5955,7 +389,7 @@ function addIssueToContext(ctx, issueData) {
       // then schema-bound map if available
       overrideMap,
       // then global override map
-      overrideMap === en_default ? void 0 : en_default
+      overrideMap === errorMap ? void 0 : errorMap
       // then global default map
     ].filter((x) => !!x)
   });
@@ -6024,15 +458,24 @@ var isAborted = (x) => x.status === "aborted";
 var isDirty = (x) => x.status === "dirty";
 var isValid = (x) => x.status === "valid";
 var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
-
-// node_modules/zod/v3/helpers/errorUtil.js
+function __classPrivateFieldGet(receiver, state, kind, f) {
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+}
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+  if (kind === "m") throw new TypeError("Private method is not writable");
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
+}
 var errorUtil;
 (function(errorUtil2) {
   errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
-  errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
+  errorUtil2.toString = (message) => typeof message === "string" ? message : message === null || message === void 0 ? void 0 : message.message;
 })(errorUtil || (errorUtil = {}));
-
-// node_modules/zod/v3/types.js
+var _ZodEnum_cache;
+var _ZodNativeEnum_cache;
 var ParseInputLazyPath = class {
   constructor(parent, value, path, key) {
     this._cachedPath = [];
@@ -6043,7 +486,7 @@ var ParseInputLazyPath = class {
   }
   get path() {
     if (!this._cachedPath.length) {
-      if (Array.isArray(this._key)) {
+      if (this._key instanceof Array) {
         this._cachedPath.push(...this._path, ...this._key);
       } else {
         this._cachedPath.push(...this._path, this._key);
@@ -6081,16 +524,17 @@ function processCreateParams(params) {
   if (errorMap2)
     return { errorMap: errorMap2, description };
   const customMap = (iss, ctx) => {
+    var _a, _b;
     const { message } = params;
     if (iss.code === "invalid_enum_value") {
-      return { message: message ?? ctx.defaultError };
+      return { message: message !== null && message !== void 0 ? message : ctx.defaultError };
     }
     if (typeof ctx.data === "undefined") {
-      return { message: message ?? required_error ?? ctx.defaultError };
+      return { message: (_a = message !== null && message !== void 0 ? message : required_error) !== null && _a !== void 0 ? _a : ctx.defaultError };
     }
     if (iss.code !== "invalid_type")
       return { message: ctx.defaultError };
-    return { message: message ?? invalid_type_error ?? ctx.defaultError };
+    return { message: (_b = message !== null && message !== void 0 ? message : invalid_type_error) !== null && _b !== void 0 ? _b : ctx.defaultError };
   };
   return { errorMap: customMap, description };
 }
@@ -6142,13 +586,14 @@ var ZodType = class {
     throw result.error;
   }
   safeParse(data2, params) {
+    var _a;
     const ctx = {
       common: {
         issues: [],
-        async: params?.async ?? false,
-        contextualErrorMap: params?.errorMap
+        async: (_a = params === null || params === void 0 ? void 0 : params.async) !== null && _a !== void 0 ? _a : false,
+        contextualErrorMap: params === null || params === void 0 ? void 0 : params.errorMap
       },
-      path: params?.path || [],
+      path: (params === null || params === void 0 ? void 0 : params.path) || [],
       schemaErrorMap: this._def.errorMap,
       parent: null,
       data: data2,
@@ -6158,6 +603,7 @@ var ZodType = class {
     return handleResult(ctx, result);
   }
   "~validate"(data2) {
+    var _a, _b;
     const ctx = {
       common: {
         issues: [],
@@ -6178,7 +624,7 @@ var ZodType = class {
           issues: ctx.common.issues
         };
       } catch (err) {
-        if (err?.message?.toLowerCase()?.includes("encountered")) {
+        if ((_b = (_a = err === null || err === void 0 ? void 0 : err.message) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === null || _b === void 0 ? void 0 : _b.includes("encountered")) {
           this["~standard"].async = true;
         }
         ctx.common = {
@@ -6203,10 +649,10 @@ var ZodType = class {
     const ctx = {
       common: {
         issues: [],
-        contextualErrorMap: params?.errorMap,
+        contextualErrorMap: params === null || params === void 0 ? void 0 : params.errorMap,
         async: true
       },
-      path: params?.path || [],
+      path: (params === null || params === void 0 ? void 0 : params.path) || [],
       schemaErrorMap: this._def.errorMap,
       parent: null,
       data: data2,
@@ -6396,14 +842,13 @@ var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_
 var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
 var dateRegex = new RegExp(`^${dateRegexSource}$`);
 function timeRegexSource(args) {
-  let secondsRegexSource = `[0-5]\\d`;
+  let regex = `([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d`;
   if (args.precision) {
-    secondsRegexSource = `${secondsRegexSource}\\.\\d{${args.precision}}`;
+    regex = `${regex}\\.\\d{${args.precision}}`;
   } else if (args.precision == null) {
-    secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
+    regex = `${regex}(\\.\\d+)?`;
   }
-  const secondsQuantifier = args.precision ? "+" : "?";
-  return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
+  return regex;
 }
 function timeRegex(args) {
   return new RegExp(`^${timeRegexSource(args)}$`);
@@ -6431,20 +876,16 @@ function isValidJWT(jwt, alg) {
     return false;
   try {
     const [header] = jwt.split(".");
-    if (!header)
-      return false;
     const base64 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
     const decoded = JSON.parse(atob(base64));
     if (typeof decoded !== "object" || decoded === null)
       return false;
-    if ("typ" in decoded && decoded?.typ !== "JWT")
-      return false;
-    if (!decoded.alg)
+    if (!decoded.typ || !decoded.alg)
       return false;
     if (alg && decoded.alg !== alg)
       return false;
     return true;
-  } catch {
+  } catch (_a) {
     return false;
   }
 }
@@ -6603,7 +1044,7 @@ var ZodString = class _ZodString extends ZodType {
       } else if (check.kind === "url") {
         try {
           new URL(input2.data);
-        } catch {
+        } catch (_a) {
           ctx = this._getOrReturnCtx(input2, ctx);
           addIssueToContext(ctx, {
             validation: "url",
@@ -6815,6 +1256,7 @@ var ZodString = class _ZodString extends ZodType {
     return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options) });
   }
   datetime(options) {
+    var _a, _b;
     if (typeof options === "string") {
       return this._addCheck({
         kind: "datetime",
@@ -6826,10 +1268,10 @@ var ZodString = class _ZodString extends ZodType {
     }
     return this._addCheck({
       kind: "datetime",
-      precision: typeof options?.precision === "undefined" ? null : options?.precision,
-      offset: options?.offset ?? false,
-      local: options?.local ?? false,
-      ...errorUtil.errToObj(options?.message)
+      precision: typeof (options === null || options === void 0 ? void 0 : options.precision) === "undefined" ? null : options === null || options === void 0 ? void 0 : options.precision,
+      offset: (_a = options === null || options === void 0 ? void 0 : options.offset) !== null && _a !== void 0 ? _a : false,
+      local: (_b = options === null || options === void 0 ? void 0 : options.local) !== null && _b !== void 0 ? _b : false,
+      ...errorUtil.errToObj(options === null || options === void 0 ? void 0 : options.message)
     });
   }
   date(message) {
@@ -6845,8 +1287,8 @@ var ZodString = class _ZodString extends ZodType {
     }
     return this._addCheck({
       kind: "time",
-      precision: typeof options?.precision === "undefined" ? null : options?.precision,
-      ...errorUtil.errToObj(options?.message)
+      precision: typeof (options === null || options === void 0 ? void 0 : options.precision) === "undefined" ? null : options === null || options === void 0 ? void 0 : options.precision,
+      ...errorUtil.errToObj(options === null || options === void 0 ? void 0 : options.message)
     });
   }
   duration(message) {
@@ -6863,8 +1305,8 @@ var ZodString = class _ZodString extends ZodType {
     return this._addCheck({
       kind: "includes",
       value,
-      position: options?.position,
-      ...errorUtil.errToObj(options?.message)
+      position: options === null || options === void 0 ? void 0 : options.position,
+      ...errorUtil.errToObj(options === null || options === void 0 ? void 0 : options.message)
     });
   }
   startsWith(value, message) {
@@ -6996,10 +1438,11 @@ var ZodString = class _ZodString extends ZodType {
   }
 };
 ZodString.create = (params) => {
+  var _a;
   return new ZodString({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodString,
-    coerce: params?.coerce ?? false,
+    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false,
     ...processCreateParams(params)
   });
 };
@@ -7007,9 +1450,9 @@ function floatSafeRemainder(val, step) {
   const valDecCount = (val.toString().split(".")[1] || "").length;
   const stepDecCount = (step.toString().split(".")[1] || "").length;
   const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
-  const valInt = Number.parseInt(val.toFixed(decCount).replace(".", ""));
-  const stepInt = Number.parseInt(step.toFixed(decCount).replace(".", ""));
-  return valInt % stepInt / 10 ** decCount;
+  const valInt = parseInt(val.toFixed(decCount).replace(".", ""));
+  const stepInt = parseInt(step.toFixed(decCount).replace(".", ""));
+  return valInt % stepInt / Math.pow(10, decCount);
 }
 var ZodNumber = class _ZodNumber extends ZodType {
   constructor() {
@@ -7219,8 +1662,7 @@ var ZodNumber = class _ZodNumber extends ZodType {
     return !!this._def.checks.find((ch) => ch.kind === "int" || ch.kind === "multipleOf" && util.isInteger(ch.value));
   }
   get isFinite() {
-    let max = null;
-    let min = null;
+    let max = null, min = null;
     for (const ch of this._def.checks) {
       if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
         return true;
@@ -7239,7 +1681,7 @@ ZodNumber.create = (params) => {
   return new ZodNumber({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodNumber,
-    coerce: params?.coerce || false,
+    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
     ...processCreateParams(params)
   });
 };
@@ -7253,7 +1695,7 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
     if (this._def.coerce) {
       try {
         input2.data = BigInt(input2.data);
-      } catch {
+      } catch (_a) {
         return this._getInvalidInput(input2);
       }
     }
@@ -7408,10 +1850,11 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
   }
 };
 ZodBigInt.create = (params) => {
+  var _a;
   return new ZodBigInt({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodBigInt,
-    coerce: params?.coerce ?? false,
+    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false,
     ...processCreateParams(params)
   });
 };
@@ -7436,7 +1879,7 @@ var ZodBoolean = class extends ZodType {
 ZodBoolean.create = (params) => {
   return new ZodBoolean({
     typeName: ZodFirstPartyTypeKind.ZodBoolean,
-    coerce: params?.coerce || false,
+    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
     ...processCreateParams(params)
   });
 };
@@ -7455,7 +1898,7 @@ var ZodDate = class _ZodDate extends ZodType {
       });
       return INVALID;
     }
-    if (Number.isNaN(input2.data.getTime())) {
+    if (isNaN(input2.data.getTime())) {
       const ctx2 = this._getOrReturnCtx(input2);
       addIssueToContext(ctx2, {
         code: ZodIssueCode.invalid_date
@@ -7544,7 +1987,7 @@ var ZodDate = class _ZodDate extends ZodType {
 ZodDate.create = (params) => {
   return new ZodDate({
     checks: [],
-    coerce: params?.coerce || false,
+    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
     typeName: ZodFirstPartyTypeKind.ZodDate,
     ...processCreateParams(params)
   });
@@ -7819,8 +2262,7 @@ var ZodObject = class _ZodObject extends ZodType {
       return this._cached;
     const shape = this._def.shape();
     const keys = util.objectKeys(shape);
-    this._cached = { shape, keys };
-    return this._cached;
+    return this._cached = { shape, keys };
   }
   _parse(input2) {
     const parsedType = this._getType(input2);
@@ -7870,8 +2312,8 @@ var ZodObject = class _ZodObject extends ZodType {
           });
           status2.dirty();
         }
-      } else if (unknownKeys === "strip") {
-      } else {
+      } else if (unknownKeys === "strip") ;
+      else {
         throw new Error(`Internal ZodObject error: invalid unknownKeys value.`);
       }
     } else {
@@ -7918,10 +2360,11 @@ var ZodObject = class _ZodObject extends ZodType {
       unknownKeys: "strict",
       ...message !== void 0 ? {
         errorMap: (issue, ctx) => {
-          const defaultError = this._def.errorMap?.(issue, ctx).message ?? ctx.defaultError;
+          var _a, _b, _c, _d;
+          const defaultError = (_c = (_b = (_a = this._def).errorMap) === null || _b === void 0 ? void 0 : _b.call(_a, issue, ctx).message) !== null && _c !== void 0 ? _c : ctx.defaultError;
           if (issue.code === "unrecognized_keys")
             return {
-              message: errorUtil.errToObj(message).message ?? defaultError
+              message: (_d = errorUtil.errToObj(message).message) !== null && _d !== void 0 ? _d : defaultError
             };
           return {
             message: defaultError
@@ -8052,11 +2495,11 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   pick(mask) {
     const shape = {};
-    for (const key of util.objectKeys(mask)) {
+    util.objectKeys(mask).forEach((key) => {
       if (mask[key] && this.shape[key]) {
         shape[key] = this.shape[key];
       }
-    }
+    });
     return new _ZodObject({
       ...this._def,
       shape: () => shape
@@ -8064,11 +2507,11 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   omit(mask) {
     const shape = {};
-    for (const key of util.objectKeys(this.shape)) {
+    util.objectKeys(this.shape).forEach((key) => {
       if (!mask[key]) {
         shape[key] = this.shape[key];
       }
-    }
+    });
     return new _ZodObject({
       ...this._def,
       shape: () => shape
@@ -8082,14 +2525,14 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   partial(mask) {
     const newShape = {};
-    for (const key of util.objectKeys(this.shape)) {
+    util.objectKeys(this.shape).forEach((key) => {
       const fieldSchema = this.shape[key];
       if (mask && !mask[key]) {
         newShape[key] = fieldSchema;
       } else {
         newShape[key] = fieldSchema.optional();
       }
-    }
+    });
     return new _ZodObject({
       ...this._def,
       shape: () => newShape
@@ -8097,7 +2540,7 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   required(mask) {
     const newShape = {};
-    for (const key of util.objectKeys(this.shape)) {
+    util.objectKeys(this.shape).forEach((key) => {
       if (mask && !mask[key]) {
         newShape[key] = this.shape[key];
       } else {
@@ -8108,7 +2551,7 @@ var ZodObject = class _ZodObject extends ZodType {
         }
         newShape[key] = newField;
       }
-    }
+    });
     return new _ZodObject({
       ...this._def,
       shape: () => newShape
@@ -8724,7 +3167,12 @@ var ZodFunction = class _ZodFunction extends ZodType {
       return makeIssue({
         data: args,
         path: ctx.path,
-        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
+        errorMaps: [
+          ctx.common.contextualErrorMap,
+          ctx.schemaErrorMap,
+          getErrorMap(),
+          errorMap
+        ].filter((x) => !!x),
         issueData: {
           code: ZodIssueCode.invalid_arguments,
           argumentsError: error
@@ -8735,7 +3183,12 @@ var ZodFunction = class _ZodFunction extends ZodType {
       return makeIssue({
         data: returns,
         path: ctx.path,
-        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
+        errorMaps: [
+          ctx.common.contextualErrorMap,
+          ctx.schemaErrorMap,
+          getErrorMap(),
+          errorMap
+        ].filter((x) => !!x),
         issueData: {
           code: ZodIssueCode.invalid_return_type,
           returnTypeError: error
@@ -8859,6 +3312,10 @@ function createZodEnum(values, params) {
   });
 }
 var ZodEnum = class _ZodEnum extends ZodType {
+  constructor() {
+    super(...arguments);
+    _ZodEnum_cache.set(this, void 0);
+  }
   _parse(input2) {
     if (typeof input2.data !== "string") {
       const ctx = this._getOrReturnCtx(input2);
@@ -8870,10 +3327,10 @@ var ZodEnum = class _ZodEnum extends ZodType {
       });
       return INVALID;
     }
-    if (!this._cache) {
-      this._cache = new Set(this._def.values);
+    if (!__classPrivateFieldGet(this, _ZodEnum_cache, "f")) {
+      __classPrivateFieldSet(this, _ZodEnum_cache, new Set(this._def.values), "f");
     }
-    if (!this._cache.has(input2.data)) {
+    if (!__classPrivateFieldGet(this, _ZodEnum_cache, "f").has(input2.data)) {
       const ctx = this._getOrReturnCtx(input2);
       const expectedValues = this._def.values;
       addIssueToContext(ctx, {
@@ -8922,8 +3379,13 @@ var ZodEnum = class _ZodEnum extends ZodType {
     });
   }
 };
+_ZodEnum_cache = /* @__PURE__ */ new WeakMap();
 ZodEnum.create = createZodEnum;
 var ZodNativeEnum = class extends ZodType {
+  constructor() {
+    super(...arguments);
+    _ZodNativeEnum_cache.set(this, void 0);
+  }
   _parse(input2) {
     const nativeEnumValues = util.getValidEnumValues(this._def.values);
     const ctx = this._getOrReturnCtx(input2);
@@ -8936,10 +3398,10 @@ var ZodNativeEnum = class extends ZodType {
       });
       return INVALID;
     }
-    if (!this._cache) {
-      this._cache = new Set(util.getValidEnumValues(this._def.values));
+    if (!__classPrivateFieldGet(this, _ZodNativeEnum_cache, "f")) {
+      __classPrivateFieldSet(this, _ZodNativeEnum_cache, new Set(util.getValidEnumValues(this._def.values)), "f");
     }
-    if (!this._cache.has(input2.data)) {
+    if (!__classPrivateFieldGet(this, _ZodNativeEnum_cache, "f").has(input2.data)) {
       const expectedValues = util.objectValues(nativeEnumValues);
       addIssueToContext(ctx, {
         received: ctx.data,
@@ -8954,6 +3416,7 @@ var ZodNativeEnum = class extends ZodType {
     return this._def.values;
   }
 };
+_ZodNativeEnum_cache = /* @__PURE__ */ new WeakMap();
 ZodNativeEnum.create = (values, params) => {
   return new ZodNativeEnum({
     values,
@@ -9094,7 +3557,7 @@ var ZodEffects = class extends ZodType {
           parent: ctx
         });
         if (!isValid(base))
-          return INVALID;
+          return base;
         const result = effect.transform(base.value, checkCtx);
         if (result instanceof Promise) {
           throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
@@ -9103,11 +3566,8 @@ var ZodEffects = class extends ZodType {
       } else {
         return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
           if (!isValid(base))
-            return INVALID;
-          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
-            status: status2.value,
-            value: result
-          }));
+            return base;
+          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({ status: status2.value, value: result }));
         });
       }
     }
@@ -9359,30 +3819,16 @@ ZodReadonly.create = (type, params) => {
     ...processCreateParams(params)
   });
 };
-function cleanParams(params, data2) {
-  const p = typeof params === "function" ? params(data2) : typeof params === "string" ? { message: params } : params;
-  const p2 = typeof p === "string" ? { message: p } : p;
-  return p2;
-}
-function custom(check, _params = {}, fatal) {
+function custom(check, params = {}, fatal) {
   if (check)
     return ZodAny.create().superRefine((data2, ctx) => {
-      const r = check(data2);
-      if (r instanceof Promise) {
-        return r.then((r2) => {
-          if (!r2) {
-            const params = cleanParams(_params, data2);
-            const _fatal = params.fatal ?? fatal ?? true;
-            ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
-          }
-        });
+      var _a, _b;
+      if (!check(data2)) {
+        const p = typeof params === "function" ? params(data2) : typeof params === "string" ? { message: params } : params;
+        const _fatal = (_b = (_a = p.fatal) !== null && _a !== void 0 ? _a : fatal) !== null && _b !== void 0 ? _b : true;
+        const p2 = typeof p === "string" ? { message: p } : p;
+        ctx.addIssue({ code: "custom", ...p2, fatal: _fatal });
       }
-      if (!r) {
-        const params = cleanParams(_params, data2);
-        const _fatal = params.fatal ?? fatal ?? true;
-        ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
-      }
-      return;
     });
   return ZodAny.create();
 }
@@ -9469,40 +3915,156 @@ var ostring = () => stringType().optional();
 var onumber = () => numberType().optional();
 var oboolean = () => booleanType().optional();
 var coerce = {
-  string: ((arg) => ZodString.create({ ...arg, coerce: true })),
-  number: ((arg) => ZodNumber.create({ ...arg, coerce: true })),
-  boolean: ((arg) => ZodBoolean.create({
+  string: (arg) => ZodString.create({ ...arg, coerce: true }),
+  number: (arg) => ZodNumber.create({ ...arg, coerce: true }),
+  boolean: (arg) => ZodBoolean.create({
     ...arg,
     coerce: true
-  })),
-  bigint: ((arg) => ZodBigInt.create({ ...arg, coerce: true })),
-  date: ((arg) => ZodDate.create({ ...arg, coerce: true }))
+  }),
+  bigint: (arg) => ZodBigInt.create({ ...arg, coerce: true }),
+  date: (arg) => ZodDate.create({ ...arg, coerce: true })
 };
 var NEVER = INVALID;
+var z = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  defaultErrorMap: errorMap,
+  setErrorMap,
+  getErrorMap,
+  makeIssue,
+  EMPTY_PATH,
+  addIssueToContext,
+  ParseStatus,
+  INVALID,
+  DIRTY,
+  OK,
+  isAborted,
+  isDirty,
+  isValid,
+  isAsync,
+  get util() {
+    return util;
+  },
+  get objectUtil() {
+    return objectUtil;
+  },
+  ZodParsedType,
+  getParsedType,
+  ZodType,
+  datetimeRegex,
+  ZodString,
+  ZodNumber,
+  ZodBigInt,
+  ZodBoolean,
+  ZodDate,
+  ZodSymbol,
+  ZodUndefined,
+  ZodNull,
+  ZodAny,
+  ZodUnknown,
+  ZodNever,
+  ZodVoid,
+  ZodArray,
+  ZodObject,
+  ZodUnion,
+  ZodDiscriminatedUnion,
+  ZodIntersection,
+  ZodTuple,
+  ZodRecord,
+  ZodMap,
+  ZodSet,
+  ZodFunction,
+  ZodLazy,
+  ZodLiteral,
+  ZodEnum,
+  ZodNativeEnum,
+  ZodPromise,
+  ZodEffects,
+  ZodTransformer: ZodEffects,
+  ZodOptional,
+  ZodNullable,
+  ZodDefault,
+  ZodCatch,
+  ZodNaN,
+  BRAND,
+  ZodBranded,
+  ZodPipeline,
+  ZodReadonly,
+  custom,
+  Schema: ZodType,
+  ZodSchema: ZodType,
+  late,
+  get ZodFirstPartyTypeKind() {
+    return ZodFirstPartyTypeKind;
+  },
+  coerce,
+  any: anyType,
+  array: arrayType,
+  bigint: bigIntType,
+  boolean: booleanType,
+  date: dateType,
+  discriminatedUnion: discriminatedUnionType,
+  effect: effectsType,
+  "enum": enumType,
+  "function": functionType,
+  "instanceof": instanceOfType,
+  intersection: intersectionType,
+  lazy: lazyType,
+  literal: literalType,
+  map: mapType,
+  nan: nanType,
+  nativeEnum: nativeEnumType,
+  never: neverType,
+  "null": nullType,
+  nullable: nullableType,
+  number: numberType,
+  object: objectType,
+  oboolean,
+  onumber,
+  optional: optionalType,
+  ostring,
+  pipeline: pipelineType,
+  preprocess: preprocessType,
+  promise: promiseType,
+  record: recordType,
+  set: setType,
+  strictObject: strictObjectType,
+  string: stringType,
+  symbol: symbolType,
+  transformer: effectsType,
+  tuple: tupleType,
+  "undefined": undefinedType,
+  union: unionType,
+  unknown: unknownType,
+  "void": voidType,
+  NEVER,
+  ZodIssueCode,
+  quotelessJson,
+  ZodError
+});
 
-// ../protocol/dist/loopback.js
+// ../protocol/src/loopback.ts
 var LOOPBACK_CHUNK_BYTES = 64 * 1024;
 var LOOPBACK_MAX_BODY_BYTES = 1024 * 1024;
 var LOOPBACK_MAX_WS_BYTES = 256 * 1024;
 var LOOPBACK_MAX_CONNECTIONS = 16;
-var id = external_exports.string().uuid();
-var data = external_exports.string().max(Math.ceil(LOOPBACK_MAX_BODY_BYTES / 3) * 4).regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/);
+var id = z.string().uuid();
+var data = z.string().max(Math.ceil(LOOPBACK_MAX_BODY_BYTES / 3) * 4).regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/);
 var target = {
-  port: external_exports.number().int().min(1024).max(65535),
-  path: external_exports.string().min(1).max(8192).regex(/^\/(?!\/)[^\x00-\x20\x7f\\]*$/),
-  headers: external_exports.array(external_exports.tuple([external_exports.string().regex(/^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/), external_exports.string().max(8192).regex(/^[^\x00-\x08\x0a-\x1f\x7f]*$/)])).max(64)
+  port: z.number().int().min(1024).max(65535),
+  path: z.string().min(1).max(8192).regex(/^\/(?!\/)[^\x00-\x20\x7f\\]*$/),
+  headers: z.array(z.tuple([z.string().regex(/^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/), z.string().max(8192).regex(/^[^\x00-\x08\x0a-\x1f\x7f]*$/)])).max(64)
 };
-var loopbackRequestSchema = external_exports.discriminatedUnion("op", [
-  external_exports.object({ op: external_exports.literal("describe") }).strict(),
-  external_exports.object({ op: external_exports.literal("http.open"), id, ...target, method: external_exports.enum(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]), body: data.optional() }).strict(),
-  external_exports.object({ op: external_exports.literal("http.read"), id }).strict(),
-  external_exports.object({ op: external_exports.literal("close"), id }).strict(),
-  external_exports.object({ op: external_exports.literal("ws.open"), id, ...target, protocols: external_exports.array(external_exports.string().regex(/^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/)).max(16) }).strict(),
-  external_exports.object({ op: external_exports.literal("ws.read"), id }).strict(),
-  external_exports.object({ op: external_exports.literal("ws.send"), id, data, binary: external_exports.boolean() }).strict()
+var loopbackRequestSchema = z.discriminatedUnion("op", [
+  z.object({ op: z.literal("describe") }).strict(),
+  z.object({ op: z.literal("http.open"), id, ...target, method: z.enum(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]), body: data.optional() }).strict(),
+  z.object({ op: z.literal("http.read"), id }).strict(),
+  z.object({ op: z.literal("close"), id }).strict(),
+  z.object({ op: z.literal("ws.open"), id, ...target, protocols: z.array(z.string().regex(/^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/)).max(16) }).strict(),
+  z.object({ op: z.literal("ws.read"), id }).strict(),
+  z.object({ op: z.literal("ws.send"), id, data, binary: z.boolean() }).strict()
 ]);
 
-// ../protocol/dist/index.js
+// ../protocol/src/index.ts
 var PROTOCOL_VERSION = 1;
 var MAX_CONTROL_FRAME_BYTES = 64 * 1024;
 var MAX_RELAY_FRAME_BYTES = 1024 * 1024;
@@ -9666,12 +4228,9 @@ var errorCodes = [
 ];
 var selectedTransports = ["lan", "p2p", "turn", "relay"];
 function normalizeSdpMLineIndex(value) {
-  if (value === void 0)
-    return void 0;
-  if (value === null)
-    return null;
-  if (typeof value !== "number" || !Number.isInteger(value) || value < 0)
-    return null;
+  if (value === void 0) return void 0;
+  if (value === null) return null;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) return null;
   return value;
 }
 function selectCapabilities(offered, supported) {
@@ -9685,132 +4244,131 @@ function acceptNegotiatedCapabilities(offered, negotiated) {
   }
   return [...accepted];
 }
-var rpcMethodSchema = external_exports.enum(rpcMethods);
-var messageTypeSchema = external_exports.enum(messageTypes);
-var controlFrameTypeSchema = external_exports.enum(controlFrameTypes);
-var errorCodeSchema = external_exports.enum(errorCodes);
+var rpcMethodSchema = z.enum(rpcMethods);
+var messageTypeSchema = z.enum(messageTypes);
+var controlFrameTypeSchema = z.enum(controlFrameTypes);
+var errorCodeSchema = z.enum(errorCodes);
 var uniqueStrings = (values) => new Set(values).size === values.length;
 var uniqueNumbers = (values) => new Set(values).size === values.length;
 var utf8Length = (value) => new TextEncoder().encode(value).byteLength;
-var boundedUtf8Schema = (minimum, maximum) => external_exports.string().refine((value) => utf8Length(value) >= minimum && utf8Length(value) <= maximum);
-var deviceIdSchema = external_exports.string().refine((value) => /^[0-9A-HJKMNP-TV-Z]{26}$/iu.test(value) || /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value), "Device ID must be a ULID or UUID.");
+var boundedUtf8Schema = (minimum, maximum) => z.string().refine((value) => utf8Length(value) >= minimum && utf8Length(value) <= maximum);
+var deviceIdSchema = z.string().refine((value) => /^[0-9A-HJKMNP-TV-Z]{26}$/iu.test(value) || /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value), "Device ID must be a ULID or UUID.");
 var deviceNameSchema = boundedUtf8Schema(1, MAX_DEVICE_NAME_LENGTH).refine((value) => value.trim().length > 0, "Device name must contain visible text.");
-var devicePlatformSchema = external_exports.string().min(1).max(MAX_DEVICE_PLATFORM_LENGTH).regex(/^[a-z0-9][a-z0-9._-]*$/u);
-var identityKeySchema = external_exports.string().regex(/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/u);
+var devicePlatformSchema = z.string().min(1).max(MAX_DEVICE_PLATFORM_LENGTH).regex(/^[a-z0-9][a-z0-9._-]*$/u);
+var identityKeySchema = z.string().regex(/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/u);
 var deviceVersionSchema = boundedUtf8Schema(1, MAX_DEVICE_VERSION_LENGTH);
 var authTokenSchema = boundedUtf8Schema(16, MAX_AUTH_TOKEN_LENGTH);
-var expiresAtSchema = external_exports.number().int().positive().safe();
-var hostDeviceDescriptorSchema = external_exports.object({
+var expiresAtSchema = z.number().int().positive().safe();
+var hostDeviceDescriptorSchema = z.object({
   deviceId: deviceIdSchema,
   name: deviceNameSchema,
-  role: external_exports.literal("host"),
+  role: z.literal("host"),
   platform: devicePlatformSchema,
   identityKey: identityKeySchema,
   clientVersion: deviceVersionSchema,
   harnessVersion: deviceVersionSchema.optional()
 }).strict();
-var clientDeviceDescriptorSchema = external_exports.object({
+var clientDeviceDescriptorSchema = z.object({
   deviceId: deviceIdSchema,
   name: deviceNameSchema,
-  role: external_exports.literal("client"),
+  role: z.literal("client"),
   platform: devicePlatformSchema,
   identityKey: identityKeySchema,
   clientVersion: deviceVersionSchema
 }).strict();
-var accountDeviceDescriptorSchema = external_exports.union([
+var accountDeviceDescriptorSchema = z.union([
   hostDeviceDescriptorSchema,
   clientDeviceDescriptorSchema
 ]);
-var deviceRegistrationRequestSchema = external_exports.object({
-  v: external_exports.literal(PROTOCOL_VERSION),
+var deviceRegistrationRequestSchema = z.object({
+  v: z.literal(PROTOCOL_VERSION),
   device: accountDeviceDescriptorSchema
 }).strict();
-var hostRegistrationCodeRequestSchema = external_exports.object({
-  v: external_exports.literal(PROTOCOL_VERSION),
-  code: external_exports.string().regex(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/u),
+var hostRegistrationCodeRequestSchema = z.object({
+  v: z.literal(PROTOCOL_VERSION),
+  code: z.string().regex(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/u),
   device: hostDeviceDescriptorSchema
 }).strict();
-var registerOwnedRoleRequestSchema = external_exports.object({
-  v: external_exports.literal(PROTOCOL_VERSION),
+var registerOwnedRoleRequestSchema = z.object({
+  v: z.literal(PROTOCOL_VERSION),
   device: accountDeviceDescriptorSchema
 }).strict();
-var deviceRefreshRequestSchema = external_exports.object({
+var deviceRefreshRequestSchema = z.object({
   deviceId: deviceIdSchema,
   refreshToken: authTokenSchema
 }).strict();
-var deviceTokenPairSchema = external_exports.object({
+var deviceTokenPairSchema = z.object({
   accessToken: authTokenSchema,
   accessTokenExpiresAt: expiresAtSchema,
   refreshToken: authTokenSchema,
   refreshTokenExpiresAt: expiresAtSchema
 }).strict();
-var browserAuthorizationExchangeRequestSchema = external_exports.object({
-  v: external_exports.literal(PROTOCOL_VERSION),
-  device: external_exports.object({
+var browserAuthorizationExchangeRequestSchema = z.object({
+  v: z.literal(PROTOCOL_VERSION),
+  device: z.object({
     deviceId: deviceIdSchema,
     name: deviceNameSchema,
-    role: external_exports.literal("client"),
-    platform: external_exports.literal("browser"),
+    role: z.literal("client"),
+    platform: z.literal("browser"),
     identityKey: identityKeySchema,
     clientVersion: deviceVersionSchema
   }).strict()
 }).strict();
-var browserAuthorizationExchangeResponseSchema = external_exports.object({
+var browserAuthorizationExchangeResponseSchema = z.object({
   accessToken: authTokenSchema,
   accessTokenExpiresAt: expiresAtSchema,
   refreshToken: authTokenSchema,
   refreshTokenExpiresAt: expiresAtSchema,
   account: boundedUtf8Schema(1, 254).refine((value) => value.trim().length > 0)
 }).strict();
-var remoteMessageSchema = external_exports.object({
-  v: external_exports.literal(PROTOCOL_VERSION),
-  id: external_exports.string().min(1),
+var remoteMessageSchema = z.object({
+  v: z.literal(PROTOCOL_VERSION),
+  id: z.string().min(1),
   type: messageTypeSchema,
-  timestamp: external_exports.number().int().positive(),
-  payload: external_exports.unknown()
+  timestamp: z.number().int().positive(),
+  payload: z.unknown()
 });
-var controlFrameSchema = external_exports.object({
-  v: external_exports.literal(PROTOCOL_VERSION),
-  id: external_exports.string().min(1),
+var controlFrameSchema = z.object({
+  v: z.literal(PROTOCOL_VERSION),
+  id: z.string().min(1),
   type: controlFrameTypeSchema,
-  timestamp: external_exports.number().int().positive(),
-  payload: external_exports.unknown()
+  timestamp: z.number().int().positive(),
+  payload: z.unknown()
 }).strict();
-var transportEnum = external_exports.enum(["lan", "p2p", "turn", "relay"]);
-var selectedTransportEnum = external_exports.enum(selectedTransports);
-var helloPayloadSchema = external_exports.object({
-  role: external_exports.enum(["host", "client"]),
-  deviceId: external_exports.string().min(1),
-  accessToken: external_exports.string().min(1),
-  protocols: external_exports.array(external_exports.number().int().nonnegative().safe()).min(1).refine(uniqueNumbers),
-  capabilities: external_exports.array(external_exports.string().min(1)).refine(uniqueStrings),
-  clientVersion: external_exports.string().optional(),
-  harnessVersion: external_exports.string().optional()
+var transportEnum = z.enum(["lan", "p2p", "turn", "relay"]);
+var selectedTransportEnum = z.enum(selectedTransports);
+var helloPayloadSchema = z.object({
+  role: z.enum(["host", "client"]),
+  deviceId: z.string().min(1),
+  accessToken: z.string().min(1),
+  protocols: z.array(z.number().int().nonnegative().safe()).min(1).refine(uniqueNumbers),
+  capabilities: z.array(z.string().min(1)).refine(uniqueStrings),
+  clientVersion: z.string().optional(),
+  harnessVersion: z.string().optional()
 });
-var helloAckPayloadSchema = external_exports.object({
-  protocol: external_exports.literal(PROTOCOL_VERSION),
-  serverVersion: external_exports.string().min(1),
-  connectionSessionId: external_exports.string().min(1),
-  heartbeatIntervalMs: external_exports.number().int().positive(),
-  maxControlFrameBytes: external_exports.number().int().positive().max(MAX_CONTROL_FRAME_BYTES),
-  maxRelayFrameBytes: external_exports.number().int().positive().max(MAX_RELAY_FRAME_BYTES),
-  capabilities: external_exports.array(external_exports.string().min(1)).refine(uniqueStrings).optional(),
-  webrtcEnabled: external_exports.boolean().optional(),
-  webrtcFallbackTimeoutMs: external_exports.number().int().positive().optional()
+var helloAckPayloadSchema = z.object({
+  protocol: z.literal(PROTOCOL_VERSION),
+  serverVersion: z.string().min(1),
+  connectionSessionId: z.string().min(1),
+  heartbeatIntervalMs: z.number().int().positive(),
+  maxControlFrameBytes: z.number().int().positive().max(MAX_CONTROL_FRAME_BYTES),
+  maxRelayFrameBytes: z.number().int().positive().max(MAX_RELAY_FRAME_BYTES),
+  capabilities: z.array(z.string().min(1)).refine(uniqueStrings).optional(),
+  webrtcEnabled: z.boolean().optional(),
+  webrtcFallbackTimeoutMs: z.number().int().positive().optional()
 });
-var remoteWorkspaceTypeDescriptionSchema = external_exports.object({
-  id: external_exports.string().min(1),
-  name: external_exports.string().min(1),
-  capability: external_exports.string().min(1),
-  available: external_exports.boolean()
+var remoteWorkspaceTypeDescriptionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  capability: z.string().min(1),
+  available: z.boolean()
 });
-var harnessTransportDescriptionSchema = external_exports.object({
-  capabilities: external_exports.array(external_exports.string().min(1)).refine(uniqueStrings),
-  workspaceTypes: external_exports.array(remoteWorkspaceTypeDescriptionSchema).optional()
+var harnessTransportDescriptionSchema = z.object({
+  capabilities: z.array(z.string().min(1)).refine(uniqueStrings),
+  workspaceTypes: z.array(remoteWorkspaceTypeDescriptionSchema).optional()
 });
 function parseRemoteWorkspaceTypes(value) {
-  if (!Array.isArray(value))
-    return [];
+  if (!Array.isArray(value)) return [];
   const types = [];
   for (const item of value) {
     const result = remoteWorkspaceTypeDescriptionSchema.safeParse(item);
@@ -9820,65 +4378,65 @@ function parseRemoteWorkspaceTypes(value) {
   }
   return types;
 }
-var connectRequestPayloadSchema = external_exports.object({
-  hostDeviceId: external_exports.string().min(1),
-  preferredTransports: external_exports.array(transportEnum).min(1)
+var connectRequestPayloadSchema = z.object({
+  hostDeviceId: z.string().min(1),
+  preferredTransports: z.array(transportEnum).min(1)
 });
-var connectIncomingPayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1),
-  clientDeviceId: external_exports.string().min(1),
-  clientIdentityKey: external_exports.string().min(1),
-  authorization: external_exports.literal("account"),
-  preferredTransports: external_exports.array(transportEnum).min(1)
+var connectIncomingPayloadSchema = z.object({
+  connectionId: z.string().min(1),
+  clientDeviceId: z.string().min(1),
+  clientIdentityKey: z.string().min(1),
+  authorization: z.literal("account"),
+  preferredTransports: z.array(transportEnum).min(1)
 });
-var connectAcceptedPayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1)
+var connectAcceptedPayloadSchema = z.object({
+  connectionId: z.string().min(1)
 });
-var connectRejectedPayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1),
-  code: external_exports.string().optional(),
-  message: external_exports.string().optional()
+var connectRejectedPayloadSchema = z.object({
+  connectionId: z.string().min(1),
+  code: z.string().optional(),
+  message: z.string().optional()
 });
-var secureHandshakePayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1),
-  targetDeviceId: external_exports.string().min(1),
-  step: external_exports.number().int().positive(),
-  data: external_exports.string().min(1)
+var secureHandshakePayloadSchema = z.object({
+  connectionId: z.string().min(1),
+  targetDeviceId: z.string().min(1),
+  step: z.number().int().positive(),
+  data: z.string().min(1)
 });
-var relayPayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1),
-  targetDeviceId: external_exports.string().min(1),
-  counter: external_exports.number().int().nonnegative().safe(),
-  ciphertext: external_exports.string().min(1)
+var relayPayloadSchema = z.object({
+  connectionId: z.string().min(1),
+  targetDeviceId: z.string().min(1),
+  counter: z.number().int().nonnegative().safe(),
+  ciphertext: z.string().min(1)
 });
-var signalPayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1),
-  targetDeviceId: external_exports.string().min(1),
-  sdp: external_exports.string().min(1)
+var signalPayloadSchema = z.object({
+  connectionId: z.string().min(1),
+  targetDeviceId: z.string().min(1),
+  sdp: z.string().min(1)
 });
-var signalIcePayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1),
-  targetDeviceId: external_exports.string().min(1),
-  candidate: external_exports.object({
-    candidate: external_exports.string().optional(),
-    sdpMid: external_exports.string().nullable().optional(),
-    sdpMLineIndex: external_exports.preprocess(normalizeSdpMLineIndex, external_exports.number().int().nonnegative().nullable().optional()),
-    usernameFragment: external_exports.string().nullable().optional()
+var signalIcePayloadSchema = z.object({
+  connectionId: z.string().min(1),
+  targetDeviceId: z.string().min(1),
+  candidate: z.object({
+    candidate: z.string().optional(),
+    sdpMid: z.string().nullable().optional(),
+    sdpMLineIndex: z.preprocess(normalizeSdpMLineIndex, z.number().int().nonnegative().nullable().optional()),
+    usernameFragment: z.string().nullable().optional()
   })
 });
-var transportSelectedPayloadSchema = external_exports.object({
-  connectionId: external_exports.string().min(1),
-  targetDeviceId: external_exports.string().min(1),
+var transportSelectedPayloadSchema = z.object({
+  connectionId: z.string().min(1),
+  targetDeviceId: z.string().min(1),
   transport: selectedTransportEnum
 });
-var pingPongPayloadSchema = external_exports.object({
-  nonce: external_exports.string().min(1)
+var pingPongPayloadSchema = z.object({
+  nonce: z.string().min(1)
 });
-var controlErrorPayloadSchema = external_exports.object({
-  code: external_exports.string().min(1),
-  message: external_exports.string().min(1),
-  retryable: external_exports.boolean().optional(),
-  connectionId: external_exports.string().min(1).optional()
+var controlErrorPayloadSchema = z.object({
+  code: z.string().min(1),
+  message: z.string().min(1),
+  retryable: z.boolean().optional(),
+  connectionId: z.string().min(1).optional()
 });
 var controlFramePayloadSchemas = {
   "hello": helloPayloadSchema,
@@ -9897,20 +4455,20 @@ var controlFramePayloadSchemas = {
   "pong": pingPongPayloadSchema,
   "error": controlErrorPayloadSchema
 };
-var rpcRequestPayloadSchema = external_exports.object({
+var rpcRequestPayloadSchema = z.object({
   method: rpcMethodSchema,
-  params: external_exports.unknown()
+  params: z.unknown()
 });
-var rpcResponsePayloadSchema = external_exports.object({
-  requestId: external_exports.string().min(1),
-  result: external_exports.unknown()
+var rpcResponsePayloadSchema = z.object({
+  requestId: z.string().min(1),
+  result: z.unknown()
 });
-var rpcErrorPayloadSchema = external_exports.object({
-  requestId: external_exports.string().min(1),
-  code: external_exports.string().min(1),
-  message: external_exports.string().min(1),
-  retryable: external_exports.boolean().optional(),
-  details: external_exports.unknown().optional()
+var rpcErrorPayloadSchema = z.object({
+  requestId: z.string().min(1),
+  code: z.string().min(1),
+  message: z.string().min(1),
+  retryable: z.boolean().optional(),
+  details: z.unknown().optional()
 });
 function createMessage(type, payload, id5 = cryptoRandomId()) {
   return {
@@ -9961,8 +4519,7 @@ function encodeControlFrame(frame, limits = {}) {
 }
 function decodeControlFrame(data2, limits = {}) {
   const encoded = typeof data2 === "string" ? new TextEncoder().encode(data2) : data2;
-  if (encoded.byteLength > MAX_RELAY_FRAME_BYTES)
-    throw new Error("Control frame exceeds the Relay frame limit.");
+  if (encoded.byteLength > MAX_RELAY_FRAME_BYTES) throw new Error("Control frame exceeds the Relay frame limit.");
   const text = typeof data2 === "string" ? data2 : new TextDecoder("utf-8", { fatal: true }).decode(data2);
   const frame = parseControlFrame(JSON.parse(text));
   assertControlFrameSize(encoded.byteLength, frame.type, limits);
@@ -9982,8 +4539,7 @@ var SecureMessageCodec = class {
     if (message.byteLength > MAX_SECURE_MESSAGE_BYTES) {
       throw new Error("Secure message exceeds the reassembly limit.");
     }
-    if (message.byteLength <= SECURE_FRAGMENT_CHUNK_BYTES)
-      return [message];
+    if (message.byteLength <= SECURE_FRAGMENT_CHUNK_BYTES) return [message];
     const messageId = this.nextMessageId;
     this.nextMessageId = messageId === 4294967295 ? 1 : messageId + 1;
     const total = Math.ceil(message.byteLength / SECURE_FRAGMENT_CHUNK_BYTES);
@@ -10005,8 +4561,7 @@ var SecureMessageCodec = class {
     return frames;
   }
   decode(frame) {
-    if (!isSecureFragment(frame))
-      return frame;
+    if (!isSecureFragment(frame)) return frame;
     if (frame.byteLength < SECURE_FRAGMENT_HEADER_BYTES || frame[4] !== SECURE_FRAGMENT_VERSION) {
       throw new Error("Secure fragment header is invalid.");
     }
@@ -10018,10 +4573,12 @@ var SecureMessageCodec = class {
     if (messageId === 0 || total < 2 || index >= total || totalBytes <= SECURE_FRAGMENT_CHUNK_BYTES || totalBytes > MAX_SECURE_MESSAGE_BYTES || total !== Math.ceil(totalBytes / SECURE_FRAGMENT_CHUNK_BYTES)) {
       throw new Error("Secure fragment metadata is invalid.");
     }
-    const expectedChunkBytes = Math.min(SECURE_FRAGMENT_CHUNK_BYTES, totalBytes - index * SECURE_FRAGMENT_CHUNK_BYTES);
+    const expectedChunkBytes = Math.min(
+      SECURE_FRAGMENT_CHUNK_BYTES,
+      totalBytes - index * SECURE_FRAGMENT_CHUNK_BYTES
+    );
     const chunk = frame.subarray(SECURE_FRAGMENT_HEADER_BYTES);
-    if (chunk.byteLength !== expectedChunkBytes)
-      throw new Error("Secure fragment length is invalid.");
+    if (chunk.byteLength !== expectedChunkBytes) throw new Error("Secure fragment length is invalid.");
     let assembly = this.assemblies.get(messageId);
     if (assembly === void 0) {
       if (index !== 0 || this.assemblies.size >= MAX_IN_FLIGHT_SECURE_MESSAGES) {
@@ -10036,11 +4593,9 @@ var SecureMessageCodec = class {
     }
     assembly.chunks.push(Uint8Array.from(chunk));
     assembly.receivedBytes += chunk.byteLength;
-    if (assembly.chunks.length < total)
-      return void 0;
+    if (assembly.chunks.length < total) return void 0;
     this.assemblies.delete(messageId);
-    if (assembly.receivedBytes !== totalBytes)
-      throw new Error("Secure message length is invalid.");
+    if (assembly.receivedBytes !== totalBytes) throw new Error("Secure message length is invalid.");
     const message = new Uint8Array(totalBytes);
     let offset = 0;
     for (const part of assembly.chunks) {
@@ -10055,11 +4610,9 @@ var SecureMessageCodec = class {
   }
 };
 function isSecureFragment(frame) {
-  if (frame.byteLength < SECURE_FRAGMENT_MAGIC.byteLength)
-    return false;
+  if (frame.byteLength < SECURE_FRAGMENT_MAGIC.byteLength) return false;
   for (let index = 0; index < SECURE_FRAGMENT_MAGIC.byteLength; index += 1) {
-    if (frame[index] !== SECURE_FRAGMENT_MAGIC[index])
-      return false;
+    if (frame[index] !== SECURE_FRAGMENT_MAGIC[index]) return false;
   }
   return true;
 }
@@ -10067,31 +4620,24 @@ function assertControlFrameSize(bytes, type, limits) {
   const configured = type === "relay" ? limits.maxRelayFrameBytes : limits.maxControlFrameBytes;
   const protocolMaximum = type === "relay" ? MAX_RELAY_FRAME_BYTES : MAX_CONTROL_FRAME_BYTES;
   const maximum = configured === void 0 ? protocolMaximum : Math.min(protocolMaximum, configured);
-  if (!Number.isSafeInteger(maximum) || maximum <= 0)
-    throw new Error("Control frame limit is invalid.");
-  if (bytes > maximum)
-    throw new Error(`${type === "relay" ? "Relay" : "Control"} frame exceeds its limit.`);
+  if (!Number.isSafeInteger(maximum) || maximum <= 0) throw new Error("Control frame limit is invalid.");
+  if (bytes > maximum) throw new Error(`${type === "relay" ? "Relay" : "Control"} frame exceeds its limit.`);
 }
 function cryptoRandomId() {
   const g = globalThis.crypto;
-  if (g?.randomUUID)
-    return g.randomUUID();
+  if (g?.randomUUID) return g.randomUUID();
   return `msg_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
 }
 
-// ../client-core/dist/remote-gateway.js
+// ../client-core/src/remote-gateway.ts
 var DIRECT_REMOTE_CALL_BYTES = 2 * 1024 * 1024;
 function remoteWorkspaceTypeAvailable(capabilities, workspaceTypes, id5, capability) {
-  if (!capabilities.includes(capability))
-    return false;
-  if (workspaceTypes === void 0)
-    return true;
+  if (!capabilities.includes(capability)) return false;
+  if (workspaceTypes === void 0) return true;
   const entries = workspaceTypes.filter((item) => item.id === id5);
   return entries.length === 1 && entries[0]?.capability === capability && entries[0].available;
 }
 var RemoteGatewayError = class extends Error {
-  code;
-  details;
   constructor(code, message, details = {}, options) {
     super(message, options);
     this.code = code;
@@ -10101,17 +4647,15 @@ var RemoteGatewayError = class extends Error {
 };
 function createRemoteId() {
   const crypto4 = globalThis.crypto;
-  if (crypto4?.randomUUID !== void 0)
-    return crypto4.randomUUID();
+  if (crypto4?.randomUUID !== void 0) return crypto4.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-// ../client-core/dist/codex-client.js
+// ../client-core/src/codex-client.ts
 var MAX_DISPLAY_ITEM_TEXT = 256 * 1024;
 var CODEX_IMAGE_MEDIA_TYPES = /* @__PURE__ */ new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 var DATA_IMAGE_URL = /^data:(image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/u;
 var CodexRemoteClient = class {
-  core;
   constructor(core) {
     this.core = core;
   }
@@ -10128,8 +4672,7 @@ var CodexRemoteClient = class {
   }
   async threads(params = {}, signal) {
     const result = await this.call("thread/list", params, false, signal);
-    if (!isRecord(result) || !Array.isArray(result.data))
-      throw invalidResponse("thread list");
+    if (!isRecord(result) || !Array.isArray(result.data)) throw invalidResponse("thread list");
     return {
       sessions: result.data.map(projectCodexThread).filter((value) => value !== void 0),
       ...typeof result.nextCursor === "string" ? { nextCursor: result.nextCursor } : {}
@@ -10137,11 +4680,9 @@ var CodexRemoteClient = class {
   }
   async history(threadId, signal) {
     const result = await this.call("thread/read", { threadId, includeTurns: true }, true, signal);
-    if (!isRecord(result) || !isRecord(result.thread))
-      throw invalidResponse("thread history");
+    if (!isRecord(result) || !isRecord(result.thread)) throw invalidResponse("thread history");
     const session = projectCodexThread(result.thread);
-    if (session === void 0)
-      throw invalidResponse("thread history");
+    if (session === void 0) throw invalidResponse("thread history");
     return { session, items: projectCodexHistory(result.thread) };
   }
   async start(cwd2, model, signal) {
@@ -10181,23 +4722,19 @@ var CodexRemoteClient = class {
     let closed = false;
     let unsubscribe = () => void 0;
     const markClosed = () => {
-      if (closed)
-        return false;
+      if (closed) return false;
       closed = true;
       unsubscribe();
       return true;
     };
     unsubscribe = this.core.onEvent((event) => {
-      if (!isRecord(event.data) || event.data.streamId !== streamId)
-        return;
+      if (!isRecord(event.data) || event.data.streamId !== streamId) return;
       if (event.event === "codex.app.stream.closed") {
-        if (!markClosed())
-          return;
+        if (!markClosed()) return;
         onClose?.(codexStreamCloseReason(event.data.reason));
         return;
       }
-      if (event.event !== "codex.app.frame" || !isRecord(event.data.frame) || typeof event.data.frame.method !== "string")
-        return;
+      if (event.event !== "codex.app.frame" || !isRecord(event.data.frame) || typeof event.data.frame.method !== "string") return;
       onFrame(event.data.frame);
     });
     try {
@@ -10209,16 +4746,14 @@ var CodexRemoteClient = class {
     return {
       streamId,
       close: async () => {
-        if (!markClosed())
-          return;
+        if (!markClosed()) return;
         await this.core.rpc("codex.app.stream.close", { streamId }).catch(() => void 0);
       }
     };
   }
   async call(method, params, transfer, signal) {
     const envelope = { method, params };
-    if (!transfer)
-      return this.core.rpc("codex.app.call", envelope, signal);
+    if (!transfer) return this.core.rpc("codex.app.call", envelope, signal);
     return this.callTransferred(new TextEncoder().encode(JSON.stringify(envelope)), signal);
   }
   async callTransferred(encoded, signal) {
@@ -10236,29 +4771,33 @@ var CodexRemoteClient = class {
         const chunk = encoded.subarray(start, Math.min(start + CODEX_APP_TRANSFER_CHUNK_BYTES, encoded.byteLength));
         await this.core.rpc("codex.app.transfer.chunk", { transferId, index, data: bytesToBase64(chunk) }, signal);
       }
-      const committed = await this.core.rpc("codex.app.transfer.commit", { transferId }, signal);
-      if (committed.kind === "inline")
-        return committed.response;
+      const committed = await this.core.rpc(
+        "codex.app.transfer.commit",
+        { transferId },
+        signal
+      );
+      if (committed.kind === "inline") return committed.response;
       if (committed.transferId !== transferId || committed.totalBytes <= 0 || committed.totalBytes > MAX_CODEX_APP_TRANSFER_BYTES || committed.totalChunks !== Math.ceil(committed.totalBytes / CODEX_APP_TRANSFER_CHUNK_BYTES)) {
         throw invalidResponse("transfer descriptor");
       }
       const response = new Uint8Array(committed.totalBytes);
       let offset = 0;
       for (let index = 0; index < committed.totalChunks; index += 1) {
-        const result = await this.core.rpc("codex.app.transfer.read", { transferId, index }, signal);
-        if (result.transferId !== transferId || result.index !== index)
-          throw invalidResponse("transfer ordering");
+        const result = await this.core.rpc(
+          "codex.app.transfer.read",
+          { transferId, index },
+          signal
+        );
+        if (result.transferId !== transferId || result.index !== index) throw invalidResponse("transfer ordering");
         const chunk = base64ToBytes(result.data);
         const expected = Math.min(CODEX_APP_TRANSFER_CHUNK_BYTES, committed.totalBytes - offset);
-        if (chunk.byteLength !== expected)
-          throw invalidResponse("transfer chunk");
+        if (chunk.byteLength !== expected) throw invalidResponse("transfer chunk");
         response.set(chunk, offset);
         offset += chunk.byteLength;
       }
       return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(response));
     } finally {
-      if (opened)
-        await this.core.rpc("codex.app.transfer.close", { transferId }).catch(() => void 0);
+      if (opened) await this.core.rpc("codex.app.transfer.close", { transferId }).catch(() => void 0);
     }
   }
 };
@@ -10266,8 +4805,7 @@ function hasImageInput(params) {
   return isRecord(params) && Array.isArray(params.input) && params.input.some((value) => isRecord(value) && value.type === "image");
 }
 function projectCodexThread(value) {
-  if (!isRecord(value) || typeof value.id !== "string")
-    return void 0;
+  if (!isRecord(value) || typeof value.id !== "string") return void 0;
   const createdAt = normalizeTimestamp(value.createdAt);
   const updatedAt = normalizeTimestamp(value.updatedAt) || createdAt;
   return {
@@ -10290,11 +4828,9 @@ function deriveCodexCwdWorkspaces(values) {
   const usedIds = /* @__PURE__ */ new Set();
   for (const value of values) {
     const session = projectCodexThread(value);
-    if (session === void 0 || session.cwd === void 0 || session.cwd.length === 0)
-      continue;
+    if (session === void 0 || session.cwd === void 0 || session.cwd.length === 0) continue;
     const path = session.cwd;
-    if (!isAbsoluteWorkspacePath(path))
-      continue;
+    if (!isAbsoluteWorkspacePath(path)) continue;
     const key = normalizeWorkspacePath(path);
     const existing = byPath.get(key);
     if (existing !== void 0) {
@@ -10304,8 +4840,7 @@ function deriveCodexCwdWorkspaces(values) {
     }
     const baseId = `cwd-${hashWorkspacePath(key)}`;
     let id5 = baseId;
-    for (let suffix = 2; usedIds.has(id5); suffix += 1)
-      id5 = `${baseId}-${suffix}`;
+    for (let suffix = 2; usedIds.has(id5); suffix += 1) id5 = `${baseId}-${suffix}`;
     usedIds.add(id5);
     byPath.set(key, {
       id: id5,
@@ -10319,13 +4854,11 @@ function deriveCodexCwdWorkspaces(values) {
   return [...byPath.values()];
 }
 function projectCodexHistory(thread) {
-  if (!isRecord(thread) || typeof thread.id !== "string" || !Array.isArray(thread.turns))
-    return [];
+  if (!isRecord(thread) || typeof thread.id !== "string" || !Array.isArray(thread.turns)) return [];
   const sessionId = `codex:${thread.id}`;
   const output = [];
   for (const turn of thread.turns) {
-    if (!isRecord(turn) || typeof turn.id !== "string" || !Array.isArray(turn.items))
-      continue;
+    if (!isRecord(turn) || typeof turn.id !== "string" || !Array.isArray(turn.items)) continue;
     for (let index = 0; index < turn.items.length; index += 1) {
       const item = turn.items[index];
       output.push(projectCodexItem(item, thread.id, turn.id, sessionId, index));
@@ -10385,51 +4918,36 @@ function projectCodexItem(value, threadId, turnId, sessionId, index) {
   if (type === "plan" || type === "reasoning") {
     return { ...base, kind: "status", text: itemText(item) ?? textArray(item.summary) ?? type, details: { type } };
   }
-  if (type === "error")
-    return { ...base, kind: "error", text: itemText(item), status: "failed", details: { type } };
+  if (type === "error") return { ...base, kind: "error", text: itemText(item), status: "failed", details: { type } };
   return { ...base, kind: "unknown", text: `Unsupported Codex item: ${type}`, details: { type } };
 }
 function requireProjectedThread(result) {
-  if (!isRecord(result))
-    throw invalidResponse("thread");
+  if (!isRecord(result)) throw invalidResponse("thread");
   const session = projectCodexThread(result.thread);
-  if (session === void 0)
-    throw invalidResponse("thread");
+  if (session === void 0) throw invalidResponse("thread");
   return session;
 }
 function projectThreadStatus(value) {
-  if (!isRecord(value) || typeof value.type !== "string")
-    return "idle";
-  if (value.type === "systemError")
-    return "failed";
-  if (value.type !== "active")
-    return "idle";
+  if (!isRecord(value) || typeof value.type !== "string") return "idle";
+  if (value.type === "systemError") return "failed";
+  if (value.type !== "active") return "idle";
   return Array.isArray(value.activeFlags) && value.activeFlags.includes("waitingOnApproval") ? "waiting" : "running";
 }
 function projectItemStatus(value) {
-  if (value === "inProgress")
-    return "running";
-  if (value === "failed")
-    return "failed";
-  if (value === "declined")
-    return "declined";
+  if (value === "inProgress") return "running";
+  if (value === "failed") return "failed";
+  if (value === "declined") return "declined";
   return "completed";
 }
 function itemText(item) {
-  if (typeof item.text === "string")
-    return boundedText(item.text);
-  if (typeof item.content === "string")
-    return boundedText(item.content);
+  if (typeof item.text === "string") return boundedText(item.text);
+  if (typeof item.content === "string") return boundedText(item.content);
   const content = Array.isArray(item.content) ? item.content : Array.isArray(item.input) ? item.input : void 0;
-  if (content === void 0)
-    return void 0;
+  if (content === void 0) return void 0;
   const parts = content.flatMap((value) => {
-    if (typeof value === "string")
-      return [value];
-    if (!isRecord(value))
-      return [];
-    if (typeof value.text === "string")
-      return [value.text];
+    if (typeof value === "string") return [value];
+    if (!isRecord(value)) return [];
+    if (typeof value.text === "string") return [value.text];
     return typeof value.content === "string" ? [value.content] : [];
   });
   return parts.length > 0 ? boundedText(parts.join("\n")) : void 0;
@@ -10437,11 +4955,9 @@ function itemText(item) {
 function itemImages(item) {
   const content = Array.isArray(item.content) ? item.content : Array.isArray(item.input) ? item.input : [];
   return content.flatMap((value) => {
-    if (!isRecord(value) || !isImageContent(value))
-      return [];
+    if (!isRecord(value) || !isImageContent(value)) return [];
     const uri = imageDataUri(value);
-    if (uri === void 0)
-      return [];
+    if (uri === void 0) return [];
     return [{
       uri,
       ...typeof value.name === "string" && value.name.length > 0 ? { name: value.name } : {}
@@ -10456,11 +4972,9 @@ function toolItemImages(item) {
     Array.isArray(item.output) ? { content: item.output } : void 0
   ];
   for (const candidate of candidates) {
-    if (candidate === void 0 || !Array.isArray(candidate.content))
-      continue;
+    if (candidate === void 0 || !Array.isArray(candidate.content)) continue;
     const images = itemImages(candidate);
-    if (images.length > 0)
-      return images;
+    if (images.length > 0) return images;
   }
   return [];
 }
@@ -10470,21 +4984,17 @@ function isImageContent(value) {
 function imageDataUri(value) {
   const url = typeof value.url === "string" ? value.url : typeof value.image_url === "string" ? value.image_url : isRecord(value.image_url) && typeof value.image_url.url === "string" ? value.image_url.url : void 0;
   const parsed = url === void 0 ? void 0 : parseDataImageUrl(url);
-  if (parsed !== void 0)
-    return parsed.url;
-  if (typeof value.data !== "string" || !isCanonicalBase64(value.data))
-    return void 0;
+  if (parsed !== void 0) return parsed.url;
+  if (typeof value.data !== "string" || !isCanonicalBase64(value.data)) return void 0;
   const mediaType = typeof value.mediaType === "string" ? value.mediaType : typeof value.mimeType === "string" ? value.mimeType : sniffImageMediaType(value.data);
   return mediaType !== void 0 && CODEX_IMAGE_MEDIA_TYPES.has(mediaType) ? `data:${mediaType};base64,${value.data}` : void 0;
 }
 function parseDataImageUrl(value) {
   const match = DATA_IMAGE_URL.exec(value);
-  if (match === null)
-    return void 0;
+  if (match === null) return void 0;
   const mediaType = match[1];
   const data2 = match[2];
-  if (!CODEX_IMAGE_MEDIA_TYPES.has(mediaType) || !isCanonicalBase64(data2))
-    return void 0;
+  if (!CODEX_IMAGE_MEDIA_TYPES.has(mediaType) || !isCanonicalBase64(data2)) return void 0;
   return { url: `data:${mediaType};base64,${data2}`, mediaType, data: data2 };
 }
 function isCanonicalBase64(value) {
@@ -10492,14 +5002,10 @@ function isCanonicalBase64(value) {
 }
 function sniffImageMediaType(data2) {
   const bytes = base64PrefixBytes(data2, 32);
-  if (bytes.length >= 8 && bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10 && bytes[6] === 26 && bytes[7] === 10)
-    return "image/png";
-  if (bytes.length >= 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255)
-    return "image/jpeg";
-  if (bytes.length >= 6 && bytes[0] === 71 && bytes[1] === 73 && bytes[2] === 70 && bytes[3] === 56 && (bytes[4] === 55 || bytes[4] === 57) && bytes[5] === 97)
-    return "image/gif";
-  if (bytes.length >= 12 && bytes[0] === 82 && bytes[1] === 73 && bytes[2] === 70 && bytes[3] === 70 && bytes[8] === 87 && bytes[9] === 69 && bytes[10] === 66 && bytes[11] === 80)
-    return "image/webp";
+  if (bytes.length >= 8 && bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10 && bytes[6] === 26 && bytes[7] === 10) return "image/png";
+  if (bytes.length >= 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return "image/jpeg";
+  if (bytes.length >= 6 && bytes[0] === 71 && bytes[1] === 73 && bytes[2] === 70 && bytes[3] === 56 && (bytes[4] === 55 || bytes[4] === 57) && bytes[5] === 97) return "image/gif";
+  if (bytes.length >= 12 && bytes[0] === 82 && bytes[1] === 73 && bytes[2] === 70 && bytes[3] === 70 && bytes[8] === 87 && bytes[9] === 69 && bytes[10] === 66 && bytes[11] === 80) return "image/webp";
   return void 0;
 }
 function base64PrefixBytes(value, maxBytes) {
@@ -10511,29 +5017,23 @@ function base64PrefixBytes(value, maxBytes) {
     return new Uint8Array();
   }
   const bytes = new Uint8Array(Math.min(binary.length, maxBytes));
-  for (let index = 0; index < bytes.length; index += 1)
-    bytes[index] = binary.charCodeAt(index);
+  for (let index = 0; index < bytes.length; index += 1) bytes[index] = binary.charCodeAt(index);
   return bytes;
 }
 function isToolItemType(type) {
   return type === "mcpToolCall" || type === "dynamicToolCall" || type === "functionCallOutput" || type === "hookPrompt" || type === "collabAgentToolCall" || type === "subAgentActivity" || type === "webSearch" || type === "imageView" || type === "imageGeneration" || type === "sleep" || type === "enteredReviewMode" || type === "exitedReviewMode" || type === "contextCompaction";
 }
 function toolLabel(item) {
-  if (typeof item.tool === "string")
-    return item.tool;
-  if (typeof item.server === "string" && typeof item.name === "string")
-    return `${item.server}: ${item.name}`;
-  if (typeof item.command === "string")
-    return item.command;
-  if (Array.isArray(item.command) && item.command.every((value) => typeof value === "string"))
-    return item.command.join(" ");
+  if (typeof item.tool === "string") return item.tool;
+  if (typeof item.server === "string" && typeof item.name === "string") return `${item.server}: ${item.name}`;
+  if (typeof item.command === "string") return item.command;
+  if (Array.isArray(item.command) && item.command.every((value) => typeof value === "string")) return item.command.join(" ");
   return typeof item.type === "string" ? item.type : void 0;
 }
 function commandExecutionText(item) {
   const command = toolLabel(item);
   const output = typeof item.aggregatedOutput === "string" ? item.aggregatedOutput : void 0;
-  if (command === void 0)
-    return output === void 0 ? void 0 : boundedText(output);
+  if (command === void 0) return output === void 0 ? void 0 : boundedText(output);
   return boundedText(output === void 0 || output === "" ? command : `${command}
 
 ${output}`);
@@ -10541,22 +5041,19 @@ ${output}`);
 function toolCallText(item) {
   const type = typeof item.type === "string" ? item.type : void 0;
   if (type === "webSearch") {
-    const count = Array.isArray(item.results) ? item.results.length : 0;
-    return count === 0 ? "Web search completed." : `Web search returned ${count} result${count === 1 ? "" : "s"}.`;
+    const count2 = Array.isArray(item.results) ? item.results.length : 0;
+    return count2 === 0 ? "Web search completed." : `Web search returned ${count2} result${count2 === 1 ? "" : "s"}.`;
   }
-  if (type === "imageView")
-    return `Viewed image: ${typeof item.path === "string" ? item.path : "image"}`;
+  if (type === "imageView") return `Viewed image: ${typeof item.path === "string" ? item.path : "image"}`;
   if (type === "imageGeneration") {
     return typeof item.savedPath === "string" ? `Generated image: ${item.savedPath}` : `Image generation ${typeof item.status === "string" ? item.status : "completed"}.`;
   }
-  if (type === "contextCompaction")
-    return "CodeX compacted the conversation context.";
+  if (type === "contextCompaction") return "CodeX compacted the conversation context.";
   if (type === "enteredReviewMode" || type === "exitedReviewMode") {
     const action = type === "enteredReviewMode" ? "Entered" : "Exited";
     return `${action} review mode${typeof item.review === "string" ? `: ${item.review}` : "."}`;
   }
-  if (type === "sleep")
-    return `Waited ${typeof item.durationMs === "number" && Number.isFinite(item.durationMs) ? item.durationMs : 0} ms.`;
+  if (type === "sleep") return `Waited ${typeof item.durationMs === "number" && Number.isFinite(item.durationMs) ? item.durationMs : 0} ms.`;
   if (type === "subAgentActivity") {
     const kind = isRecord(item.kind) && typeof item.kind.type === "string" ? item.kind.type : typeof item.kind === "string" ? item.kind : "Subagent activity";
     return [kind, typeof item.agentPath === "string" ? item.agentPath : void 0].filter((value) => value !== void 0).join(": ");
@@ -10568,11 +5065,9 @@ function toolCallText(item) {
   return boundedText([label, error, result].filter((value) => value !== void 0 && value !== "").join("\n\n")) || void 0;
 }
 function fileChangeText(value) {
-  if (!Array.isArray(value))
-    return "File changes";
+  if (!Array.isArray(value)) return "File changes";
   const changes = value.flatMap((change) => {
-    if (!isRecord(change) || typeof change.path !== "string")
-      return [];
+    if (!isRecord(change) || typeof change.path !== "string") return [];
     const kind = typeof change.kind === "string" ? change.kind : "update";
     return [`[${kind}] ${change.path}`];
   });
@@ -10582,10 +5077,8 @@ function textArray(value) {
   return Array.isArray(value) && value.every((part) => typeof part === "string") ? boundedText(value.join("\n")) : void 0;
 }
 function compactUnknown(value) {
-  if (value === void 0 || value === null)
-    return void 0;
-  if (typeof value === "string")
-    return boundedText(value);
+  if (value === void 0 || value === null) return void 0;
+  if (typeof value === "string") return boundedText(value);
   try {
     return boundedText(JSON.stringify(value, void 0, 2));
   } catch {
@@ -10607,10 +5100,8 @@ function workspaceBasename(value) {
   return normalized.split(/[\\/]/u).at(-1) || value;
 }
 function earliestTimestamp(left, right) {
-  if (left <= 0)
-    return right;
-  if (right <= 0)
-    return left;
+  if (left <= 0) return right;
+  if (right <= 0) return left;
   return Math.min(left, right);
 }
 function hashWorkspacePath(value) {
@@ -10622,14 +5113,12 @@ function hashWorkspacePath(value) {
   return (hash >>> 0).toString(36);
 }
 function normalizeTimestamp(value) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0)
-    return 0;
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return 0;
   return value < 1e10 ? value * 1e3 : value;
 }
 function bytesToBase64(value) {
   let binary = "";
-  for (let index = 0; index < value.length; index += 1)
-    binary += String.fromCharCode(value[index]);
+  for (let index = 0; index < value.length; index += 1) binary += String.fromCharCode(value[index]);
   return btoa(binary);
 }
 function base64ToBytes(value) {
@@ -10640,10 +5129,8 @@ function base64ToBytes(value) {
     throw invalidResponse("transfer data");
   }
   const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1)
-    bytes[index] = binary.charCodeAt(index);
-  if (bytesToBase64(bytes) !== value)
-    throw invalidResponse("transfer data");
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  if (bytesToBase64(bytes) !== value) throw invalidResponse("transfer data");
   return bytes;
 }
 function invalidResponse(part) {
@@ -10653,14 +5140,12 @@ function codexStreamCloseReason(value) {
   return value === "cancelled" || value === "completed" || value === "failed" || value === "peer-disconnected" ? value : "failed";
 }
 function createCodexTransferId() {
-  if (globalThis.crypto?.randomUUID !== void 0)
-    return globalThis.crypto.randomUUID();
+  if (globalThis.crypto?.randomUUID !== void 0) return globalThis.crypto.randomUUID();
   const bytes = new Uint8Array(16);
   if (globalThis.crypto?.getRandomValues !== void 0) {
     globalThis.crypto.getRandomValues(bytes);
   } else {
-    for (let index = 0; index < bytes.length; index += 1)
-      bytes[index] = Math.floor(Math.random() * 256);
+    for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
   }
   bytes[6] = bytes[6] & 15 | 64;
   bytes[8] = bytes[8] & 63 | 128;
@@ -10671,11 +5156,9 @@ function isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-// ../client-core/dist/acp-client.js
+// ../client-core/src/acp-client.ts
 var ACP_PROMPT_RPC_TIMEOUT_MS = 10 * 6e4;
 var AgentAcpClient = class {
-  core;
-  capabilities;
   constructor(core, capabilities = []) {
     this.core = core;
     this.capabilities = capabilities;
@@ -10698,8 +5181,7 @@ var AgentAcpClient = class {
     return this.call("dsh/sessionModels", { sessionId, backend }, signal);
   }
   async selectModel(sessionId, backend, selection, signal) {
-    if (selection.provider !== backend)
-      throw new RemoteGatewayError("INVALID_MESSAGE", "The model provider does not match the ACP backend.");
+    if (selection.provider !== backend) throw new RemoteGatewayError("INVALID_MESSAGE", "The model provider does not match the ACP backend.");
     if (backend === "antigravity" && !this.capabilities.includes("agent.acp.antigravity.model-load.v1")) {
       await this.call("session/load", { sessionId, backend }, signal);
     }
@@ -10721,8 +5203,7 @@ var AgentAcpClient = class {
     const result = await this.call("dsh/workspaceList", {
       ...backend === void 0 ? {} : { backend }
     }, signal).catch((error) => {
-      if (backend === "pi")
-        throw error;
+      if (backend === "pi") throw error;
       return [];
     });
     if (backend === "pi" && !Array.isArray(result)) {
@@ -10736,8 +5217,7 @@ var AgentAcpClient = class {
       ...backend === void 0 ? {} : { backend },
       ...limit === void 0 ? {} : { limit }
     }, signal).catch((error) => {
-      if (backend === "pi")
-        throw error;
+      if (backend === "pi") throw error;
       return { items: [] };
     });
     if (backend === "pi" && (!isRecord2(result) || !Array.isArray(result.items))) {
@@ -10750,8 +5230,7 @@ var AgentAcpClient = class {
       sessionId,
       ...backend === void 0 ? {} : { backend }
     }, signal).catch((error) => {
-      if (backend === "pi")
-        throw error;
+      if (backend === "pi") throw error;
       return { events: [] };
     });
     if (backend === "pi" && (!isRecord2(result) || !Array.isArray(result.events))) {
@@ -10767,8 +5246,7 @@ var AgentAcpClient = class {
       ...backend === void 0 ? {} : { backend }
     }, signal);
     const sessionId = readString(result, "sessionId");
-    if (sessionId === void 0)
-      throw new RemoteGatewayError("INVALID_RESPONSE", "ACP session/new did not return sessionId.");
+    if (sessionId === void 0) throw new RemoteGatewayError("INVALID_RESPONSE", "ACP session/new did not return sessionId.");
     return {
       sessionId,
       cwd: cwd2,
@@ -10790,8 +5268,7 @@ var AgentAcpClient = class {
     const unsubscribe = this.core.onEvent((event) => {
       if (event.event === "agent.acp.frame" && isRecord2(event.data)) {
         const data2 = event.data;
-        if (tool ? data2.streamId !== streamId : !frameMatchesSubscription(data2, streamId, sessionId))
-          return;
+        if (tool ? data2.streamId !== streamId : !frameMatchesSubscription(data2, streamId, sessionId)) return;
         onFrame(data2);
       }
       if (event.event === "agent.acp.stream.closed" && isRecord2(event.data) && event.data.streamId === streamId) {
@@ -10839,20 +5316,21 @@ var AgentAcpClient = class {
           data: bytesToCanonicalBase64(requestBytes.subarray(start, end))
         }, signal);
       }
-      const commit = await this.core.rpc("agent.acp.transfer.commit", { transferId }, signal, method === "session/prompt" ? ACP_PROMPT_RPC_TIMEOUT_MS : void 0);
-      if (commit.kind === "inline")
-        return commit.response;
-      if (commit.kind !== "chunked" || commit.transferId !== transferId || !Number.isSafeInteger(commit.totalBytes) || commit.totalBytes < 1 || commit.totalBytes > MAX_AGENT_ACP_TRANSFER_BYTES || commit.totalChunks !== Math.ceil(commit.totalBytes / AGENT_ACP_TRANSFER_CHUNK_BYTES))
-        throw new RemoteGatewayError("INVALID_RESPONSE", "Invalid ACP transfer descriptor.");
+      const commit = await this.core.rpc(
+        "agent.acp.transfer.commit",
+        { transferId },
+        signal,
+        method === "session/prompt" ? ACP_PROMPT_RPC_TIMEOUT_MS : void 0
+      );
+      if (commit.kind === "inline") return commit.response;
+      if (commit.kind !== "chunked" || commit.transferId !== transferId || !Number.isSafeInteger(commit.totalBytes) || commit.totalBytes < 1 || commit.totalBytes > MAX_AGENT_ACP_TRANSFER_BYTES || commit.totalChunks !== Math.ceil(commit.totalBytes / AGENT_ACP_TRANSFER_CHUNK_BYTES)) throw new RemoteGatewayError("INVALID_RESPONSE", "Invalid ACP transfer descriptor.");
       const chunks = [];
       for (let index = 0; index < commit.totalChunks; index += 1) {
         const part = await this.core.rpc("agent.acp.transfer.read", { transferId, index }, signal);
-        if (part.transferId !== transferId || part.index !== index || typeof part.data !== "string" || part.data.length > Math.ceil(AGENT_ACP_TRANSFER_CHUNK_BYTES / 3) * 4)
-          throw new RemoteGatewayError("INVALID_RESPONSE", "Invalid ACP transfer chunk.");
+        if (part.transferId !== transferId || part.index !== index || typeof part.data !== "string" || part.data.length > Math.ceil(AGENT_ACP_TRANSFER_CHUNK_BYTES / 3) * 4) throw new RemoteGatewayError("INVALID_RESPONSE", "Invalid ACP transfer chunk.");
         const chunk = canonicalBase64ToBytes(part.data);
         const expected = Math.min(AGENT_ACP_TRANSFER_CHUNK_BYTES, commit.totalBytes - index * AGENT_ACP_TRANSFER_CHUNK_BYTES);
-        if (chunk.length !== expected || bytesToCanonicalBase64(chunk) !== part.data)
-          throw new RemoteGatewayError("INVALID_RESPONSE", "Invalid ACP transfer chunk size or encoding.");
+        if (chunk.length !== expected || bytesToCanonicalBase64(chunk) !== part.data) throw new RemoteGatewayError("INVALID_RESPONSE", "Invalid ACP transfer chunk size or encoding.");
         chunks.push(chunk);
       }
       const bytes = concat(chunks, commit.totalBytes);
@@ -10869,15 +5347,11 @@ function isRecord2(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function frameMatchesSubscription(data2, streamId, sessionId) {
-  if (data2.streamId === streamId)
-    return true;
-  if (data2.streamId === sessionScopedStreamId(sessionId))
-    return true;
+  if (data2.streamId === streamId) return true;
+  if (data2.streamId === sessionScopedStreamId(sessionId)) return true;
   const params = isRecord2(data2.frame.params) ? data2.frame.params : void 0;
-  if (params === void 0)
-    return false;
-  if (params.sessionId === sessionId)
-    return true;
+  if (params === void 0) return false;
+  if (params.sessionId === sessionId) return true;
   return isRecord2(params.update) && params.update.sessionId === sessionId;
 }
 function sessionScopedStreamId(sessionId) {
@@ -10894,21 +5368,18 @@ function concat(chunks, totalBytes) {
 }
 function bytesToCanonicalBase64(bytes) {
   let binary = "";
-  for (const value of bytes)
-    binary += String.fromCharCode(value);
+  for (const value of bytes) binary += String.fromCharCode(value);
   return btoa(binary);
 }
 function canonicalBase64ToBytes(value) {
   const binary = atob(value);
   const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1)
-    bytes[index] = binary.charCodeAt(index);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
   return bytes;
 }
 
-// ../client-core/dist/index.js
+// ../client-core/src/index.ts
 var RemoteClientError = class extends Error {
-  code;
   constructor(code, message, options) {
     super(message, options);
     this.code = code;
@@ -10916,21 +5387,18 @@ var RemoteClientError = class extends Error {
   }
 };
 var RemoteClientCore = class {
-  transport;
-  timeoutMs;
+  constructor(transport, timeoutMs = 3e4) {
+    this.transport = transport;
+    this.timeoutMs = timeoutMs;
+  }
   pending = /* @__PURE__ */ new Map();
   eventHandlers = /* @__PURE__ */ new Set();
   unsubscribeTransport;
   unsubscribeClose;
   closeHandlers = /* @__PURE__ */ new Set();
   closeNotified = false;
-  constructor(transport, timeoutMs = 3e4) {
-    this.transport = transport;
-    this.timeoutMs = timeoutMs;
-  }
   async connect() {
-    if (this.unsubscribeTransport !== void 0)
-      return;
+    if (this.unsubscribeTransport !== void 0) return;
     this.closeNotified = false;
     this.unsubscribeTransport = this.transport.onMessage((data2) => this.handleMessage(data2));
     this.unsubscribeClose = this.transport.onClose?.(() => this.handleTransportClose());
@@ -10945,13 +5413,15 @@ var RemoteClientCore = class {
     }
   }
   async rpc(method, params, signal, options) {
-    if (signal?.aborted)
-      throw rpcAbortedError(method, signal.reason);
+    if (signal?.aborted) throw rpcAbortedError(method, signal.reason);
     const timeoutMs = typeof options === "number" ? options : callTimeoutMs(this.timeoutMs, options);
     const request = createRpcRequest(method, params);
     const result = new Promise((resolve6, reject) => {
       const timer = setTimeout(() => {
-        this.rejectPending(request.id, new RemoteClientError("RPC_TIMEOUT", `RPC ${method} timed out after ${timeoutMs}ms`));
+        this.rejectPending(
+          request.id,
+          new RemoteClientError("RPC_TIMEOUT", `RPC ${method} timed out after ${timeoutMs}ms`)
+        );
       }, timeoutMs);
       const pending = {
         method,
@@ -10961,8 +5431,7 @@ var RemoteClientCore = class {
       };
       if (signal !== void 0) {
         const onAbort = () => {
-          if (this.pending.get(request.id) !== pending)
-            return;
+          if (this.pending.get(request.id) !== pending) return;
           this.rejectPending(request.id, rpcAbortedError(method, signal.reason));
         };
         signal.addEventListener("abort", onAbort, { once: true });
@@ -10996,42 +5465,46 @@ var RemoteClientCore = class {
     this.unsubscribeTransport = void 0;
     this.unsubscribeClose?.();
     this.unsubscribeClose = void 0;
-    this.rejectAllPending((pending) => new RemoteClientError("CLIENT_CLOSED", `RPC ${pending.method} terminated because the remote client closed`));
+    this.rejectAllPending(
+      (pending) => new RemoteClientError(
+        "CLIENT_CLOSED",
+        `RPC ${pending.method} terminated because the remote client closed`
+      )
+    );
     this.notifyClose();
     await this.transport.close();
   }
   handleTransportClose() {
-    this.rejectAllPending((pending) => new RemoteClientError("TRANSPORT_CLOSED", `RPC ${pending.method} terminated because the remote transport closed`));
+    this.rejectAllPending(
+      (pending) => new RemoteClientError(
+        "TRANSPORT_CLOSED",
+        `RPC ${pending.method} terminated because the remote transport closed`
+      )
+    );
     this.notifyClose();
   }
   handleMessage(data2) {
     const message = decodeMessage(data2);
-    if (message.type === "rpc.response")
-      this.handleResponse(message);
-    if (message.type === "rpc.error")
-      this.handleError(message);
+    if (message.type === "rpc.response") this.handleResponse(message);
+    if (message.type === "rpc.error") this.handleError(message);
     if (message.type === "event") {
       const event = message.payload;
-      for (const handler of this.eventHandlers)
-        handler(event);
+      for (const handler of this.eventHandlers) handler(event);
     }
   }
   handleResponse(message) {
     const pending = this.takePending(message.payload.requestId);
-    if (pending === void 0)
-      return;
+    if (pending === void 0) return;
     pending.resolve(message.payload.result);
   }
   handleError(message) {
     const pending = this.takePending(message.payload.requestId);
-    if (pending === void 0)
-      return;
+    if (pending === void 0) return;
     pending.reject(Object.assign(new Error(message.payload.message), { code: message.payload.code }));
   }
   takePending(requestId) {
     const pending = this.pending.get(requestId);
-    if (pending === void 0)
-      return void 0;
+    if (pending === void 0) return void 0;
     this.pending.delete(requestId);
     clearTimeout(pending.timer);
     pending.removeAbort?.();
@@ -11039,37 +5512,289 @@ var RemoteClientCore = class {
   }
   rejectPending(requestId, error) {
     const pending = this.takePending(requestId);
-    if (pending === void 0)
-      return false;
+    if (pending === void 0) return false;
     pending.reject(error);
     return true;
   }
   rejectAllPending(createError) {
     for (const requestId of [...this.pending.keys()]) {
       const pending = this.takePending(requestId);
-      if (pending !== void 0)
-        pending.reject(createError(pending));
+      if (pending !== void 0) pending.reject(createError(pending));
     }
   }
   notifyClose() {
-    if (this.closeNotified)
-      return;
+    if (this.closeNotified) return;
     this.closeNotified = true;
-    for (const handler of this.closeHandlers)
-      handler();
+    for (const handler of this.closeHandlers) handler();
   }
 };
 function rpcAbortedError(method, reason) {
-  return new RemoteClientError("RPC_ABORTED", `RPC ${method} was aborted`, reason === void 0 ? void 0 : { cause: reason });
+  return new RemoteClientError(
+    "RPC_ABORTED",
+    `RPC ${method} was aborted`,
+    reason === void 0 ? void 0 : { cause: reason }
+  );
 }
 function callTimeoutMs(fallback, options) {
   const timeoutMs = options?.timeoutMs;
-  if (typeof timeoutMs !== "number")
-    return fallback;
+  if (typeof timeoutMs !== "number") return fallback;
   return Number.isSafeInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 2147483647 ? timeoutMs : fallback;
 }
 function transportSendError(error) {
   return error instanceof Error ? error : new Error("remote transport send failed", { cause: error });
+}
+
+// src/safe-error.ts
+var RpcError = class extends Error {
+  constructor(code, message, details, retryable = false) {
+    super(message);
+    this.code = code;
+    this.details = details;
+    this.retryable = retryable;
+  }
+};
+function safeErrorCode(error) {
+  if (error instanceof RpcError) return error.code;
+  if (error instanceof z.ZodError) return "INVALID_MESSAGE";
+  return "INTERNAL_ERROR";
+}
+
+// src/session-token-usage.ts
+var USAGE_PAGE_MESSAGES = 60;
+var USAGE_MAX_PAGES = 200;
+function createSessionTokenUsage(sessionId) {
+  return { sessionId, ...emptyCounts(), turn: null };
+}
+function emptyCounts() {
+  return {
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+    reasoningTokens: 0,
+    totalTokens: 0,
+    reportedCalls: 0,
+    unreportedCalls: 0,
+    complete: true
+  };
+}
+function createTurnLedger() {
+  return { buckets: /* @__PURE__ */ new Map() };
+}
+function accumulateSessionTokenUsage(total, records, seen, turns = createTurnLedger()) {
+  let oldest;
+  for (const record8 of records) {
+    const event = eventOf(record8);
+    if (event === void 0) continue;
+    if (event.seq !== void 0) {
+      oldest = oldest === void 0 ? event.seq : Math.min(oldest, event.seq);
+      if (seen.has(event.seq)) continue;
+      seen.add(event.seq);
+    }
+    const turn = turnNumber(event.data);
+    if (turn !== void 0) noteTurn(turns, turn);
+    if (event.type !== "assistant/message") continue;
+    const usage = normalizeUsage(event.data);
+    const bucket = turn === void 0 ? void 0 : turns.buckets.get(turn);
+    if (usage === void 0) {
+      markUnreported(total);
+      if (bucket !== void 0) markUnreported(bucket);
+      continue;
+    }
+    applyUsage(total, usage);
+    if (bucket !== void 0) applyUsage(bucket, usage);
+  }
+  return oldest;
+}
+async function collectSessionTokenUsage(sessionId, readPage, signal) {
+  const usage = createSessionTokenUsage(sessionId);
+  const turns = createTurnLedger();
+  const seen = /* @__PURE__ */ new Set();
+  let beforeSeq;
+  for (let page = 0; page < USAGE_MAX_PAGES; page += 1) {
+    if (signal.aborted) throw new RpcError("CANCELLED", "The session usage request was cancelled.");
+    const result = await readPage(beforeSeq);
+    const oldest = accumulateSessionTokenUsage(usage, result.records, seen, turns);
+    if (!result.hasMore) return finishUsage(usage, turns, true);
+    if (oldest === void 0 || beforeSeq !== void 0 && oldest >= beforeSeq) {
+      usage.complete = false;
+      return finishUsage(usage, turns, false);
+    }
+    beforeSeq = oldest;
+  }
+  usage.complete = false;
+  return finishUsage(usage, turns, false);
+}
+async function readSessionTokenUsage(dispatch, payload, signal) {
+  const address = usageAddress(payload);
+  if (address === void 0) {
+    return { ok: false, error: { code: "INVALID_MESSAGE", message: "The session usage request is invalid.", details: {} } };
+  }
+  try {
+    const usage = await collectSessionTokenUsage(address.sessionId, async (beforeSeq) => {
+      const result = await dispatch("session/page", {
+        args: {
+          request: {
+            address: address.wire,
+            maxMessages: USAGE_PAGE_MESSAGES,
+            ...beforeSeq === void 0 ? {} : { beforeSeq }
+          }
+        }
+      }, signal);
+      if (result.ok !== true) throw new UsagePageError(result);
+      const value = isRecord3(result.value) ? result.value : {};
+      return {
+        records: Array.isArray(value.records) ? value.records : [],
+        hasMore: value.hasMore === true
+      };
+    }, signal);
+    return { ok: true, value: usage };
+  } catch (error) {
+    if (error instanceof UsagePageError) return error.result;
+    throw error;
+  }
+}
+var UsagePageError = class extends Error {
+  constructor(result) {
+    super("Session history page failed.");
+    this.result = result;
+  }
+};
+function usageAddress(payload) {
+  const request = requestOf(payload);
+  const address = isRecord3(request.address) ? request.address : void 0;
+  if (address?.kind === "subagent") {
+    if (!validId(address.parentSessionId) || !validId(address.childSessionId)) return void 0;
+    return {
+      sessionId: address.childSessionId,
+      wire: {
+        kind: "subagent",
+        parentSessionId: address.parentSessionId,
+        childSessionId: address.childSessionId,
+        mode: "unknown"
+      }
+    };
+  }
+  const sessionId = address?.kind === "session" && typeof address.sessionId === "string" ? address.sessionId : typeof request.sessionId === "string" ? request.sessionId : void 0;
+  if (!validId(sessionId)) return void 0;
+  return { sessionId, wire: { kind: "session", sessionId } };
+}
+function requestOf(payload) {
+  const root = isRecord3(payload) ? payload : {};
+  const args = isRecord3(root.args) ? root.args : root;
+  return isRecord3(args.request) ? args.request : isRecord3(args._request) ? args._request : args;
+}
+function validId(value) {
+  return typeof value === "string" && value.length > 0 && value.length <= 512 && !value.includes("\0");
+}
+function eventOf(record8) {
+  if (!isRecord3(record8) || record8.type === "chunks") return void 0;
+  const event = record8.type === "event" && isRecord3(record8.event) ? record8.event : isRecord3(record8.event) && typeof record8.event.type === "string" ? record8.event : typeof record8.type === "string" ? record8 : void 0;
+  if (event === void 0 || typeof event.type !== "string") return void 0;
+  const seq = typeof event.seq === "number" && Number.isSafeInteger(event.seq) && event.seq >= 0 ? event.seq : void 0;
+  return { type: event.type, ...seq === void 0 ? {} : { seq }, data: event.data };
+}
+function normalizeUsage(data2) {
+  if (!isRecord3(data2)) return void 0;
+  const value = usageRecord(data2);
+  if (value === void 0) return void 0;
+  if (!count(value.inputTokens) || !count(value.outputTokens)) return void 0;
+  const usage = {
+    inputTokens: value.inputTokens,
+    outputTokens: value.outputTokens,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+    reasoningTokens: 0,
+    totalTokens: 0,
+    exactTotal: false
+  };
+  const cacheRead = value.cacheReadTokens;
+  const cacheWrite = value.cacheWriteTokens;
+  const reasoning = value.reasoningTokens;
+  const total = value.totalTokens;
+  if (cacheRead !== void 0 && !count(cacheRead)) return void 0;
+  if (cacheWrite !== void 0 && !count(cacheWrite)) return void 0;
+  if (reasoning !== void 0 && !count(reasoning)) return void 0;
+  if (total !== void 0 && !count(total)) return void 0;
+  if (cacheRead !== void 0) usage.cacheReadTokens = cacheRead;
+  if (cacheWrite !== void 0) usage.cacheWriteTokens = cacheWrite;
+  if (reasoning !== void 0) usage.reasoningTokens = reasoning;
+  if (usage.reasoningTokens > usage.outputTokens) return void 0;
+  const knownPrompt = usage.inputTokens + usage.cacheReadTokens + usage.cacheWriteTokens;
+  const knownTotal = knownPrompt + usage.outputTokens;
+  if (!Number.isSafeInteger(knownPrompt) || !Number.isSafeInteger(knownTotal)) return void 0;
+  if (total !== void 0 && (total < knownTotal || cacheRead !== void 0 && cacheWrite !== void 0 && total !== knownTotal)) return void 0;
+  if (total !== void 0) {
+    usage.totalTokens = total;
+    usage.exactTotal = true;
+  } else if (cacheRead !== void 0 && cacheWrite !== void 0) {
+    usage.totalTokens = knownTotal;
+    usage.exactTotal = true;
+  } else {
+    usage.totalTokens = knownTotal;
+    usage.exactTotal = false;
+  }
+  return usage;
+}
+function usageRecord(data2) {
+  if (isRecord3(data2.usage)) return data2.usage;
+  const stream = Array.isArray(data2.stream) ? data2.stream : [];
+  for (let index = stream.length - 1; index >= 0; index -= 1) {
+    const row = stream[index];
+    if (!isRecord3(row) || row.type !== "chunk" || !isRecord3(row.chunk) || row.chunk.type !== "usage" || !isRecord3(row.chunk.usage)) continue;
+    return row.chunk.usage;
+  }
+  return void 0;
+}
+function noteTurn(turns, turn) {
+  if (turns.latest === void 0 || turn > turns.latest) turns.latest = turn;
+  if (!turns.buckets.has(turn)) turns.buckets.set(turn, emptyCounts());
+}
+function turnNumber(data2) {
+  if (!isRecord3(data2) || !count(data2.turn)) return void 0;
+  return data2.turn;
+}
+function markUnreported(total) {
+  total.unreportedCalls += 1;
+  total.complete = false;
+}
+function finishUsage(usage, turns, historyComplete) {
+  if (turns.latest === void 0) {
+    usage.turn = null;
+    return usage;
+  }
+  const counts = turns.buckets.get(turns.latest) ?? emptyCounts();
+  if (!historyComplete) counts.complete = false;
+  usage.turn = { turn: turns.latest, ...counts };
+  return usage;
+}
+function applyUsage(total, usage) {
+  const inputTokens = total.inputTokens + usage.inputTokens;
+  const outputTokens = total.outputTokens + usage.outputTokens;
+  const cacheReadTokens = total.cacheReadTokens + usage.cacheReadTokens;
+  const cacheWriteTokens = total.cacheWriteTokens + usage.cacheWriteTokens;
+  const reasoningTokens = total.reasoningTokens + usage.reasoningTokens;
+  const totalTokens = total.totalTokens + usage.totalTokens;
+  const reportedCalls = total.reportedCalls + 1;
+  if (![inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, reasoningTokens, totalTokens, reportedCalls].every(Number.isSafeInteger)) {
+    total.unreportedCalls += 1;
+    total.complete = false;
+    return;
+  }
+  total.inputTokens = inputTokens;
+  total.outputTokens = outputTokens;
+  total.cacheReadTokens = cacheReadTokens;
+  total.cacheWriteTokens = cacheWriteTokens;
+  total.reasoningTokens = reasoningTokens;
+  total.totalTokens = totalTokens;
+  total.reportedCalls = reportedCalls;
+  if (!usage.exactTotal) total.complete = false;
+}
+function count(value) {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+function isRecord3(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 // src/acp/image-content.ts
@@ -11252,16 +5977,16 @@ function extractPromptText(content) {
 function extractText(update) {
   const content = update.content;
   if (typeof content === "string") return content;
-  if (isRecord3(content) && typeof content.text === "string") return content.text;
+  if (isRecord4(content) && typeof content.text === "string") return content.text;
   if (Array.isArray(content)) {
-    const parts = content.map((part) => isRecord3(part) && typeof part.text === "string" ? part.text : void 0).filter((part) => part !== void 0);
+    const parts = content.map((part) => isRecord4(part) && typeof part.text === "string" ? part.text : void 0).filter((part) => part !== void 0);
     return parts.length === 0 ? void 0 : parts.join("");
   }
   return typeof update.text === "string" ? update.text : void 0;
 }
 function summarizeQuestions(params) {
   if (!Array.isArray(params.questions)) return void 0;
-  const lines = params.questions.map((question) => isRecord3(question) ? string(question.prompt) : void 0).filter((line) => line !== void 0);
+  const lines = params.questions.map((question) => isRecord4(question) ? string(question.prompt) : void 0).filter((line) => line !== void 0);
   return lines.length === 0 ? void 0 : lines.join("\n");
 }
 function sessionIdFromAddress(address) {
@@ -11274,7 +5999,7 @@ function sessionIdFromAddress(address) {
 }
 function extractSessionId(request) {
   if (typeof request.sessionId === "string" && request.sessionId.length > 0) return request.sessionId;
-  if (isRecord3(request.address)) return sessionIdFromAddress(request.address);
+  if (isRecord4(request.address)) return sessionIdFromAddress(request.address);
   throw new Error("The sessionId is required.");
 }
 function sessionPrefix(backend) {
@@ -11307,17 +6032,17 @@ function failure(code, message, details = {}) {
   return { ok: false, error: { code, message, details } };
 }
 function business(value) {
-  if (isRecord3(value) && value.ok === false && isRecord3(value.error)) {
+  if (isRecord4(value) && value.ok === false && isRecord4(value.error)) {
     return {
       ok: false,
       error: {
         code: string(value.error.code) ?? "internal",
         message: string(value.error.message) ?? "The virtual Harness request failed.",
-        details: isRecord3(value.error.details) ? value.error.details : {}
+        details: isRecord4(value.error.details) ? value.error.details : {}
       }
     };
   }
-  if (isRecord3(value) && value.ok === true) return { ok: true, value: value.value };
+  if (isRecord4(value) && value.ok === true) return { ok: true, value: value.value };
   return { ok: true, value };
 }
 function fail(code, message, details = {}) {
@@ -11329,9 +6054,9 @@ function failFrom(error) {
   return fail(code, source.message);
 }
 function record(value) {
-  return isRecord3(value) ? value : {};
+  return isRecord4(value) ? value : {};
 }
-function isRecord3(value) {
+function isRecord4(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function array(value) {
@@ -11462,7 +6187,7 @@ var AcpEventCarrier = class {
       this.broadcastRcHost({ type: "host/session-status", sessionId, running: args[1] });
     } else if (event === "api-session/removed" && sessionId !== void 0) {
       this.broadcastRcHost({ type: "host/session-removed", sessionId });
-    } else if (event === "api-session/added" && isRecord3(args[0])) {
+    } else if (event === "api-session/added" && isRecord4(args[0])) {
       const summary = args[0];
       this.broadcastRcHost({
         type: "host/session-added",
@@ -11501,7 +6226,7 @@ var AcpEventCarrier = class {
   }
   createApiProxy() {
     const call = (endpoint) => async (request, signal) => {
-      const payload = endpoint === "session.prompt" && isRecord3(request.payload) ? { ...request.payload, requestId: String(request.rpcId) } : request.payload;
+      const payload = endpoint === "session.prompt" && isRecord4(request.payload) ? { ...request.payload, requestId: String(request.rpcId) } : request.payload;
       const result = await this.context.dispatch(rcEndpoint(endpoint), { args: { request: payload } }, signal ?? new AbortController().signal);
       return {
         rpcId: request.rpcId,
@@ -11544,8 +6269,8 @@ var AcpEventCarrier = class {
       credentials: {},
       llm: {},
       events: {
-        mux: ((request, signal) => this.rcMux(request, signal)),
-        host: ((request, signal) => this.rcHost(request, signal))
+        mux: (request, signal) => this.rcMux(request, signal),
+        host: (request, signal) => this.rcHost(request, signal)
       },
       downloads: {},
       respond: async (message) => {
@@ -11639,7 +6364,7 @@ var AcpLiveProjection = class {
       acpSessionId: session.acpSessionId,
       queue,
       nextSeq: session.events.length,
-      turn: Math.max(0, ...session.events.map((entry) => isRecord3(entry.event.data) && typeof entry.event.data.turn === "number" ? entry.event.data.turn : 0)),
+      turn: Math.max(0, ...session.events.map((entry) => isRecord4(entry.event.data) && typeof entry.event.data.turn === "number" ? entry.event.data.turn : 0)),
       stepOpen: session.running,
       streamActive: false,
       assistantStreamRevision: 0,
@@ -11697,7 +6422,7 @@ var AcpLiveProjection = class {
       acpSessionId: session.acpSessionId,
       queue,
       nextSeq: session.events.length === 0 ? 0 : Math.max(...session.events.map((entry) => entry.event.seq)) + 1,
-      turn: Math.max(0, ...session.events.map((entry) => isRecord3(entry.event.data) && typeof entry.event.data.turn === "number" ? entry.event.data.turn : 0)),
+      turn: Math.max(0, ...session.events.map((entry) => isRecord4(entry.event.data) && typeof entry.event.data.turn === "number" ? entry.event.data.turn : 0)),
       stepOpen: false,
       streamActive: false,
       assistantStreamRevision: 0,
@@ -11735,10 +6460,10 @@ var AcpLiveProjection = class {
     }
   }
   acceptSessionUpdate(follow, params) {
-    const update = isRecord3(params.update) ? params.update : params;
+    const update = isRecord4(params.update) ? params.update : params;
     const kind = string(update.sessionUpdate) ?? string(update.type);
     const session = this.context.sessions.get(follow.sessionId);
-    if (kind === "model_selection" && isRecord3(update.selected) && update.selected.provider === this.context.backend && typeof update.selected.model === "string") {
+    if (kind === "model_selection" && isRecord4(update.selected) && update.selected.provider === this.context.backend && typeof update.selected.model === "string") {
       this.context.selectedModels.set(follow.sessionId, update.selected);
       this.context.publishProjection(follow.sessionId, "modelSelection", this.context.modelSelectionProjection(follow.sessionId), this.context.nextProjectionSeq());
       return;
@@ -11843,8 +6568,8 @@ var AcpLiveProjection = class {
       const hasLiveContent = follow.stepOpen || follow.streamActive;
       if (!hasLiveContent && Array.isArray(update.catchUp)) {
         for (const item of update.catchUp) {
-          if (!isRecord3(item) || typeof item.method !== "string") continue;
-          const params2 = isRecord3(item.params) ? item.params : {};
+          if (!isRecord4(item) || typeof item.method !== "string") continue;
+          const params2 = isRecord4(item.params) ? item.params : {};
           if (item.method === "session/update") this.acceptSessionUpdate(follow, params2);
         }
       }
@@ -12306,6 +7031,8 @@ var AcpVirtualHarness = class _AcpVirtualHarness {
           return business(await this.sessionHistory(requestArg(args)));
         case "session/page":
           return business(await this.sessionPage(requestArg(args)));
+        case "session/usage":
+          return business(await this.sessionUsage(requestArg(args)));
         case "session/prompt":
           return business(await this.prompt(requestArg(args), signal));
         case "session/cancel":
@@ -12638,13 +7365,24 @@ var AcpVirtualHarness = class _AcpVirtualHarness {
     });
     return success({ records: page.records, hasMore: page.hasMore });
   }
+  async sessionUsage(request) {
+    const sessionId = extractSessionId(request);
+    const session = this.ensureSessionRegistered(sessionId) ?? this.sessions.get(sessionId);
+    if (session === void 0) return failure("session-not-found", "The Session was not found.");
+    await this.hydrateSession(session);
+    const usage = await collectSessionTokenUsage(sessionId, async () => ({
+      records: session.events,
+      hasMore: false
+    }), AbortSignal.timeout(6e4));
+    return success(usage);
+  }
   historyPage(session, options = {}) {
     const lastSessionSeq = session.events.at(-1)?.event.seq ?? -1;
     const throughSeq = Math.min(options.throughSeq ?? lastSessionSeq, lastSessionSeq);
     const endSeq = Math.min(throughSeq, options.beforeSeq === void 0 ? throughSeq : options.beforeSeq - 1);
-    const window2 = endSeq < 0 ? [] : session.events.filter((entry) => entry.event.seq <= endSeq);
+    const window = endSeq < 0 ? [] : session.events.filter((entry) => entry.event.seq <= endSeq);
     const limit = options.limit ?? 50;
-    const records = window2.slice(Math.max(0, window2.length - limit));
+    const records = window.slice(Math.max(0, window.length - limit));
     const cursor2 = records.at(-1)?.event.seq ?? -1;
     return {
       header: {
@@ -12655,9 +7393,9 @@ var AcpVirtualHarness = class _AcpVirtualHarness {
         isSeeded: false
       },
       cursor: cursor2,
-      nextTurn: Math.max(0, ...session.events.map((entry) => isRecord3(entry.event.data) && typeof entry.event.data.turn === "number" ? entry.event.data.turn : 0)) + 1,
+      nextTurn: Math.max(0, ...session.events.map((entry) => isRecord4(entry.event.data) && typeof entry.event.data.turn === "number" ? entry.event.data.turn : 0)) + 1,
       records,
-      hasMore: window2.length > records.length,
+      hasMore: window.length > records.length,
       ...session.running ? { activeTurnId: "cursor-live" } : {},
       assistantStream: { revision: 0 }
     };
@@ -12957,19 +7695,17 @@ var ApiProxySwitch = class {
   }
 };
 
-// ../webrtc/dist/websocket-backpressure.js
+// ../webrtc/src/websocket-backpressure.ts
 async function waitForRelayCapacity(socket) {
   const started = Date.now();
   while ((socket.bufferedAmount ?? 0) > 512 * 1024) {
-    if (socket.readyState !== 1 || Date.now() - started > 1e4)
-      throw new Error("Relay consumer is too slow or disconnected");
+    if (socket.readyState !== 1 || Date.now() - started > 1e4) throw new Error("Relay consumer is too slow or disconnected");
     await new Promise((resolve6) => setTimeout(resolve6, 10));
   }
-  if (socket.readyState !== 1)
-    throw new Error("Relay transport closed");
+  if (socket.readyState !== 1) throw new Error("Relay transport closed");
 }
 
-// ../webrtc/dist/transport.js
+// ../webrtc/src/transport.ts
 var BaseTransport = class {
   handlers = /* @__PURE__ */ new Set();
   closeHandlers = /* @__PURE__ */ new Set();
@@ -12982,16 +7718,14 @@ var BaseTransport = class {
     return () => this.closeHandlers.delete(cb);
   }
   emit(data2) {
-    for (const handler of this.handlers)
-      handler(data2);
+    for (const handler of this.handlers) handler(data2);
   }
   emitClose() {
-    for (const handler of this.closeHandlers)
-      handler();
+    for (const handler of this.closeHandlers) handler();
   }
 };
 
-// ../webrtc/dist/util.js
+// ../webrtc/src/util.ts
 function toBase64Url(bytes) {
   const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
   const base64 = typeof btoa === "function" ? btoa(binary) : Buffer.from(bytes).toString("base64");
@@ -13000,12 +7734,11 @@ function toBase64Url(bytes) {
 function fromBase64Url(value) {
   const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
   const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
-  if (typeof atob === "function")
-    return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+  if (typeof atob === "function") return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
   return new Uint8Array(Buffer.from(padded, "base64"));
 }
 
-// ../webrtc/dist/rtc-adapter.js
+// ../webrtc/src/rtc-adapter.ts
 var RTC_DATA_CHANNEL_LABEL = "dsh";
 var RTC_DATA_CHANNEL_OPTIONS = { ordered: true };
 function browserRtcFactory() {
@@ -13085,8 +7818,7 @@ function browserRtcFactory() {
 }
 function summarizeIceCandidate(candidate) {
   const value = candidate?.candidate?.trim();
-  if (value === void 0 || value.length === 0)
-    return emptyCandidateSummary();
+  if (value === void 0 || value.length === 0) return emptyCandidateSummary();
   const parts = value.replace(/^candidate:/, "").split(/\s+/);
   const typeIndex = parts.indexOf("typ");
   const relatedAddressIndex = parts.indexOf("raddr");
@@ -13098,10 +7830,8 @@ function summarizeIceCandidate(candidate) {
   };
 }
 function summarizeAddress(address) {
-  if (address === void 0 || address.length === 0)
-    return { addressFamily: "unknown", addressScope: "unknown" };
-  if (address.includes(":"))
-    return { addressFamily: "ipv6", addressScope: summarizeIpv6Scope(address) };
+  if (address === void 0 || address.length === 0) return { addressFamily: "unknown", addressScope: "unknown" };
+  if (address.includes(":")) return { addressFamily: "ipv6", addressScope: summarizeIpv6Scope(address) };
   const parts = address.split(".").map(Number);
   if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
     return { addressFamily: "unknown", addressScope: "unknown" };
@@ -13113,8 +7843,7 @@ function stunOnlyIceServers(iceServers) {
   for (const server of iceServers) {
     const sourceUrls = Array.isArray(server.urls) ? server.urls : [server.urls];
     const urls = sourceUrls.filter(isStunUrl);
-    if (urls.length === 0)
-      continue;
+    if (urls.length === 0) continue;
     direct.push({ urls: Array.isArray(server.urls) ? urls : urls[0] });
   }
   return direct;
@@ -13127,13 +7856,11 @@ function emptyCandidateSummary() {
   return { candidateType: "unknown", addressFamily: "unknown", addressScope: "unknown" };
 }
 function parseCandidateType(value) {
-  if (value === "host" || value === "srflx" || value === "prflx" || value === "relay")
-    return value;
+  if (value === "host" || value === "srflx" || value === "prflx" || value === "relay") return value;
   return "unknown";
 }
 function normalizeProtocol(value) {
-  if (value === void 0 || value.length === 0)
-    return void 0;
+  if (value === void 0 || value.length === 0) return void 0;
   return value.toLowerCase();
 }
 function relatedAddressSummary(address) {
@@ -13144,36 +7871,23 @@ function relatedAddressSummary(address) {
   };
 }
 function summarizeIpv4Scope(parts) {
-  if (parts[0] === 0 || parts[0] >= 240)
-    return "reserved";
-  if (parts[0] === 127)
-    return "loopback";
-  if (parts[0] === 169 && parts[1] === 254)
-    return "link-local";
-  if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127)
-    return "cgnat";
-  if (parts[0] >= 224)
-    return "reserved";
-  if (parts[0] === 10)
-    return "private";
-  if (parts[0] === 192 && parts[1] === 168)
-    return "private";
-  if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)
-    return "private";
+  if (parts[0] === 0 || parts[0] >= 240) return "reserved";
+  if (parts[0] === 127) return "loopback";
+  if (parts[0] === 169 && parts[1] === 254) return "link-local";
+  if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return "cgnat";
+  if (parts[0] >= 224) return "reserved";
+  if (parts[0] === 10) return "private";
+  if (parts[0] === 192 && parts[1] === 168) return "private";
+  if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return "private";
   return "public";
 }
 function summarizeIpv6Scope(address) {
   const value = address.toLowerCase();
-  if (value === "::1")
-    return "loopback";
-  if (value.startsWith("fe80:"))
-    return "link-local";
-  if (value.startsWith("fd7a:115c:a1e0:"))
-    return "cgnat";
-  if (value.startsWith("fc") || value.startsWith("fd"))
-    return "private";
-  if (value.startsWith("ff"))
-    return "reserved";
+  if (value === "::1") return "loopback";
+  if (value.startsWith("fe80:")) return "link-local";
+  if (value.startsWith("fd7a:115c:a1e0:")) return "cgnat";
+  if (value.startsWith("fc") || value.startsWith("fd")) return "private";
+  if (value.startsWith("ff")) return "reserved";
   return "public";
 }
 function adaptDataChannel(raw) {
@@ -13235,7 +7949,7 @@ function adaptDataChannel(raw) {
   };
 }
 
-// ../webrtc/dist/rtc-chunking.js
+// ../webrtc/src/rtc-chunking.ts
 var RTC_CHUNK_MAGIC = new Uint8Array([82, 84, 67, 72]);
 var RTC_CHUNK_HEADER_BYTES = 12;
 var RTC_CHUNK_PAYLOAD_BYTES = 8 * 1024;
@@ -13247,8 +7961,7 @@ var RtcChunkCodec = class {
   nextMessageId = 1;
   assemblies = /* @__PURE__ */ new Map();
   encode(data2) {
-    if (data2.byteLength <= RTC_CHUNK_PAYLOAD_BYTES)
-      return [data2];
+    if (data2.byteLength <= RTC_CHUNK_PAYLOAD_BYTES) return [data2];
     if (data2.byteLength > RTC_CHUNK_MAX_MESSAGE_BYTES) {
       throw new Error("WebRTC transport message exceeds the reassembly limit.");
     }
@@ -13277,8 +7990,7 @@ var RtcChunkCodec = class {
       }
       return frame;
     }
-    if (frame.byteLength < RTC_CHUNK_HEADER_BYTES)
-      throw new Error("WebRTC transport chunk header is invalid.");
+    if (frame.byteLength < RTC_CHUNK_HEADER_BYTES) throw new Error("WebRTC transport chunk header is invalid.");
     const view = new DataView(frame.buffer, frame.byteOffset, frame.byteLength);
     const messageId = view.getUint32(4);
     const index = view.getUint16(8);
@@ -13311,8 +8023,7 @@ var RtcChunkCodec = class {
     assembly.chunks.push(Uint8Array.from(chunk));
     assembly.receivedBytes = receivedBytes;
     assembly.updatedAt = Date.now();
-    if (assembly.chunks.length < total)
-      return void 0;
+    if (assembly.chunks.length < total) return void 0;
     this.assemblies.delete(messageId);
     const message = new Uint8Array(assembly.receivedBytes);
     let offset = 0;
@@ -13329,22 +8040,19 @@ var RtcChunkCodec = class {
   pruneStale() {
     const now = Date.now();
     for (const [messageId, assembly] of this.assemblies) {
-      if (now - assembly.updatedAt > MAX_ASSEMBLY_AGE_MS)
-        this.assemblies.delete(messageId);
+      if (now - assembly.updatedAt > MAX_ASSEMBLY_AGE_MS) this.assemblies.delete(messageId);
     }
   }
 };
 function isChunk(frame) {
-  if (frame.byteLength < RTC_CHUNK_MAGIC.byteLength)
-    return false;
+  if (frame.byteLength < RTC_CHUNK_MAGIC.byteLength) return false;
   for (let index = 0; index < RTC_CHUNK_MAGIC.byteLength; index += 1) {
-    if (frame[index] !== RTC_CHUNK_MAGIC[index])
-      return false;
+    if (frame[index] !== RTC_CHUNK_MAGIC[index]) return false;
   }
   return true;
 }
 
-// ../webrtc/dist/rtc-data-channel.js
+// ../webrtc/src/rtc-data-channel.ts
 var DEFAULT_NEGOTIATE_TIMEOUT_MS = 8e3;
 var SELECTED_PATH_RETRY_COUNT = 5;
 var SELECTED_PATH_RETRY_DELAY_MS = 50;
@@ -13418,14 +8126,10 @@ var RtcDataChannelTransport = class {
   }
   /** Begin negotiation; resolves when the DataChannel is open. */
   connect(signal) {
-    if (this.closed)
-      return Promise.reject(new RtcConnectError("RTC_CLOSED", "WebRTC transport closed."));
-    if (signal?.aborted)
-      return Promise.reject(new RtcConnectError("RTC_ABORTED", "WebRTC negotiation was aborted."));
-    if (this.opened)
-      return Promise.resolve();
-    if (this.connectPromise !== void 0)
-      return this.connectPromise;
+    if (this.closed) return Promise.reject(new RtcConnectError("RTC_CLOSED", "WebRTC transport closed."));
+    if (signal?.aborted) return Promise.reject(new RtcConnectError("RTC_ABORTED", "WebRTC negotiation was aborted."));
+    if (this.opened) return Promise.resolve();
+    if (this.connectPromise !== void 0) return this.connectPromise;
     this.armAbort(signal);
     this.connectPromise = new Promise((resolve6, reject) => {
       this.openResolve = resolve6;
@@ -13440,19 +8144,14 @@ var RtcDataChannelTransport = class {
     return this.connectPromise;
   }
   handleSignal(signal) {
-    if (this.closed)
-      return;
-    if (signal.type === "offer")
-      void this.handleOffer(signal.sdp);
-    else if (signal.type === "answer")
-      void this.handleAnswer(signal.sdp);
-    else
-      void this.handleIce(signal.candidate);
+    if (this.closed) return;
+    if (signal.type === "offer") void this.handleOffer(signal.sdp);
+    else if (signal.type === "answer") void this.handleAnswer(signal.sdp);
+    else void this.handleIce(signal.candidate);
   }
   async send(data2) {
     const channel = this.requireOpenChannel();
-    if (channel.readyState !== "open")
-      throw new Error("WebRTC data channel is not open.");
+    if (channel.readyState !== "open") throw new Error("WebRTC data channel is not open.");
     for (const frame of this.outgoing.encode(data2)) {
       try {
         channel.send(toArrayBuffer(frame));
@@ -13526,8 +8225,7 @@ var RtcDataChannelTransport = class {
   }
   /** Idempotent close: releases PeerConnection, DataChannel, timers and listeners. */
   async close() {
-    if (this.closed)
-      return;
+    if (this.closed) return;
     this.closed = true;
     this.clearNegotiation();
     this.openReject?.(new RtcConnectError("RTC_CLOSED", "WebRTC transport closed during negotiation."));
@@ -13557,32 +8255,27 @@ var RtcDataChannelTransport = class {
     }
     if (this.opened) {
       this.opened = false;
-      for (const handler of this.closeHandlers)
-        handler();
+      for (const handler of this.closeHandlers) handler();
     }
   }
   armAbort(signal) {
     this.removeAbort?.();
     this.removeAbort = void 0;
-    if (signal === void 0)
-      return;
+    if (signal === void 0) return;
     const onAbort = () => {
       this.failOpen(new RtcConnectError("RTC_ABORTED", "WebRTC negotiation was aborted."));
     };
     signal.addEventListener("abort", onAbort, { once: true });
     this.removeAbort = () => signal.removeEventListener("abort", onAbort);
-    if (signal.aborted)
-      onAbort();
+    if (signal.aborted) onAbort();
   }
   async startInitiator() {
     const channel = this.pc.createDataChannel(this.channelLabel, RTC_DATA_CHANNEL_OPTIONS);
     this.adoptChannel(channel);
     const offer = await this.pc.createOffer();
-    if (this.closed)
-      return;
+    if (this.closed) return;
     await this.pc.setLocalDescription(offer);
-    if (this.closed)
-      return;
+    if (this.closed) return;
     this.onSignal({ type: "offer", sdp: requireSdp(offer) });
   }
   async handleOffer(sdp) {
@@ -13650,50 +8343,42 @@ var RtcDataChannelTransport = class {
     this.channel = channel;
     channel.binaryType = "arraybuffer";
     channel.onopen = () => {
-      if (this.closed || this.opened)
-        return;
+      if (this.closed || this.opened) return;
       this.opened = true;
       const resolve6 = this.openResolve;
       this.clearNegotiation();
       void this.resolveSelectedTransport().then(() => {
-        if (this.closed)
-          return;
+        if (this.closed) return;
         this.openResolve = void 0;
         this.openReject = void 0;
         resolve6?.();
       });
     };
     channel.onmessage = (event) => {
-      if (this.closed || !this.opened)
-        return;
+      if (this.closed || !this.opened) return;
       const data2 = event.data;
       const frame = typeof data2 === "string" ? new TextEncoder().encode(data2) : new Uint8Array(data2);
       this.bytesReceived += frame.byteLength;
       try {
         const message = this.incoming.decode(frame);
-        if (message === void 0)
-          return;
-        for (const handler of this.messageHandlers)
-          handler(message);
+        if (message === void 0) return;
+        for (const handler of this.messageHandlers) handler(message);
       } catch {
         void this.close();
       }
     };
     channel.onclose = () => {
-      if (this.closed)
-        return;
+      if (this.closed) return;
       this.failOpen(new RtcConnectError("RTC_CLOSED", "WebRTC data channel closed."));
       if (this.opened) {
         this.opened = false;
-        for (const handler of this.closeHandlers)
-          handler();
+        for (const handler of this.closeHandlers) handler();
       }
     };
     channel.onerror = () => {
       const error = new RtcConnectError("RTC_FAILED", "WebRTC data channel reported an error.");
       this.failOpen(error);
-      for (const handler of this.errorHandlers)
-        handler(error);
+      for (const handler of this.errorHandlers) handler(error);
     };
   }
   async resolveSelectedTransport() {
@@ -13718,8 +8403,7 @@ var RtcDataChannelTransport = class {
     }
   }
   checkConnectionState() {
-    if (this.closed || this.opened)
-      return;
+    if (this.closed || this.opened) return;
     if (this.pc.connectionState === "failed" || this.pc.iceConnectionState === "failed" || this.pc.connectionState === "closed" || this.pc.iceConnectionState === "closed") {
       void this.failOpenAfterStats(new RtcConnectError("RTC_FAILED", "WebRTC peer connection failed before the data channel opened."));
     }
@@ -13729,8 +8413,7 @@ var RtcDataChannelTransport = class {
     this.failOpen(error);
   }
   failOpen(error) {
-    if (this.closed || this.opened || this.openReject === void 0)
-      return;
+    if (this.closed || this.opened || this.openReject === void 0) return;
     const reject = this.openReject;
     this.clearNegotiation();
     this.openResolve = void 0;
@@ -13739,8 +8422,7 @@ var RtcDataChannelTransport = class {
     void this.close();
   }
   clearNegotiation() {
-    if (this.negotiateTimer !== void 0)
-      clearTimeout(this.negotiateTimer);
+    if (this.negotiateTimer !== void 0) clearTimeout(this.negotiateTimer);
     this.negotiateTimer = void 0;
     this.removeAbort?.();
     this.removeAbort = void 0;
@@ -13753,10 +8435,8 @@ var RtcDataChannelTransport = class {
     return channel;
   }
   armWatchdog(channel) {
-    if (this.closed || this.sendTimeoutMs === void 0 || this.sendTimeoutMs <= 0)
-      return;
-    if (this.watchdogTimer !== void 0)
-      clearTimeout(this.watchdogTimer);
+    if (this.closed || this.sendTimeoutMs === void 0 || this.sendTimeoutMs <= 0) return;
+    if (this.watchdogTimer !== void 0) clearTimeout(this.watchdogTimer);
     this.watchdogTimer = void 0;
     const baseline = channel.bufferedAmount;
     if (baseline <= 0) {
@@ -13766,24 +8446,20 @@ var RtcDataChannelTransport = class {
     this.lastBufferedAmount = baseline;
     this.watchdogTimer = setTimeout(() => {
       this.watchdogTimer = void 0;
-      if (this.closed || this.channel !== channel || channel.readyState !== "open")
-        return;
+      if (this.closed || this.channel !== channel || channel.readyState !== "open") return;
       const current = channel.bufferedAmount;
       if (current > 0 && current >= this.lastBufferedAmount) {
         const error = new RtcConnectError("RTC_SEND_TIMEOUT", "DataChannel send stalled.");
-        for (const handler of this.errorHandlers)
-          handler(error);
+        for (const handler of this.errorHandlers) handler(error);
         void this.close();
         return;
       }
       this.lastBufferedAmount = current;
-      if (current > 0)
-        this.armWatchdog(channel);
+      if (current > 0) this.armWatchdog(channel);
     }, this.sendTimeoutMs);
   }
   clearWatchdog() {
-    if (this.watchdogTimer !== void 0)
-      clearTimeout(this.watchdogTimer);
+    if (this.watchdogTimer !== void 0) clearTimeout(this.watchdogTimer);
     this.watchdogTimer = void 0;
     this.lastBufferedAmount = 0;
   }
@@ -13792,8 +8468,7 @@ var RtcDataChannelTransport = class {
       const timer = setTimeout(() => reject(new Error("WebRTC statistics timed out.")), 250);
       Promise.resolve().then(() => this.pc.getStats()).then(resolve6, reject).finally(() => clearTimeout(timer));
     })];
-    if (this.closed)
-      return {};
+    if (this.closed) return {};
     this.candidatePairTelemetry = inspectCandidatePairs(stats);
     return inspectSelectedPath(stats);
   }
@@ -13808,8 +8483,7 @@ var RtcDataChannelTransport = class {
       });
       return;
     }
-    if (event.localCandidate !== void 0)
-      recordCandidate(this.filteredCandidatePairTelemetry, event.localCandidate);
+    if (event.localCandidate !== void 0) recordCandidate(this.filteredCandidatePairTelemetry, event.localCandidate);
     this.emitDiagnostic({
       type: event.type,
       localCandidate: event.localCandidate,
@@ -13834,7 +8508,6 @@ var RtcDataChannelTransport = class {
   }
 };
 var RtcConnectError = class extends Error {
-  code;
   constructor(code, message) {
     super(message);
     this.code = code;
@@ -13852,8 +8525,7 @@ function inspectSelectedPath(stats) {
       }
     } else if (entry.type === "candidate-pair") {
       candidatePairs.set(String(entry.id ?? reportId), entry);
-      if (entry.selected === true || entry.nominated === true)
-        selectedPairs.push(entry);
+      if (entry.selected === true || entry.nominated === true) selectedPairs.push(entry);
     } else if (entry.type === "transport" && typeof entry.selectedCandidatePairId === "string") {
       selectedPairIds.add(entry.selectedCandidatePairId);
     }
@@ -13870,11 +8542,9 @@ function inspectSelectedPath(stats) {
     const localAddressScope = summarizeAddress(candidateAddressValue(local)).addressScope;
     const remoteAddressScope = summarizeAddress(candidateAddressValue(remote)).addressScope;
     let selected;
-    if (localType === "relay" || remoteType === "relay")
-      selected = { transport: "turn", mode: "TURN" };
+    if (localType === "relay" || remoteType === "relay") selected = { transport: "turn", mode: "TURN" };
     const relayUrl = localType === "relay" ? stringStat(local, "url") : void 0;
-    if (local === void 0 && remote === void 0)
-      continue;
+    if (local === void 0 && remote === void 0) continue;
     const lan = isLanCandidatePair(localType, remoteType, localAddressScope, remoteAddressScope);
     selected ??= { transport: lan ? "lan" : "p2p", mode: lan ? "LAN" : "P2P" };
     const currentRoundTripTime = numberStat(pair, "currentRoundTripTime");
@@ -13912,10 +8582,8 @@ function inspectCandidatePairs(stats) {
   }
   for (const pair of pairs) {
     telemetry.total += 1;
-    if (pair.nominated === true)
-      telemetry.nominated += 1;
-    if (pair.selected === true)
-      telemetry.selected += 1;
+    if (pair.nominated === true) telemetry.nominated += 1;
+    if (pair.selected === true) telemetry.selected += 1;
     increment(telemetry.byState, stringStat(pair, "state") ?? (pair.selected === true ? "selected" : "unknown"));
     const local = candidates.get(String(pair.localCandidateId));
     const remote = candidates.get(String(pair.remoteCandidateId));
@@ -13926,8 +8594,7 @@ function inspectCandidatePairs(stats) {
 }
 function candidateAddress(candidate) {
   const address = stringStat(candidate, "address") ?? stringStat(candidate, "ip");
-  if (address === void 0)
-    return void 0;
+  if (address === void 0) return void 0;
   const port = numberStat(candidate, "port");
   return port === void 0 ? address : `${address}:${port}`;
 }
@@ -13990,8 +8657,7 @@ function recordCandidate(telemetry, candidate) {
   increment(telemetry.byType, candidate.candidateType);
   increment(telemetry.byFamily, candidate.addressFamily);
   increment(telemetry.byScope, candidate.addressScope);
-  if (candidate.protocol !== void 0)
-    increment(telemetry.byProtocol, candidate.protocol);
+  if (candidate.protocol !== void 0) increment(telemetry.byProtocol, candidate.protocol);
 }
 function recordCandidateStats(byType, byFamily, byScope, candidate) {
   const candidateType = candidateTypeStat(candidate);
@@ -14002,8 +8668,7 @@ function recordCandidateStats(byType, byFamily, byScope, candidate) {
 }
 function candidateTypeStat(candidate) {
   const value = stringStat(candidate, "candidateType");
-  if (value === "host" || value === "srflx" || value === "prflx" || value === "relay")
-    return value;
+  if (value === "host" || value === "srflx" || value === "prflx" || value === "relay") return value;
   return "unknown";
 }
 function candidateAddressValue(candidate) {
@@ -14014,10 +8679,8 @@ function isLanCandidatePair(localType, remoteType, localScope, remoteScope) {
     return !isExplicitlyNonLanScope(localScope) && !isExplicitlyNonLanScope(remoteScope);
   }
   const directTypes = /* @__PURE__ */ new Set(["host", "prflx"]);
-  if (!directTypes.has(String(localType)) || !directTypes.has(String(remoteType)))
-    return false;
-  if (isLocalNetworkScope(localScope) && isLocalNetworkScope(remoteScope))
-    return true;
+  if (!directTypes.has(String(localType)) || !directTypes.has(String(remoteType))) return false;
+  if (isLocalNetworkScope(localScope) && isLocalNetworkScope(remoteScope)) return true;
   return localType === "host" && isLocalNetworkScope(localScope) && remoteType === "prflx" && remoteScope === "unknown" || remoteType === "host" && isLocalNetworkScope(remoteScope) && localType === "prflx" && localScope === "unknown";
 }
 function isLocalNetworkScope(scope) {
@@ -14051,8 +8714,7 @@ function requireSdp(description) {
   return description.sdp;
 }
 function toArrayBuffer(data2) {
-  if (data2.byteOffset === 0 && data2.byteLength === data2.buffer.byteLength)
-    return data2.buffer;
+  if (data2.byteOffset === 0 && data2.byteLength === data2.buffer.byteLength) return data2.buffer;
   return data2.slice().buffer;
 }
 function asError(error) {
@@ -14062,12 +8724,15 @@ function sleep(ms) {
   return new Promise((resolve6) => setTimeout(resolve6, ms));
 }
 
-// ../webrtc/dist/adaptive-transport.js
+// ../webrtc/src/adaptive-transport.ts
 var DEFAULT_CAPABILITIES = ["transport.lan", "transport.p2p", "transport.turn", "transport.relay", "harness.api.v1"];
 var DEFAULT_PREFERRED_TRANSPORTS = ["lan", "p2p", "turn", "relay"];
 var AdaptiveTransport = class extends BaseTransport {
-  url;
-  options;
+  constructor(url, options) {
+    super();
+    this.url = url;
+    this.options = options;
+  }
   handshakeHandlers = /* @__PURE__ */ new Set();
   socket;
   connectionId;
@@ -14091,14 +8756,8 @@ var AdaptiveTransport = class extends BaseTransport {
   lastControlReceivedAt;
   lastControlSentAt;
   lastRtcDiagnostics;
-  constructor(url, options) {
-    super();
-    this.url = url;
-    this.options = options;
-  }
   async connect() {
-    if (this.socket !== void 0)
-      return;
+    if (this.socket !== void 0) return;
     throwIfAborted(this.options.signal);
     const lifetime = new AbortController();
     this.lifetime = lifetime;
@@ -14117,14 +8776,16 @@ var AdaptiveTransport = class extends BaseTransport {
       const onAbort = () => this.failConnection(new Error("Adaptive connection was aborted"));
       this.options.signal?.addEventListener("abort", onAbort, { once: true });
       this.removeAbort = () => this.options.signal?.removeEventListener("abort", onAbort);
-      this.handshakeTimer = setTimeout(() => this.failConnection(new Error("Adaptive control handshake timed out")), this.options.handshakeTimeoutMs ?? 15e3);
+      this.handshakeTimer = setTimeout(
+        () => this.failConnection(new Error("Adaptive control handshake timed out")),
+        this.options.handshakeTimeoutMs ?? 15e3
+      );
       const socket = this.socket;
       socket.onmessage = (event) => {
         void this.handleSocketMessage(event.data, lifetime);
       };
       socket.onopen = () => {
-        if (this.lifetime !== lifetime)
-          return;
+        if (this.lifetime !== lifetime) return;
         this.sendControl("hello", {
           role: this.options.role,
           deviceId: this.options.deviceId,
@@ -14134,28 +8795,23 @@ var AdaptiveTransport = class extends BaseTransport {
         });
       };
       socket.onerror = () => {
-        if (this.lifetime === lifetime)
-          this.failConnection(new Error(`AdaptiveTransport failed to connect to ${this.url}`));
+        if (this.lifetime === lifetime) this.failConnection(new Error(`AdaptiveTransport failed to connect to ${this.url}`));
       };
       socket.onclose = (event) => {
-        if (this.lifetime === lifetime)
-          this.failConnection(adaptiveControlCloseError(event));
+        if (this.lifetime === lifetime) this.failConnection(adaptiveControlCloseError(event));
       };
     });
   }
   async send(data2) {
-    if (this.connectionId === void 0)
-      throw new Error("adaptive transport has not been authorized");
+    if (this.connectionId === void 0) throw new Error("adaptive transport has not been authorized");
     if (this.dataMode === "webrtc") {
       const rtc = this.rtc;
-      if (rtc === void 0)
-        throw new Error("webrtc data channel is not available");
+      if (rtc === void 0) throw new Error("webrtc data channel is not available");
       this.bytesSent += data2.byteLength;
       await rtc.send(data2);
       return;
     }
-    if (this.socket?.readyState !== WebSocket.OPEN)
-      throw new Error("adaptive transport is not connected");
+    if (this.socket?.readyState !== WebSocket.OPEN) throw new Error("adaptive transport is not connected");
     await waitForRelayCapacity(this.socket);
     this.sendControl("relay", {
       connectionId: this.connectionId,
@@ -14167,8 +8823,7 @@ var AdaptiveTransport = class extends BaseTransport {
     this.relayCounter += 1;
   }
   connectionInfo() {
-    if (this.connectionId === void 0)
-      throw new Error("adaptive transport has not been authorized");
+    if (this.connectionId === void 0) throw new Error("adaptive transport has not been authorized");
     return {
       connectionId: this.connectionId,
       localDeviceId: this.options.deviceId,
@@ -14213,25 +8868,21 @@ var AdaptiveTransport = class extends BaseTransport {
     const relayConnected = this.dataMode === "relay" && this.socket?.readyState === WebSocket.OPEN && this.connectionId !== void 0;
     const connected = webrtcConnected || relayConnected;
     let mode2 = "Disconnected";
-    if (this.selected === "relay")
-      mode2 = relayConnected ? "Relay" : "Disconnected";
+    if (this.selected === "relay") mode2 = relayConnected ? "Relay" : "Disconnected";
     else if (this.selected === "lan" || this.selected === "turn" || this.selected === "p2p") {
       mode2 = webrtcConnected ? this.rtc.getStats().mode : "Disconnected";
     }
     return { mode: mode2, connected, bytesSent: this.bytesSent, bytesReceived: this.bytesReceived };
   }
   async handleSocketMessage(raw, lifetime) {
-    if (this.lifetime !== lifetime)
-      return;
+    if (this.lifetime !== lifetime) return;
     try {
-      if (typeof raw !== "string")
-        throw new Error("Adaptive control frames must be text JSON");
+      if (typeof raw !== "string") throw new Error("Adaptive control frames must be text JSON");
       const frame = decodeControlFrame(raw, this.controlFrameLimits);
       this.lastControlReceivedAt = Date.now();
       if (frame.type === "hello.ack") {
         const payload = frame.payload;
-        if (payload.protocol !== PROTOCOL_VERSION)
-          throw new Error("Server selected an unsupported protocol version");
+        if (payload.protocol !== PROTOCOL_VERSION) throw new Error("Server selected an unsupported protocol version");
         this.heartbeatIntervalMs = payload.heartbeatIntervalMs;
         const offered = this.options.capabilities ?? DEFAULT_CAPABILITIES;
         this.negotiatedCapabilities = acceptNegotiatedCapabilities(offered, payload.capabilities);
@@ -14243,8 +8894,7 @@ var AdaptiveTransport = class extends BaseTransport {
         if (preferredTransports.length === 0) {
           throw new Error("Server did not negotiate a supported transport capability");
         }
-        if (payload.webrtcEnabled === false)
-          this.webrtcEnabled = false;
+        if (payload.webrtcEnabled === false) this.webrtcEnabled = false;
         if (typeof payload.webrtcFallbackTimeoutMs === "number" && Number.isSafeInteger(payload.webrtcFallbackTimeoutMs) && payload.webrtcFallbackTimeoutMs > 0) {
           this.serverNegotiateTimeoutMs = payload.webrtcFallbackTimeoutMs;
         }
@@ -14255,8 +8905,7 @@ var AdaptiveTransport = class extends BaseTransport {
         return;
       }
       if (frame.type === "connect.accepted") {
-        if (this.connectionId !== void 0)
-          throw new Error("Duplicate connect.accepted");
+        if (this.connectionId !== void 0) throw new Error("Duplicate connect.accepted");
         const payload = frame.payload;
         if (typeof payload.connectionId !== "string" || payload.connectionId.length === 0) {
           throw new Error("connect.accepted did not include a connectionId");
@@ -14264,8 +8913,7 @@ var AdaptiveTransport = class extends BaseTransport {
         this.connectionId = payload.connectionId;
         this.clearHandshake();
         void this.negotiate(lifetime.signal).catch((error) => {
-          if (this.lifetime === lifetime)
-            this.failConnection(error instanceof Error ? error : new Error("Adaptive transport negotiation failed"));
+          if (this.lifetime === lifetime) this.failConnection(error instanceof Error ? error : new Error("Adaptive transport negotiation failed"));
         });
         return;
       }
@@ -14275,8 +8923,7 @@ var AdaptiveTransport = class extends BaseTransport {
         throw Object.assign(new Error(message), { code: payload.code });
       }
       if (frame.type === "relay") {
-        if (this.dataMode !== "relay")
-          return;
+        if (this.dataMode !== "relay") return;
         this.handleRelay(frame.payload);
         return;
       }
@@ -14286,8 +8933,7 @@ var AdaptiveTransport = class extends BaseTransport {
           throw new Error("Received a secure handshake frame for an unknown connection");
         }
         const data2 = fromBase64Url(payload.data);
-        for (const handler of this.handshakeHandlers)
-          handler(payload.step, data2);
+        for (const handler of this.handshakeHandlers) handler(payload.step, data2);
         return;
       }
       if (frame.type === "signal.answer") {
@@ -14304,10 +8950,8 @@ var AdaptiveTransport = class extends BaseTransport {
         }
         return;
       }
-      if (frame.type === "signal.offer" || frame.type === "transport.selected")
-        return;
-      if (frame.type === "ping")
-        this.sendControl("pong", frame.payload);
+      if (frame.type === "signal.offer" || frame.type === "transport.selected") return;
+      if (frame.type === "ping") this.sendControl("pong", frame.payload);
     } catch (error) {
       this.failConnection(error instanceof Error ? error : new Error("Invalid adaptive control frame"));
     }
@@ -14321,8 +8965,7 @@ var AdaptiveTransport = class extends BaseTransport {
     this.emit(data2);
   }
   async negotiate(signal) {
-    if (this.connectionId === void 0)
-      return;
+    if (this.connectionId === void 0) return;
     const preferred = this.negotiatedTransports();
     const wantWebRtc = !this.options.forceRelay && this.webrtcEnabled && (preferred.includes("lan") || preferred.includes("p2p") || preferred.includes("turn"));
     let selected = "relay";
@@ -14355,14 +8998,12 @@ var AdaptiveTransport = class extends BaseTransport {
         await this.rtc?.close();
         throwIfAborted(signal);
         this.rtc = void 0;
-        if (!preferred.includes("relay"))
-          throw reason;
+        if (!preferred.includes("relay")) throw reason;
         this.dataMode = "relay";
         selected = "relay";
       }
     } else {
-      if (!preferred.includes("relay"))
-        throw new Error("No negotiated transport is available");
+      if (!preferred.includes("relay")) throw new Error("No negotiated transport is available");
       this.dataMode = "relay";
       selected = "relay";
     }
@@ -14379,17 +9020,14 @@ var AdaptiveTransport = class extends BaseTransport {
   negotiatedTransports() {
     const preferred = this.options.forceRelay === true ? ["relay"] : this.options.preferredTransports ?? DEFAULT_PREFERRED_TRANSPORTS;
     return preferred.filter((transport) => {
-      if (transport === "lan")
-        return this.negotiatedCapabilities.includes("transport.lan");
-      if (transport === "p2p")
-        return this.negotiatedCapabilities.includes("transport.p2p");
+      if (transport === "lan") return this.negotiatedCapabilities.includes("transport.lan");
+      if (transport === "p2p") return this.negotiatedCapabilities.includes("transport.p2p");
       return this.negotiatedCapabilities.includes(`transport.${transport}`);
     });
   }
   async tryWebRtc(signal) {
     const connectionId = this.connectionId;
-    if (connectionId === void 0)
-      throw new RtcConnectError("RTC_UNAVAILABLE", "No connection id for WebRTC negotiation.");
+    if (connectionId === void 0) throw new RtcConnectError("RTC_UNAVAILABLE", "No connection id for WebRTC negotiation.");
     const factory = this.options.rtcFactory ?? (typeof RTCPeerConnection === "undefined" ? void 0 : browserRtcFactory());
     if (factory === void 0) {
       throw new RtcConnectError("RTC_UNAVAILABLE", "No RTC backend is available in this environment.");
@@ -14422,8 +9060,7 @@ var AdaptiveTransport = class extends BaseTransport {
       this.emit(data2);
     });
     rtc.onClose(() => {
-      if (this.rtc === rtc && this.dataMode === "webrtc")
-        this.emitClose();
+      if (this.rtc === rtc && this.dataMode === "webrtc") this.emitClose();
     });
     try {
       await rtc.connect(signal);
@@ -14431,8 +9068,7 @@ var AdaptiveTransport = class extends BaseTransport {
       throwIfAborted(signal);
       this.lastRtcDiagnostics = rtc.diagnostics();
       await rtc.close();
-      if (this.rtc === rtc)
-        this.rtc = void 0;
+      if (this.rtc === rtc) this.rtc = void 0;
       throwIfAborted(signal);
       throw error;
     }
@@ -14441,21 +9077,17 @@ var AdaptiveTransport = class extends BaseTransport {
     return { transport: rtc.selectedTransport() ?? "p2p", relayUrl: rtc.selectedRelayUrl() };
   }
   async fetchIceServers(connectionId, signal) {
-    if (this.options.fetchIceServers === void 0)
-      return [];
+    if (this.options.fetchIceServers === void 0) return [];
     return new Promise((resolve6, reject) => {
       const request = new AbortController();
       let settled = false;
       const finish = (error, servers = []) => {
-        if (settled)
-          return;
+        if (settled) return;
         settled = true;
         clearTimeout(timer);
         signal.removeEventListener("abort", onAbort);
-        if (error)
-          reject(error);
-        else
-          resolve6(servers);
+        if (error) reject(error);
+        else resolve6(servers);
       };
       const onAbort = () => {
         finish(new Error("ICE configuration request was aborted"));
@@ -14473,12 +9105,14 @@ var AdaptiveTransport = class extends BaseTransport {
       Promise.resolve().then(() => {
         throwIfAborted(request.signal);
         return this.options.fetchIceServers(connectionId, request.signal);
-      }).then((servers) => finish(void 0, servers), (error) => finish(error instanceof Error ? error : new Error("ICE configuration request failed")));
+      }).then(
+        (servers) => finish(void 0, servers),
+        (error) => finish(error instanceof Error ? error : new Error("ICE configuration request failed"))
+      );
     });
   }
   sendRtcSignal(signal) {
-    if (this.connectionId === void 0)
-      return;
+    if (this.connectionId === void 0) return;
     if (signal.type === "offer") {
       this.sendControl("signal.offer", {
         connectionId: this.connectionId,
@@ -14500,8 +9134,7 @@ var AdaptiveTransport = class extends BaseTransport {
     }
   }
   sendControl(type, payload) {
-    if (this.socket?.readyState !== WebSocket.OPEN)
-      throw new Error("adaptive control socket is not open");
+    if (this.socket?.readyState !== WebSocket.OPEN) throw new Error("adaptive control socket is not open");
     this.socket.send(encodeControlFrame(createControlFrame(type, payload), this.controlFrameLimits));
     this.lastControlSentAt = Date.now();
   }
@@ -14533,12 +9166,10 @@ var AdaptiveTransport = class extends BaseTransport {
     reject?.(error);
     void rtc?.close();
     socket?.close();
-    if (socket !== void 0)
-      this.emitClose();
+    if (socket !== void 0) this.emitClose();
   }
   clearHandshake() {
-    if (this.handshakeTimer !== void 0)
-      clearTimeout(this.handshakeTimer);
+    if (this.handshakeTimer !== void 0) clearTimeout(this.handshakeTimer);
     this.handshakeTimer = void 0;
   }
 };
@@ -14551,34 +9182,27 @@ function isObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function socketState(readyState) {
-  if (readyState === 0)
-    return "connecting";
-  if (readyState === 1)
-    return "open";
-  if (readyState === 2)
-    return "closing";
+  if (readyState === 0) return "connecting";
+  if (readyState === 1) return "open";
+  if (readyState === 2) return "closing";
   return "closed";
 }
 function negotiateTimeout(serverMs, localMs) {
-  if (serverMs === void 0)
-    return localMs;
-  if (localMs === void 0)
-    return serverMs;
+  if (serverMs === void 0) return localMs;
+  if (localMs === void 0) return serverMs;
   return Math.max(serverMs, localMs);
 }
 function throwIfAborted(signal) {
-  if (signal?.aborted)
-    throw new Error("Adaptive connection was aborted");
+  if (signal?.aborted) throw new Error("Adaptive connection was aborted");
 }
 
-// ../webrtc/dist/serial-send.js
+// ../webrtc/src/serial-send.ts
 var SerialSend = class {
   tail = Promise.resolve();
   bytes = 0;
   count = 0;
   async run(bytes, send) {
-    if (this.bytes + bytes > 8 * 1024 * 1024 || this.count >= 256)
-      throw new Error("Encrypted send queue exceeds its limit");
+    if (this.bytes + bytes > 8 * 1024 * 1024 || this.count >= 256) throw new Error("Encrypted send queue exceeds its limit");
     this.bytes += bytes;
     this.count += 1;
     const task = this.tail.then(send);
@@ -14640,7 +9264,7 @@ function record2(value) {
   }
   return value;
 }
-function isRecord4(value) {
+function isRecord5(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function ok(value) {
@@ -14734,7 +9358,7 @@ async function probeRemoteHostFeatures(client, clientVersion) {
     if (error instanceof Error && "code" in error && error.code === "METHOD_NOT_FOUND") return fallback;
     throw error;
   }
-  if (!isRecord4(value) || !Array.isArray(value.capabilities) || value.capabilities.some((capability) => typeof capability !== "string")) {
+  if (!isRecord5(value) || !Array.isArray(value.capabilities) || value.capabilities.some((capability) => typeof capability !== "string")) {
     throw new ClientModeError("INVALID_MESSAGE", "The remote Host returned invalid transport capabilities.");
   }
   const capabilities = new Set(value.capabilities);
@@ -14834,10 +9458,10 @@ var ClientCodexStreams = class {
       }
     }
     stream.unsubscribe = remote.client.onEvent((event) => {
-      if (event.event === "codex.app.frame" && isRecord4(event.data) && event.data.streamId === value.streamId) {
+      if (event.event === "codex.app.frame" && isRecord5(event.data) && event.data.streamId === value.streamId) {
         this.appendCodexFrame(stream, event.data);
       }
-      if (event.event === "codex.app.stream.closed" && isRecord4(event.data) && event.data.streamId === value.streamId) {
+      if (event.event === "codex.app.stream.closed" && isRecord5(event.data) && event.data.streamId === value.streamId) {
         stream.closed = typeof event.data.reason === "string" ? event.data.reason : "closed";
         stream.wake();
       }
@@ -14864,7 +9488,7 @@ var ClientCodexStreams = class {
     stream.wake();
   };
   appendCodexFrame(stream, data2) {
-    if (!isRecord4(data2) || !isRecord4(data2.frame) || typeof data2.frame.method !== "string") return;
+    if (!isRecord5(data2) || !isRecord5(data2.frame) || typeof data2.frame.method !== "string") return;
     if (stream.frames.length >= 256) {
       stream.closed = "overflow";
     } else {
@@ -14933,7 +9557,7 @@ function randomBytes(bytesLength = 32) {
     return crypto2.getRandomValues(new Uint8Array(bytesLength));
   }
   if (crypto2 && typeof crypto2.randomBytes === "function") {
-    return Uint8Array.from(crypto2.randomBytes(bytesLength));
+    return crypto2.randomBytes(bytesLength);
   }
   throw new Error("crypto.getRandomValues must be defined");
 }
@@ -14943,54 +9567,38 @@ import * as nc2 from "node:crypto";
 var crypto3 = nc2 && typeof nc2 === "object" && "webcrypto" in nc2 ? nc2.webcrypto : nc2 && typeof nc2 === "object" && "randomBytes" in nc2 ? nc2 : void 0;
 
 // node_modules/@noble/hashes/esm/utils.js
+function randomBytes2(bytesLength = 32) {
+  if (crypto3 && typeof crypto3.getRandomValues === "function") {
+    return crypto3.getRandomValues(new Uint8Array(bytesLength));
+  }
+  if (crypto3 && typeof crypto3.randomBytes === "function") {
+    return crypto3.randomBytes(bytesLength);
+  }
+  throw new Error("crypto.getRandomValues must be defined");
+}
+
+// node_modules/@noble/curves/esm/abstract/utils.js
+var _0n = /* @__PURE__ */ BigInt(0);
 function isBytes(a) {
   return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
 }
-function anumber(n) {
-  if (!Number.isSafeInteger(n) || n < 0)
-    throw new Error("positive integer expected, got " + n);
-}
-function abytes(b, ...lengths) {
-  if (!isBytes(b))
+function abytes(item) {
+  if (!isBytes(item))
     throw new Error("Uint8Array expected");
-  if (lengths.length > 0 && !lengths.includes(b.length))
-    throw new Error("Uint8Array expected of length " + lengths + ", got length=" + b.length);
 }
-function aexists(instance, checkFinished = true) {
-  if (instance.destroyed)
-    throw new Error("Hash instance has been destroyed");
-  if (checkFinished && instance.finished)
-    throw new Error("Hash#digest() has already been called");
-}
-function aoutput(out, instance) {
-  abytes(out);
-  const min = instance.outputLen;
-  if (out.length < min) {
-    throw new Error("digestInto() expects output buffer of length at least " + min);
-  }
-}
-function clean(...arrays) {
-  for (let i = 0; i < arrays.length; i++) {
-    arrays[i].fill(0);
-  }
-}
-function createView(arr) {
-  return new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
-}
-var hasHexBuiltin = /* @__PURE__ */ (() => (
-  // @ts-ignore
-  typeof Uint8Array.from([]).toHex === "function" && typeof Uint8Array.fromHex === "function"
-))();
 var hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
 function bytesToHex(bytes) {
   abytes(bytes);
-  if (hasHexBuiltin)
-    return bytes.toHex();
   let hex = "";
   for (let i = 0; i < bytes.length; i++) {
     hex += hexes[bytes[i]];
   }
   return hex;
+}
+function hexToNumber(hex) {
+  if (typeof hex !== "string")
+    throw new Error("hex string expected, got " + typeof hex);
+  return hex === "" ? _0n : BigInt("0x" + hex);
 }
 var asciis = { _0: 48, _9: 57, A: 65, F: 70, a: 97, f: 102 };
 function asciiToBase16(ch) {
@@ -15005,8 +9613,6 @@ function asciiToBase16(ch) {
 function hexToBytes(hex) {
   if (typeof hex !== "string")
     throw new Error("hex string expected, got " + typeof hex);
-  if (hasHexBuiltin)
-    return Uint8Array.fromHex(hex);
   const hl = hex.length;
   const al = hl / 2;
   if (hl % 2)
@@ -15022,439 +9628,6 @@ function hexToBytes(hex) {
     array3[ai] = n1 * 16 + n2;
   }
   return array3;
-}
-function utf8ToBytes(str) {
-  if (typeof str !== "string")
-    throw new Error("string expected");
-  return new Uint8Array(new TextEncoder().encode(str));
-}
-function toBytes(data2) {
-  if (typeof data2 === "string")
-    data2 = utf8ToBytes(data2);
-  abytes(data2);
-  return data2;
-}
-function concatBytes(...arrays) {
-  let sum = 0;
-  for (let i = 0; i < arrays.length; i++) {
-    const a = arrays[i];
-    abytes(a);
-    sum += a.length;
-  }
-  const res = new Uint8Array(sum);
-  for (let i = 0, pad = 0; i < arrays.length; i++) {
-    const a = arrays[i];
-    res.set(a, pad);
-    pad += a.length;
-  }
-  return res;
-}
-var Hash = class {
-};
-function createHasher(hashCons) {
-  const hashC = (msg) => hashCons().update(toBytes(msg)).digest();
-  const tmp = hashCons();
-  hashC.outputLen = tmp.outputLen;
-  hashC.blockLen = tmp.blockLen;
-  hashC.create = () => hashCons();
-  return hashC;
-}
-function randomBytes2(bytesLength = 32) {
-  if (crypto3 && typeof crypto3.getRandomValues === "function") {
-    return crypto3.getRandomValues(new Uint8Array(bytesLength));
-  }
-  if (crypto3 && typeof crypto3.randomBytes === "function") {
-    return Uint8Array.from(crypto3.randomBytes(bytesLength));
-  }
-  throw new Error("crypto.getRandomValues must be defined");
-}
-
-// node_modules/@noble/hashes/esm/_md.js
-function setBigUint64(view, byteOffset, value, isLE3) {
-  if (typeof view.setBigUint64 === "function")
-    return view.setBigUint64(byteOffset, value, isLE3);
-  const _32n3 = BigInt(32);
-  const _u32_max = BigInt(4294967295);
-  const wh = Number(value >> _32n3 & _u32_max);
-  const wl = Number(value & _u32_max);
-  const h = isLE3 ? 4 : 0;
-  const l = isLE3 ? 0 : 4;
-  view.setUint32(byteOffset + h, wh, isLE3);
-  view.setUint32(byteOffset + l, wl, isLE3);
-}
-var HashMD = class extends Hash {
-  constructor(blockLen, outputLen, padOffset, isLE3) {
-    super();
-    this.finished = false;
-    this.length = 0;
-    this.pos = 0;
-    this.destroyed = false;
-    this.blockLen = blockLen;
-    this.outputLen = outputLen;
-    this.padOffset = padOffset;
-    this.isLE = isLE3;
-    this.buffer = new Uint8Array(blockLen);
-    this.view = createView(this.buffer);
-  }
-  update(data2) {
-    aexists(this);
-    data2 = toBytes(data2);
-    abytes(data2);
-    const { view, buffer, blockLen } = this;
-    const len = data2.length;
-    for (let pos = 0; pos < len; ) {
-      const take = Math.min(blockLen - this.pos, len - pos);
-      if (take === blockLen) {
-        const dataView = createView(data2);
-        for (; blockLen <= len - pos; pos += blockLen)
-          this.process(dataView, pos);
-        continue;
-      }
-      buffer.set(data2.subarray(pos, pos + take), this.pos);
-      this.pos += take;
-      pos += take;
-      if (this.pos === blockLen) {
-        this.process(view, 0);
-        this.pos = 0;
-      }
-    }
-    this.length += data2.length;
-    this.roundClean();
-    return this;
-  }
-  digestInto(out) {
-    aexists(this);
-    aoutput(out, this);
-    this.finished = true;
-    const { buffer, view, blockLen, isLE: isLE3 } = this;
-    let { pos } = this;
-    buffer[pos++] = 128;
-    clean(this.buffer.subarray(pos));
-    if (this.padOffset > blockLen - pos) {
-      this.process(view, 0);
-      pos = 0;
-    }
-    for (let i = pos; i < blockLen; i++)
-      buffer[i] = 0;
-    setBigUint64(view, blockLen - 8, BigInt(this.length * 8), isLE3);
-    this.process(view, 0);
-    const oview = createView(out);
-    const len = this.outputLen;
-    if (len % 4)
-      throw new Error("_sha2: outputLen should be aligned to 32bit");
-    const outLen = len / 4;
-    const state = this.get();
-    if (outLen > state.length)
-      throw new Error("_sha2: outputLen bigger than state");
-    for (let i = 0; i < outLen; i++)
-      oview.setUint32(4 * i, state[i], isLE3);
-  }
-  digest() {
-    const { buffer, outputLen } = this;
-    this.digestInto(buffer);
-    const res = buffer.slice(0, outputLen);
-    this.destroy();
-    return res;
-  }
-  _cloneInto(to) {
-    to || (to = new this.constructor());
-    to.set(...this.get());
-    const { blockLen, buffer, length, finished, destroyed, pos } = this;
-    to.destroyed = destroyed;
-    to.finished = finished;
-    to.length = length;
-    to.pos = pos;
-    if (length % blockLen)
-      to.buffer.set(buffer);
-    return to;
-  }
-  clone() {
-    return this._cloneInto();
-  }
-};
-var SHA512_IV = /* @__PURE__ */ Uint32Array.from([
-  1779033703,
-  4089235720,
-  3144134277,
-  2227873595,
-  1013904242,
-  4271175723,
-  2773480762,
-  1595750129,
-  1359893119,
-  2917565137,
-  2600822924,
-  725511199,
-  528734635,
-  4215389547,
-  1541459225,
-  327033209
-]);
-
-// node_modules/@noble/hashes/esm/_u64.js
-var U32_MASK64 = /* @__PURE__ */ BigInt(2 ** 32 - 1);
-var _32n = /* @__PURE__ */ BigInt(32);
-function fromBig(n, le = false) {
-  if (le)
-    return { h: Number(n & U32_MASK64), l: Number(n >> _32n & U32_MASK64) };
-  return { h: Number(n >> _32n & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
-}
-function split(lst, le = false) {
-  const len = lst.length;
-  let Ah = new Uint32Array(len);
-  let Al = new Uint32Array(len);
-  for (let i = 0; i < len; i++) {
-    const { h, l } = fromBig(lst[i], le);
-    [Ah[i], Al[i]] = [h, l];
-  }
-  return [Ah, Al];
-}
-var shrSH = (h, _l, s2) => h >>> s2;
-var shrSL = (h, l, s2) => h << 32 - s2 | l >>> s2;
-var rotrSH = (h, l, s2) => h >>> s2 | l << 32 - s2;
-var rotrSL = (h, l, s2) => h << 32 - s2 | l >>> s2;
-var rotrBH = (h, l, s2) => h << 64 - s2 | l >>> s2 - 32;
-var rotrBL = (h, l, s2) => h >>> s2 - 32 | l << 64 - s2;
-function add(Ah, Al, Bh, Bl) {
-  const l = (Al >>> 0) + (Bl >>> 0);
-  return { h: Ah + Bh + (l / 2 ** 32 | 0) | 0, l: l | 0 };
-}
-var add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
-var add3H = (low, Ah, Bh, Ch) => Ah + Bh + Ch + (low / 2 ** 32 | 0) | 0;
-var add4L = (Al, Bl, Cl, Dl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0);
-var add4H = (low, Ah, Bh, Ch, Dh) => Ah + Bh + Ch + Dh + (low / 2 ** 32 | 0) | 0;
-var add5L = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0) + (El >>> 0);
-var add5H = (low, Ah, Bh, Ch, Dh, Eh) => Ah + Bh + Ch + Dh + Eh + (low / 2 ** 32 | 0) | 0;
-
-// node_modules/@noble/hashes/esm/sha2.js
-var K512 = /* @__PURE__ */ (() => split([
-  "0x428a2f98d728ae22",
-  "0x7137449123ef65cd",
-  "0xb5c0fbcfec4d3b2f",
-  "0xe9b5dba58189dbbc",
-  "0x3956c25bf348b538",
-  "0x59f111f1b605d019",
-  "0x923f82a4af194f9b",
-  "0xab1c5ed5da6d8118",
-  "0xd807aa98a3030242",
-  "0x12835b0145706fbe",
-  "0x243185be4ee4b28c",
-  "0x550c7dc3d5ffb4e2",
-  "0x72be5d74f27b896f",
-  "0x80deb1fe3b1696b1",
-  "0x9bdc06a725c71235",
-  "0xc19bf174cf692694",
-  "0xe49b69c19ef14ad2",
-  "0xefbe4786384f25e3",
-  "0x0fc19dc68b8cd5b5",
-  "0x240ca1cc77ac9c65",
-  "0x2de92c6f592b0275",
-  "0x4a7484aa6ea6e483",
-  "0x5cb0a9dcbd41fbd4",
-  "0x76f988da831153b5",
-  "0x983e5152ee66dfab",
-  "0xa831c66d2db43210",
-  "0xb00327c898fb213f",
-  "0xbf597fc7beef0ee4",
-  "0xc6e00bf33da88fc2",
-  "0xd5a79147930aa725",
-  "0x06ca6351e003826f",
-  "0x142929670a0e6e70",
-  "0x27b70a8546d22ffc",
-  "0x2e1b21385c26c926",
-  "0x4d2c6dfc5ac42aed",
-  "0x53380d139d95b3df",
-  "0x650a73548baf63de",
-  "0x766a0abb3c77b2a8",
-  "0x81c2c92e47edaee6",
-  "0x92722c851482353b",
-  "0xa2bfe8a14cf10364",
-  "0xa81a664bbc423001",
-  "0xc24b8b70d0f89791",
-  "0xc76c51a30654be30",
-  "0xd192e819d6ef5218",
-  "0xd69906245565a910",
-  "0xf40e35855771202a",
-  "0x106aa07032bbd1b8",
-  "0x19a4c116b8d2d0c8",
-  "0x1e376c085141ab53",
-  "0x2748774cdf8eeb99",
-  "0x34b0bcb5e19b48a8",
-  "0x391c0cb3c5c95a63",
-  "0x4ed8aa4ae3418acb",
-  "0x5b9cca4f7763e373",
-  "0x682e6ff3d6b2b8a3",
-  "0x748f82ee5defb2fc",
-  "0x78a5636f43172f60",
-  "0x84c87814a1f0ab72",
-  "0x8cc702081a6439ec",
-  "0x90befffa23631e28",
-  "0xa4506cebde82bde9",
-  "0xbef9a3f7b2c67915",
-  "0xc67178f2e372532b",
-  "0xca273eceea26619c",
-  "0xd186b8c721c0c207",
-  "0xeada7dd6cde0eb1e",
-  "0xf57d4f7fee6ed178",
-  "0x06f067aa72176fba",
-  "0x0a637dc5a2c898a6",
-  "0x113f9804bef90dae",
-  "0x1b710b35131c471b",
-  "0x28db77f523047d84",
-  "0x32caab7b40c72493",
-  "0x3c9ebe0a15c9bebc",
-  "0x431d67c49c100d4c",
-  "0x4cc5d4becb3e42b6",
-  "0x597f299cfc657e2a",
-  "0x5fcb6fab3ad6faec",
-  "0x6c44198c4a475817"
-].map((n) => BigInt(n))))();
-var SHA512_Kh = /* @__PURE__ */ (() => K512[0])();
-var SHA512_Kl = /* @__PURE__ */ (() => K512[1])();
-var SHA512_W_H = /* @__PURE__ */ new Uint32Array(80);
-var SHA512_W_L = /* @__PURE__ */ new Uint32Array(80);
-var SHA512 = class extends HashMD {
-  constructor(outputLen = 64) {
-    super(128, outputLen, 16, false);
-    this.Ah = SHA512_IV[0] | 0;
-    this.Al = SHA512_IV[1] | 0;
-    this.Bh = SHA512_IV[2] | 0;
-    this.Bl = SHA512_IV[3] | 0;
-    this.Ch = SHA512_IV[4] | 0;
-    this.Cl = SHA512_IV[5] | 0;
-    this.Dh = SHA512_IV[6] | 0;
-    this.Dl = SHA512_IV[7] | 0;
-    this.Eh = SHA512_IV[8] | 0;
-    this.El = SHA512_IV[9] | 0;
-    this.Fh = SHA512_IV[10] | 0;
-    this.Fl = SHA512_IV[11] | 0;
-    this.Gh = SHA512_IV[12] | 0;
-    this.Gl = SHA512_IV[13] | 0;
-    this.Hh = SHA512_IV[14] | 0;
-    this.Hl = SHA512_IV[15] | 0;
-  }
-  // prettier-ignore
-  get() {
-    const { Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl } = this;
-    return [Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl];
-  }
-  // prettier-ignore
-  set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl) {
-    this.Ah = Ah | 0;
-    this.Al = Al | 0;
-    this.Bh = Bh | 0;
-    this.Bl = Bl | 0;
-    this.Ch = Ch | 0;
-    this.Cl = Cl | 0;
-    this.Dh = Dh | 0;
-    this.Dl = Dl | 0;
-    this.Eh = Eh | 0;
-    this.El = El | 0;
-    this.Fh = Fh | 0;
-    this.Fl = Fl | 0;
-    this.Gh = Gh | 0;
-    this.Gl = Gl | 0;
-    this.Hh = Hh | 0;
-    this.Hl = Hl | 0;
-  }
-  process(view, offset) {
-    for (let i = 0; i < 16; i++, offset += 4) {
-      SHA512_W_H[i] = view.getUint32(offset);
-      SHA512_W_L[i] = view.getUint32(offset += 4);
-    }
-    for (let i = 16; i < 80; i++) {
-      const W15h = SHA512_W_H[i - 15] | 0;
-      const W15l = SHA512_W_L[i - 15] | 0;
-      const s0h = rotrSH(W15h, W15l, 1) ^ rotrSH(W15h, W15l, 8) ^ shrSH(W15h, W15l, 7);
-      const s0l = rotrSL(W15h, W15l, 1) ^ rotrSL(W15h, W15l, 8) ^ shrSL(W15h, W15l, 7);
-      const W2h = SHA512_W_H[i - 2] | 0;
-      const W2l = SHA512_W_L[i - 2] | 0;
-      const s1h = rotrSH(W2h, W2l, 19) ^ rotrBH(W2h, W2l, 61) ^ shrSH(W2h, W2l, 6);
-      const s1l = rotrSL(W2h, W2l, 19) ^ rotrBL(W2h, W2l, 61) ^ shrSL(W2h, W2l, 6);
-      const SUMl = add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16]);
-      const SUMh = add4H(SUMl, s0h, s1h, SHA512_W_H[i - 7], SHA512_W_H[i - 16]);
-      SHA512_W_H[i] = SUMh | 0;
-      SHA512_W_L[i] = SUMl | 0;
-    }
-    let { Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl } = this;
-    for (let i = 0; i < 80; i++) {
-      const sigma1h = rotrSH(Eh, El, 14) ^ rotrSH(Eh, El, 18) ^ rotrBH(Eh, El, 41);
-      const sigma1l = rotrSL(Eh, El, 14) ^ rotrSL(Eh, El, 18) ^ rotrBL(Eh, El, 41);
-      const CHIh = Eh & Fh ^ ~Eh & Gh;
-      const CHIl = El & Fl ^ ~El & Gl;
-      const T1ll = add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
-      const T1h = add5H(T1ll, Hh, sigma1h, CHIh, SHA512_Kh[i], SHA512_W_H[i]);
-      const T1l = T1ll | 0;
-      const sigma0h = rotrSH(Ah, Al, 28) ^ rotrBH(Ah, Al, 34) ^ rotrBH(Ah, Al, 39);
-      const sigma0l = rotrSL(Ah, Al, 28) ^ rotrBL(Ah, Al, 34) ^ rotrBL(Ah, Al, 39);
-      const MAJh = Ah & Bh ^ Ah & Ch ^ Bh & Ch;
-      const MAJl = Al & Bl ^ Al & Cl ^ Bl & Cl;
-      Hh = Gh | 0;
-      Hl = Gl | 0;
-      Gh = Fh | 0;
-      Gl = Fl | 0;
-      Fh = Eh | 0;
-      Fl = El | 0;
-      ({ h: Eh, l: El } = add(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
-      Dh = Ch | 0;
-      Dl = Cl | 0;
-      Ch = Bh | 0;
-      Cl = Bl | 0;
-      Bh = Ah | 0;
-      Bl = Al | 0;
-      const All = add3L(T1l, sigma0l, MAJl);
-      Ah = add3H(All, T1h, sigma0h, MAJh);
-      Al = All | 0;
-    }
-    ({ h: Ah, l: Al } = add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
-    ({ h: Bh, l: Bl } = add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
-    ({ h: Ch, l: Cl } = add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
-    ({ h: Dh, l: Dl } = add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
-    ({ h: Eh, l: El } = add(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
-    ({ h: Fh, l: Fl } = add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
-    ({ h: Gh, l: Gl } = add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
-    ({ h: Hh, l: Hl } = add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
-    this.set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl);
-  }
-  roundClean() {
-    clean(SHA512_W_H, SHA512_W_L);
-  }
-  destroy() {
-    clean(this.buffer);
-    this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  }
-};
-var sha512 = /* @__PURE__ */ createHasher(() => new SHA512());
-
-// node_modules/@noble/curves/esm/utils.js
-var _0n = /* @__PURE__ */ BigInt(0);
-var _1n = /* @__PURE__ */ BigInt(1);
-function _abool2(value, title = "") {
-  if (typeof value !== "boolean") {
-    const prefix = title && `"${title}"`;
-    throw new Error(prefix + "expected boolean, got type=" + typeof value);
-  }
-  return value;
-}
-function _abytes2(value, length, title = "") {
-  const bytes = isBytes(value);
-  const len = value?.length;
-  const needsLen = length !== void 0;
-  if (!bytes || needsLen && len !== length) {
-    const prefix = title && `"${title}" `;
-    const ofLen = needsLen ? ` of length ${length}` : "";
-    const got = bytes ? `length=${len}` : `type=${typeof value}`;
-    throw new Error(prefix + "expected Uint8Array" + ofLen + ", got " + got);
-  }
-  return value;
-}
-function hexToNumber(hex) {
-  if (typeof hex !== "string")
-    throw new Error("hex string expected, got " + typeof hex);
-  return hex === "" ? _0n : BigInt("0x" + hex);
-}
-function bytesToNumberBE(bytes) {
-  return hexToNumber(bytesToHex(bytes));
 }
 function bytesToNumberLE(bytes) {
   abytes(bytes);
@@ -15484,17 +9657,6 @@ function ensureBytes(title, hex, expectedLength) {
     throw new Error(title + " of length " + expectedLength + " expected, got " + len);
   return res;
 }
-function equalBytes(a, b) {
-  if (a.length !== b.length)
-    return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++)
-    diff |= a[i] ^ b[i];
-  return diff === 0;
-}
-function copyBytes(bytes) {
-  return Uint8Array.from(bytes);
-}
 var isPosBig = (n) => typeof n === "bigint" && _0n <= n;
 function inRange(n, min, max) {
   return isPosBig(n) && isPosBig(min) && isPosBig(max) && min <= n && n < max;
@@ -15503,56 +9665,58 @@ function aInRange(title, n, min, max) {
   if (!inRange(n, min, max))
     throw new Error("expected valid " + title + ": " + min + " <= n < " + max + ", got " + n);
 }
-function bitLen(n) {
-  let len;
-  for (len = 0; n > _0n; n >>= _1n, len += 1)
-    ;
-  return len;
-}
-var bitMask = (n) => (_1n << BigInt(n)) - _1n;
-function _validateObject(object, fields, optFields = {}) {
-  if (!object || typeof object !== "object")
-    throw new Error("expected valid options object");
-  function checkField(fieldName, expectedType, isOpt) {
-    const val = object[fieldName];
-    if (isOpt && val === void 0)
-      return;
-    const current = typeof val;
-    if (current !== expectedType || val === null)
-      throw new Error(`param "${fieldName}" is invalid: expected ${expectedType}, got ${current}`);
-  }
-  Object.entries(fields).forEach(([k, v]) => checkField(k, v, false));
-  Object.entries(optFields).forEach(([k, v]) => checkField(k, v, true));
-}
-var notImplemented = () => {
-  throw new Error("not implemented");
+var validatorFns = {
+  bigint: (val) => typeof val === "bigint",
+  function: (val) => typeof val === "function",
+  boolean: (val) => typeof val === "boolean",
+  string: (val) => typeof val === "string",
+  stringOrUint8Array: (val) => typeof val === "string" || isBytes(val),
+  isSafeInteger: (val) => Number.isSafeInteger(val),
+  array: (val) => Array.isArray(val),
+  field: (val, object) => object.Fp.isValid(val),
+  hash: (val) => typeof val === "function" && Number.isSafeInteger(val.outputLen)
 };
-function memoized(fn) {
-  const map = /* @__PURE__ */ new WeakMap();
-  return (arg, ...args) => {
-    const val = map.get(arg);
-    if (val !== void 0)
-      return val;
-    const computed = fn(arg, ...args);
-    map.set(arg, computed);
-    return computed;
+function validateObject(object, validators, optValidators = {}) {
+  const checkField = (fieldName, type, isOptional) => {
+    const checkVal = validatorFns[type];
+    if (typeof checkVal !== "function")
+      throw new Error("invalid validator function");
+    const val = object[fieldName];
+    if (isOptional && val === void 0)
+      return;
+    if (!checkVal(val, object)) {
+      throw new Error("param " + String(fieldName) + " is invalid. Expected " + type + ", got " + val);
+    }
   };
+  for (const [fieldName, type] of Object.entries(validators))
+    checkField(fieldName, type, false);
+  for (const [fieldName, type] of Object.entries(optValidators))
+    checkField(fieldName, type, true);
+  return object;
 }
 
 // node_modules/@noble/curves/esm/abstract/modular.js
 var _0n2 = BigInt(0);
-var _1n2 = BigInt(1);
-var _2n = /* @__PURE__ */ BigInt(2);
-var _3n = /* @__PURE__ */ BigInt(3);
-var _4n = /* @__PURE__ */ BigInt(4);
-var _5n = /* @__PURE__ */ BigInt(5);
-var _7n = /* @__PURE__ */ BigInt(7);
-var _8n = /* @__PURE__ */ BigInt(8);
-var _9n = /* @__PURE__ */ BigInt(9);
-var _16n = /* @__PURE__ */ BigInt(16);
+var _1n = BigInt(1);
 function mod(a, b) {
   const result = a % b;
   return result >= _0n2 ? result : b + result;
+}
+function pow(num, power, modulo) {
+  if (power < _0n2)
+    throw new Error("invalid exponent, negatives unsupported");
+  if (modulo <= _0n2)
+    throw new Error("invalid modulus");
+  if (modulo === _1n)
+    return _0n2;
+  let res = _1n;
+  while (power > _0n2) {
+    if (power & _1n)
+      res = res * num % modulo;
+    num = num * num % modulo;
+    power >>= _1n;
+  }
+  return res;
 }
 function pow2(x, power, modulo) {
   let res = x;
@@ -15562,1192 +9726,59 @@ function pow2(x, power, modulo) {
   }
   return res;
 }
-function invert(number, modulo) {
-  if (number === _0n2)
-    throw new Error("invert: expected non-zero number");
-  if (modulo <= _0n2)
-    throw new Error("invert: expected positive modulus, got " + modulo);
-  let a = mod(number, modulo);
-  let b = modulo;
-  let x = _0n2, y = _1n2, u = _1n2, v = _0n2;
-  while (a !== _0n2) {
-    const q = b / a;
-    const r = b % a;
-    const m = x - u * q;
-    const n = y - v * q;
-    b = a, a = r, x = u, y = v, u = m, v = n;
-  }
-  const gcd = b;
-  if (gcd !== _1n2)
-    throw new Error("invert: does not exist");
-  return mod(x, modulo);
-}
-function assertIsSquare(Fp2, root, n) {
-  if (!Fp2.eql(Fp2.sqr(root), n))
-    throw new Error("Cannot find square root");
-}
-function sqrt3mod4(Fp2, n) {
-  const p1div4 = (Fp2.ORDER + _1n2) / _4n;
-  const root = Fp2.pow(n, p1div4);
-  assertIsSquare(Fp2, root, n);
-  return root;
-}
-function sqrt5mod8(Fp2, n) {
-  const p5div8 = (Fp2.ORDER - _5n) / _8n;
-  const n2 = Fp2.mul(n, _2n);
-  const v = Fp2.pow(n2, p5div8);
-  const nv = Fp2.mul(n, v);
-  const i = Fp2.mul(Fp2.mul(nv, _2n), v);
-  const root = Fp2.mul(nv, Fp2.sub(i, Fp2.ONE));
-  assertIsSquare(Fp2, root, n);
-  return root;
-}
-function sqrt9mod16(P) {
-  const Fp_ = Field(P);
-  const tn = tonelliShanks(P);
-  const c1 = tn(Fp_, Fp_.neg(Fp_.ONE));
-  const c2 = tn(Fp_, c1);
-  const c3 = tn(Fp_, Fp_.neg(c1));
-  const c4 = (P + _7n) / _16n;
-  return (Fp2, n) => {
-    let tv1 = Fp2.pow(n, c4);
-    let tv2 = Fp2.mul(tv1, c1);
-    const tv3 = Fp2.mul(tv1, c2);
-    const tv4 = Fp2.mul(tv1, c3);
-    const e1 = Fp2.eql(Fp2.sqr(tv2), n);
-    const e2 = Fp2.eql(Fp2.sqr(tv3), n);
-    tv1 = Fp2.cmov(tv1, tv2, e1);
-    tv2 = Fp2.cmov(tv4, tv3, e2);
-    const e3 = Fp2.eql(Fp2.sqr(tv2), n);
-    const root = Fp2.cmov(tv1, tv2, e3);
-    assertIsSquare(Fp2, root, n);
-    return root;
-  };
-}
-function tonelliShanks(P) {
-  if (P < _3n)
-    throw new Error("sqrt is not defined for small field");
-  let Q = P - _1n2;
-  let S = 0;
-  while (Q % _2n === _0n2) {
-    Q /= _2n;
-    S++;
-  }
-  let Z = _2n;
-  const _Fp = Field(P);
-  while (FpLegendre(_Fp, Z) === 1) {
-    if (Z++ > 1e3)
-      throw new Error("Cannot find square root: probably non-prime P");
-  }
-  if (S === 1)
-    return sqrt3mod4;
-  let cc = _Fp.pow(Z, Q);
-  const Q1div2 = (Q + _1n2) / _2n;
-  return function tonelliSlow(Fp2, n) {
-    if (Fp2.is0(n))
-      return n;
-    if (FpLegendre(Fp2, n) !== 1)
-      throw new Error("Cannot find square root");
-    let M = S;
-    let c = Fp2.mul(Fp2.ONE, cc);
-    let t = Fp2.pow(n, Q);
-    let R = Fp2.pow(n, Q1div2);
-    while (!Fp2.eql(t, Fp2.ONE)) {
-      if (Fp2.is0(t))
-        return Fp2.ZERO;
-      let i = 1;
-      let t_tmp = Fp2.sqr(t);
-      while (!Fp2.eql(t_tmp, Fp2.ONE)) {
-        i++;
-        t_tmp = Fp2.sqr(t_tmp);
-        if (i === M)
-          throw new Error("Cannot find square root");
-      }
-      const exponent = _1n2 << BigInt(M - i - 1);
-      const b = Fp2.pow(c, exponent);
-      M = i;
-      c = Fp2.sqr(b);
-      t = Fp2.mul(t, c);
-      R = Fp2.mul(R, b);
-    }
-    return R;
-  };
-}
-function FpSqrt(P) {
-  if (P % _4n === _3n)
-    return sqrt3mod4;
-  if (P % _8n === _5n)
-    return sqrt5mod8;
-  if (P % _16n === _9n)
-    return sqrt9mod16(P);
-  return tonelliShanks(P);
-}
-var isNegativeLE = (num, modulo) => (mod(num, modulo) & _1n2) === _1n2;
-var FIELD_FIELDS = [
-  "create",
-  "isValid",
-  "is0",
-  "neg",
-  "inv",
-  "sqrt",
-  "sqr",
-  "eql",
-  "add",
-  "sub",
-  "mul",
-  "pow",
-  "div",
-  "addN",
-  "subN",
-  "mulN",
-  "sqrN"
-];
-function validateField(field) {
-  const initial = {
-    ORDER: "bigint",
-    MASK: "bigint",
-    BYTES: "number",
-    BITS: "number"
-  };
-  const opts = FIELD_FIELDS.reduce((map, val) => {
-    map[val] = "function";
-    return map;
-  }, initial);
-  _validateObject(field, opts);
-  return field;
-}
-function FpPow(Fp2, num, power) {
-  if (power < _0n2)
-    throw new Error("invalid exponent, negatives unsupported");
-  if (power === _0n2)
-    return Fp2.ONE;
-  if (power === _1n2)
-    return num;
-  let p = Fp2.ONE;
-  let d = num;
-  while (power > _0n2) {
-    if (power & _1n2)
-      p = Fp2.mul(p, d);
-    d = Fp2.sqr(d);
-    power >>= _1n2;
-  }
-  return p;
-}
-function FpInvertBatch(Fp2, nums, passZero = false) {
-  const inverted = new Array(nums.length).fill(passZero ? Fp2.ZERO : void 0);
-  const multipliedAcc = nums.reduce((acc, num, i) => {
-    if (Fp2.is0(num))
-      return acc;
-    inverted[i] = acc;
-    return Fp2.mul(acc, num);
-  }, Fp2.ONE);
-  const invertedAcc = Fp2.inv(multipliedAcc);
-  nums.reduceRight((acc, num, i) => {
-    if (Fp2.is0(num))
-      return acc;
-    inverted[i] = Fp2.mul(acc, inverted[i]);
-    return Fp2.mul(acc, num);
-  }, invertedAcc);
-  return inverted;
-}
-function FpLegendre(Fp2, n) {
-  const p1mod2 = (Fp2.ORDER - _1n2) / _2n;
-  const powered = Fp2.pow(n, p1mod2);
-  const yes = Fp2.eql(powered, Fp2.ONE);
-  const zero = Fp2.eql(powered, Fp2.ZERO);
-  const no = Fp2.eql(powered, Fp2.neg(Fp2.ONE));
-  if (!yes && !zero && !no)
-    throw new Error("invalid Legendre symbol result");
-  return yes ? 1 : zero ? 0 : -1;
-}
-function nLength(n, nBitLength) {
-  if (nBitLength !== void 0)
-    anumber(nBitLength);
-  const _nBitLength = nBitLength !== void 0 ? nBitLength : n.toString(2).length;
-  const nByteLength = Math.ceil(_nBitLength / 8);
-  return { nBitLength: _nBitLength, nByteLength };
-}
-function Field(ORDER, bitLenOrOpts, isLE3 = false, opts = {}) {
-  if (ORDER <= _0n2)
-    throw new Error("invalid field: expected ORDER > 0, got " + ORDER);
-  let _nbitLength = void 0;
-  let _sqrt = void 0;
-  let modFromBytes = false;
-  let allowedLengths = void 0;
-  if (typeof bitLenOrOpts === "object" && bitLenOrOpts != null) {
-    if (opts.sqrt || isLE3)
-      throw new Error("cannot specify opts in two arguments");
-    const _opts = bitLenOrOpts;
-    if (_opts.BITS)
-      _nbitLength = _opts.BITS;
-    if (_opts.sqrt)
-      _sqrt = _opts.sqrt;
-    if (typeof _opts.isLE === "boolean")
-      isLE3 = _opts.isLE;
-    if (typeof _opts.modFromBytes === "boolean")
-      modFromBytes = _opts.modFromBytes;
-    allowedLengths = _opts.allowedLengths;
-  } else {
-    if (typeof bitLenOrOpts === "number")
-      _nbitLength = bitLenOrOpts;
-    if (opts.sqrt)
-      _sqrt = opts.sqrt;
-  }
-  const { nBitLength: BITS, nByteLength: BYTES } = nLength(ORDER, _nbitLength);
-  if (BYTES > 2048)
-    throw new Error("invalid field: expected ORDER of <= 2048 bytes");
-  let sqrtP;
-  const f = Object.freeze({
-    ORDER,
-    isLE: isLE3,
-    BITS,
-    BYTES,
-    MASK: bitMask(BITS),
-    ZERO: _0n2,
-    ONE: _1n2,
-    allowedLengths,
-    create: (num) => mod(num, ORDER),
-    isValid: (num) => {
-      if (typeof num !== "bigint")
-        throw new Error("invalid field element: expected bigint, got " + typeof num);
-      return _0n2 <= num && num < ORDER;
-    },
-    is0: (num) => num === _0n2,
-    // is valid and invertible
-    isValidNot0: (num) => !f.is0(num) && f.isValid(num),
-    isOdd: (num) => (num & _1n2) === _1n2,
-    neg: (num) => mod(-num, ORDER),
-    eql: (lhs, rhs) => lhs === rhs,
-    sqr: (num) => mod(num * num, ORDER),
-    add: (lhs, rhs) => mod(lhs + rhs, ORDER),
-    sub: (lhs, rhs) => mod(lhs - rhs, ORDER),
-    mul: (lhs, rhs) => mod(lhs * rhs, ORDER),
-    pow: (num, power) => FpPow(f, num, power),
-    div: (lhs, rhs) => mod(lhs * invert(rhs, ORDER), ORDER),
-    // Same as above, but doesn't normalize
-    sqrN: (num) => num * num,
-    addN: (lhs, rhs) => lhs + rhs,
-    subN: (lhs, rhs) => lhs - rhs,
-    mulN: (lhs, rhs) => lhs * rhs,
-    inv: (num) => invert(num, ORDER),
-    sqrt: _sqrt || ((n) => {
-      if (!sqrtP)
-        sqrtP = FpSqrt(ORDER);
-      return sqrtP(f, n);
-    }),
-    toBytes: (num) => isLE3 ? numberToBytesLE(num, BYTES) : numberToBytesBE(num, BYTES),
-    fromBytes: (bytes, skipValidation = true) => {
-      if (allowedLengths) {
-        if (!allowedLengths.includes(bytes.length) || bytes.length > BYTES) {
-          throw new Error("Field.fromBytes: expected " + allowedLengths + " bytes, got " + bytes.length);
-        }
-        const padded = new Uint8Array(BYTES);
-        padded.set(bytes, isLE3 ? 0 : padded.length - bytes.length);
-        bytes = padded;
-      }
-      if (bytes.length !== BYTES)
-        throw new Error("Field.fromBytes: expected " + BYTES + " bytes, got " + bytes.length);
-      let scalar = isLE3 ? bytesToNumberLE(bytes) : bytesToNumberBE(bytes);
-      if (modFromBytes)
-        scalar = mod(scalar, ORDER);
-      if (!skipValidation) {
-        if (!f.isValid(scalar))
-          throw new Error("invalid field element: outside of range 0..ORDER");
-      }
-      return scalar;
-    },
-    // TODO: we don't need it here, move out to separate fn
-    invertBatch: (lst) => FpInvertBatch(f, lst),
-    // We can't move this out because Fp6, Fp12 implement it
-    // and it's unclear what to return in there.
-    cmov: (a, b, c) => c ? b : a
-  });
-  return Object.freeze(f);
-}
-
-// node_modules/@noble/curves/esm/abstract/curve.js
-var _0n3 = BigInt(0);
-var _1n3 = BigInt(1);
-function negateCt(condition, item) {
-  const neg = item.negate();
-  return condition ? neg : item;
-}
-function normalizeZ(c, points) {
-  const invertedZs = FpInvertBatch(c.Fp, points.map((p) => p.Z));
-  return points.map((p, i) => c.fromAffine(p.toAffine(invertedZs[i])));
-}
-function validateW(W, bits) {
-  if (!Number.isSafeInteger(W) || W <= 0 || W > bits)
-    throw new Error("invalid window size, expected [1.." + bits + "], got W=" + W);
-}
-function calcWOpts(W, scalarBits) {
-  validateW(W, scalarBits);
-  const windows = Math.ceil(scalarBits / W) + 1;
-  const windowSize = 2 ** (W - 1);
-  const maxNumber = 2 ** W;
-  const mask = bitMask(W);
-  const shiftBy = BigInt(W);
-  return { windows, windowSize, mask, maxNumber, shiftBy };
-}
-function calcOffsets(n, window2, wOpts) {
-  const { windowSize, mask, maxNumber, shiftBy } = wOpts;
-  let wbits = Number(n & mask);
-  let nextN = n >> shiftBy;
-  if (wbits > windowSize) {
-    wbits -= maxNumber;
-    nextN += _1n3;
-  }
-  const offsetStart = window2 * windowSize;
-  const offset = offsetStart + Math.abs(wbits) - 1;
-  const isZero = wbits === 0;
-  const isNeg = wbits < 0;
-  const isNegF = window2 % 2 !== 0;
-  const offsetF = offsetStart;
-  return { nextN, offset, isZero, isNeg, isNegF, offsetF };
-}
-function validateMSMPoints(points, c) {
-  if (!Array.isArray(points))
-    throw new Error("array expected");
-  points.forEach((p, i) => {
-    if (!(p instanceof c))
-      throw new Error("invalid point at index " + i);
-  });
-}
-function validateMSMScalars(scalars, field) {
-  if (!Array.isArray(scalars))
-    throw new Error("array of scalars expected");
-  scalars.forEach((s2, i) => {
-    if (!field.isValid(s2))
-      throw new Error("invalid scalar at index " + i);
-  });
-}
-var pointPrecomputes = /* @__PURE__ */ new WeakMap();
-var pointWindowSizes = /* @__PURE__ */ new WeakMap();
-function getW(P) {
-  return pointWindowSizes.get(P) || 1;
-}
-function assert0(n) {
-  if (n !== _0n3)
-    throw new Error("invalid wNAF");
-}
-var wNAF = class {
-  // Parametrized with a given Point class (not individual point)
-  constructor(Point, bits) {
-    this.BASE = Point.BASE;
-    this.ZERO = Point.ZERO;
-    this.Fn = Point.Fn;
-    this.bits = bits;
-  }
-  // non-const time multiplication ladder
-  _unsafeLadder(elm, n, p = this.ZERO) {
-    let d = elm;
-    while (n > _0n3) {
-      if (n & _1n3)
-        p = p.add(d);
-      d = d.double();
-      n >>= _1n3;
-    }
-    return p;
-  }
-  /**
-   * Creates a wNAF precomputation window. Used for caching.
-   * Default window size is set by `utils.precompute()` and is equal to 8.
-   * Number of precomputed points depends on the curve size:
-   * 2^(𝑊−1) * (Math.ceil(𝑛 / 𝑊) + 1), where:
-   * - 𝑊 is the window size
-   * - 𝑛 is the bitlength of the curve order.
-   * For a 256-bit curve and window size 8, the number of precomputed points is 128 * 33 = 4224.
-   * @param point Point instance
-   * @param W window size
-   * @returns precomputed point tables flattened to a single array
-   */
-  precomputeWindow(point, W) {
-    const { windows, windowSize } = calcWOpts(W, this.bits);
-    const points = [];
-    let p = point;
-    let base = p;
-    for (let window2 = 0; window2 < windows; window2++) {
-      base = p;
-      points.push(base);
-      for (let i = 1; i < windowSize; i++) {
-        base = base.add(p);
-        points.push(base);
-      }
-      p = base.double();
-    }
-    return points;
-  }
-  /**
-   * Implements ec multiplication using precomputed tables and w-ary non-adjacent form.
-   * More compact implementation:
-   * https://github.com/paulmillr/noble-secp256k1/blob/47cb1669b6e506ad66b35fe7d76132ae97465da2/index.ts#L502-L541
-   * @returns real and fake (for const-time) points
-   */
-  wNAF(W, precomputes, n) {
-    if (!this.Fn.isValid(n))
-      throw new Error("invalid scalar");
-    let p = this.ZERO;
-    let f = this.BASE;
-    const wo = calcWOpts(W, this.bits);
-    for (let window2 = 0; window2 < wo.windows; window2++) {
-      const { nextN, offset, isZero, isNeg, isNegF, offsetF } = calcOffsets(n, window2, wo);
-      n = nextN;
-      if (isZero) {
-        f = f.add(negateCt(isNegF, precomputes[offsetF]));
-      } else {
-        p = p.add(negateCt(isNeg, precomputes[offset]));
-      }
-    }
-    assert0(n);
-    return { p, f };
-  }
-  /**
-   * Implements ec unsafe (non const-time) multiplication using precomputed tables and w-ary non-adjacent form.
-   * @param acc accumulator point to add result of multiplication
-   * @returns point
-   */
-  wNAFUnsafe(W, precomputes, n, acc = this.ZERO) {
-    const wo = calcWOpts(W, this.bits);
-    for (let window2 = 0; window2 < wo.windows; window2++) {
-      if (n === _0n3)
-        break;
-      const { nextN, offset, isZero, isNeg } = calcOffsets(n, window2, wo);
-      n = nextN;
-      if (isZero) {
-        continue;
-      } else {
-        const item = precomputes[offset];
-        acc = acc.add(isNeg ? item.negate() : item);
-      }
-    }
-    assert0(n);
-    return acc;
-  }
-  getPrecomputes(W, point, transform) {
-    let comp = pointPrecomputes.get(point);
-    if (!comp) {
-      comp = this.precomputeWindow(point, W);
-      if (W !== 1) {
-        if (typeof transform === "function")
-          comp = transform(comp);
-        pointPrecomputes.set(point, comp);
-      }
-    }
-    return comp;
-  }
-  cached(point, scalar, transform) {
-    const W = getW(point);
-    return this.wNAF(W, this.getPrecomputes(W, point, transform), scalar);
-  }
-  unsafe(point, scalar, transform, prev) {
-    const W = getW(point);
-    if (W === 1)
-      return this._unsafeLadder(point, scalar, prev);
-    return this.wNAFUnsafe(W, this.getPrecomputes(W, point, transform), scalar, prev);
-  }
-  // We calculate precomputes for elliptic curve point multiplication
-  // using windowed method. This specifies window size and
-  // stores precomputed values. Usually only base point would be precomputed.
-  createCache(P, W) {
-    validateW(W, this.bits);
-    pointWindowSizes.set(P, W);
-    pointPrecomputes.delete(P);
-  }
-  hasCache(elm) {
-    return getW(elm) !== 1;
-  }
-};
-function pippenger(c, fieldN, points, scalars) {
-  validateMSMPoints(points, c);
-  validateMSMScalars(scalars, fieldN);
-  const plength = points.length;
-  const slength = scalars.length;
-  if (plength !== slength)
-    throw new Error("arrays of points and scalars must have equal length");
-  const zero = c.ZERO;
-  const wbits = bitLen(BigInt(plength));
-  let windowSize = 1;
-  if (wbits > 12)
-    windowSize = wbits - 3;
-  else if (wbits > 4)
-    windowSize = wbits - 2;
-  else if (wbits > 0)
-    windowSize = 2;
-  const MASK = bitMask(windowSize);
-  const buckets = new Array(Number(MASK) + 1).fill(zero);
-  const lastBits = Math.floor((fieldN.BITS - 1) / windowSize) * windowSize;
-  let sum = zero;
-  for (let i = lastBits; i >= 0; i -= windowSize) {
-    buckets.fill(zero);
-    for (let j = 0; j < slength; j++) {
-      const scalar = scalars[j];
-      const wbits2 = Number(scalar >> BigInt(i) & MASK);
-      buckets[wbits2] = buckets[wbits2].add(points[j]);
-    }
-    let resI = zero;
-    for (let j = buckets.length - 1, sumI = zero; j > 0; j--) {
-      sumI = sumI.add(buckets[j]);
-      resI = resI.add(sumI);
-    }
-    sum = sum.add(resI);
-    if (i !== 0)
-      for (let j = 0; j < windowSize; j++)
-        sum = sum.double();
-  }
-  return sum;
-}
-function createField(order, field, isLE3) {
-  if (field) {
-    if (field.ORDER !== order)
-      throw new Error("Field.ORDER must match order: Fp == p, Fn == n");
-    validateField(field);
-    return field;
-  } else {
-    return Field(order, { isLE: isLE3 });
-  }
-}
-function _createCurveFields(type, CURVE, curveOpts = {}, FpFnLE) {
-  if (FpFnLE === void 0)
-    FpFnLE = type === "edwards";
-  if (!CURVE || typeof CURVE !== "object")
-    throw new Error(`expected valid ${type} CURVE object`);
-  for (const p of ["p", "n", "h"]) {
-    const val = CURVE[p];
-    if (!(typeof val === "bigint" && val > _0n3))
-      throw new Error(`CURVE.${p} must be positive bigint`);
-  }
-  const Fp2 = createField(CURVE.p, curveOpts.Fp, FpFnLE);
-  const Fn2 = createField(CURVE.n, curveOpts.Fn, FpFnLE);
-  const _b = type === "weierstrass" ? "b" : "d";
-  const params = ["Gx", "Gy", "a", _b];
-  for (const p of params) {
-    if (!Fp2.isValid(CURVE[p]))
-      throw new Error(`CURVE.${p} must be valid field element of CURVE.Fp`);
-  }
-  CURVE = Object.freeze(Object.assign({}, CURVE));
-  return { CURVE, Fp: Fp2, Fn: Fn2 };
-}
-
-// node_modules/@noble/curves/esm/abstract/edwards.js
-var _0n4 = BigInt(0);
-var _1n4 = BigInt(1);
-var _2n2 = BigInt(2);
-var _8n2 = BigInt(8);
-function isEdValidXY(Fp2, CURVE, x, y) {
-  const x2 = Fp2.sqr(x);
-  const y2 = Fp2.sqr(y);
-  const left = Fp2.add(Fp2.mul(CURVE.a, x2), y2);
-  const right = Fp2.add(Fp2.ONE, Fp2.mul(CURVE.d, Fp2.mul(x2, y2)));
-  return Fp2.eql(left, right);
-}
-function edwards(params, extraOpts = {}) {
-  const validated = _createCurveFields("edwards", params, extraOpts, extraOpts.FpFnLE);
-  const { Fp: Fp2, Fn: Fn2 } = validated;
-  let CURVE = validated.CURVE;
-  const { h: cofactor } = CURVE;
-  _validateObject(extraOpts, {}, { uvRatio: "function" });
-  const MASK = _2n2 << BigInt(Fn2.BYTES * 8) - _1n4;
-  const modP = (n) => Fp2.create(n);
-  const uvRatio3 = extraOpts.uvRatio || ((u, v) => {
-    try {
-      return { isValid: true, value: Fp2.sqrt(Fp2.div(u, v)) };
-    } catch (e) {
-      return { isValid: false, value: _0n4 };
-    }
-  });
-  if (!isEdValidXY(Fp2, CURVE, CURVE.Gx, CURVE.Gy))
-    throw new Error("bad curve params: generator point");
-  function acoord(title, n, banZero = false) {
-    const min = banZero ? _1n4 : _0n4;
-    aInRange("coordinate " + title, n, min, MASK);
-    return n;
-  }
-  function aextpoint(other) {
-    if (!(other instanceof Point))
-      throw new Error("ExtendedPoint expected");
-  }
-  const toAffineMemo = memoized((p, iz) => {
-    const { X, Y, Z } = p;
-    const is0 = p.is0();
-    if (iz == null)
-      iz = is0 ? _8n2 : Fp2.inv(Z);
-    const x = modP(X * iz);
-    const y = modP(Y * iz);
-    const zz = Fp2.mul(Z, iz);
-    if (is0)
-      return { x: _0n4, y: _1n4 };
-    if (zz !== _1n4)
-      throw new Error("invZ was invalid");
-    return { x, y };
-  });
-  const assertValidMemo = memoized((p) => {
-    const { a, d } = CURVE;
-    if (p.is0())
-      throw new Error("bad point: ZERO");
-    const { X, Y, Z, T } = p;
-    const X2 = modP(X * X);
-    const Y2 = modP(Y * Y);
-    const Z2 = modP(Z * Z);
-    const Z4 = modP(Z2 * Z2);
-    const aX2 = modP(X2 * a);
-    const left = modP(Z2 * modP(aX2 + Y2));
-    const right = modP(Z4 + modP(d * modP(X2 * Y2)));
-    if (left !== right)
-      throw new Error("bad point: equation left != right (1)");
-    const XY = modP(X * Y);
-    const ZT = modP(Z * T);
-    if (XY !== ZT)
-      throw new Error("bad point: equation left != right (2)");
-    return true;
-  });
-  class Point {
-    constructor(X, Y, Z, T) {
-      this.X = acoord("x", X);
-      this.Y = acoord("y", Y);
-      this.Z = acoord("z", Z, true);
-      this.T = acoord("t", T);
-      Object.freeze(this);
-    }
-    static CURVE() {
-      return CURVE;
-    }
-    static fromAffine(p) {
-      if (p instanceof Point)
-        throw new Error("extended point not allowed");
-      const { x, y } = p || {};
-      acoord("x", x);
-      acoord("y", y);
-      return new Point(x, y, _1n4, modP(x * y));
-    }
-    // Uses algo from RFC8032 5.1.3.
-    static fromBytes(bytes, zip215 = false) {
-      const len = Fp2.BYTES;
-      const { a, d } = CURVE;
-      bytes = copyBytes(_abytes2(bytes, len, "point"));
-      _abool2(zip215, "zip215");
-      const normed = copyBytes(bytes);
-      const lastByte = bytes[len - 1];
-      normed[len - 1] = lastByte & ~128;
-      const y = bytesToNumberLE(normed);
-      const max = zip215 ? MASK : Fp2.ORDER;
-      aInRange("point.y", y, _0n4, max);
-      const y2 = modP(y * y);
-      const u = modP(y2 - _1n4);
-      const v = modP(d * y2 - a);
-      let { isValid: isValid2, value: x } = uvRatio3(u, v);
-      if (!isValid2)
-        throw new Error("bad point: invalid y coordinate");
-      const isXOdd = (x & _1n4) === _1n4;
-      const isLastByteOdd = (lastByte & 128) !== 0;
-      if (!zip215 && x === _0n4 && isLastByteOdd)
-        throw new Error("bad point: x=0 and x_0=1");
-      if (isLastByteOdd !== isXOdd)
-        x = modP(-x);
-      return Point.fromAffine({ x, y });
-    }
-    static fromHex(bytes, zip215 = false) {
-      return Point.fromBytes(ensureBytes("point", bytes), zip215);
-    }
-    get x() {
-      return this.toAffine().x;
-    }
-    get y() {
-      return this.toAffine().y;
-    }
-    precompute(windowSize = 8, isLazy = true) {
-      wnaf.createCache(this, windowSize);
-      if (!isLazy)
-        this.multiply(_2n2);
-      return this;
-    }
-    // Useful in fromAffine() - not for fromBytes(), which always created valid points.
-    assertValidity() {
-      assertValidMemo(this);
-    }
-    // Compare one point to another.
-    equals(other) {
-      aextpoint(other);
-      const { X: X1, Y: Y1, Z: Z1 } = this;
-      const { X: X2, Y: Y2, Z: Z2 } = other;
-      const X1Z2 = modP(X1 * Z2);
-      const X2Z1 = modP(X2 * Z1);
-      const Y1Z2 = modP(Y1 * Z2);
-      const Y2Z1 = modP(Y2 * Z1);
-      return X1Z2 === X2Z1 && Y1Z2 === Y2Z1;
-    }
-    is0() {
-      return this.equals(Point.ZERO);
-    }
-    negate() {
-      return new Point(modP(-this.X), this.Y, this.Z, modP(-this.T));
-    }
-    // Fast algo for doubling Extended Point.
-    // https://hyperelliptic.org/EFD/g1p/auto-twisted-extended.html#doubling-dbl-2008-hwcd
-    // Cost: 4M + 4S + 1*a + 6add + 1*2.
-    double() {
-      const { a } = CURVE;
-      const { X: X1, Y: Y1, Z: Z1 } = this;
-      const A = modP(X1 * X1);
-      const B = modP(Y1 * Y1);
-      const C = modP(_2n2 * modP(Z1 * Z1));
-      const D = modP(a * A);
-      const x1y1 = X1 + Y1;
-      const E = modP(modP(x1y1 * x1y1) - A - B);
-      const G = D + B;
-      const F = G - C;
-      const H = D - B;
-      const X3 = modP(E * F);
-      const Y3 = modP(G * H);
-      const T3 = modP(E * H);
-      const Z3 = modP(F * G);
-      return new Point(X3, Y3, Z3, T3);
-    }
-    // Fast algo for adding 2 Extended Points.
-    // https://hyperelliptic.org/EFD/g1p/auto-twisted-extended.html#addition-add-2008-hwcd
-    // Cost: 9M + 1*a + 1*d + 7add.
-    add(other) {
-      aextpoint(other);
-      const { a, d } = CURVE;
-      const { X: X1, Y: Y1, Z: Z1, T: T1 } = this;
-      const { X: X2, Y: Y2, Z: Z2, T: T2 } = other;
-      const A = modP(X1 * X2);
-      const B = modP(Y1 * Y2);
-      const C = modP(T1 * d * T2);
-      const D = modP(Z1 * Z2);
-      const E = modP((X1 + Y1) * (X2 + Y2) - A - B);
-      const F = D - C;
-      const G = D + C;
-      const H = modP(B - a * A);
-      const X3 = modP(E * F);
-      const Y3 = modP(G * H);
-      const T3 = modP(E * H);
-      const Z3 = modP(F * G);
-      return new Point(X3, Y3, Z3, T3);
-    }
-    subtract(other) {
-      return this.add(other.negate());
-    }
-    // Constant-time multiplication.
-    multiply(scalar) {
-      if (!Fn2.isValidNot0(scalar))
-        throw new Error("invalid scalar: expected 1 <= sc < curve.n");
-      const { p, f } = wnaf.cached(this, scalar, (p2) => normalizeZ(Point, p2));
-      return normalizeZ(Point, [p, f])[0];
-    }
-    // Non-constant-time multiplication. Uses double-and-add algorithm.
-    // It's faster, but should only be used when you don't care about
-    // an exposed private key e.g. sig verification.
-    // Does NOT allow scalars higher than CURVE.n.
-    // Accepts optional accumulator to merge with multiply (important for sparse scalars)
-    multiplyUnsafe(scalar, acc = Point.ZERO) {
-      if (!Fn2.isValid(scalar))
-        throw new Error("invalid scalar: expected 0 <= sc < curve.n");
-      if (scalar === _0n4)
-        return Point.ZERO;
-      if (this.is0() || scalar === _1n4)
-        return this;
-      return wnaf.unsafe(this, scalar, (p) => normalizeZ(Point, p), acc);
-    }
-    // Checks if point is of small order.
-    // If you add something to small order point, you will have "dirty"
-    // point with torsion component.
-    // Multiplies point by cofactor and checks if the result is 0.
-    isSmallOrder() {
-      return this.multiplyUnsafe(cofactor).is0();
-    }
-    // Multiplies point by curve order and checks if the result is 0.
-    // Returns `false` is the point is dirty.
-    isTorsionFree() {
-      return wnaf.unsafe(this, CURVE.n).is0();
-    }
-    // Converts Extended point to default (x, y) coordinates.
-    // Can accept precomputed Z^-1 - for example, from invertBatch.
-    toAffine(invertedZ) {
-      return toAffineMemo(this, invertedZ);
-    }
-    clearCofactor() {
-      if (cofactor === _1n4)
-        return this;
-      return this.multiplyUnsafe(cofactor);
-    }
-    toBytes() {
-      const { x, y } = this.toAffine();
-      const bytes = Fp2.toBytes(y);
-      bytes[bytes.length - 1] |= x & _1n4 ? 128 : 0;
-      return bytes;
-    }
-    toHex() {
-      return bytesToHex(this.toBytes());
-    }
-    toString() {
-      return `<Point ${this.is0() ? "ZERO" : this.toHex()}>`;
-    }
-    // TODO: remove
-    get ex() {
-      return this.X;
-    }
-    get ey() {
-      return this.Y;
-    }
-    get ez() {
-      return this.Z;
-    }
-    get et() {
-      return this.T;
-    }
-    static normalizeZ(points) {
-      return normalizeZ(Point, points);
-    }
-    static msm(points, scalars) {
-      return pippenger(Point, Fn2, points, scalars);
-    }
-    _setWindowSize(windowSize) {
-      this.precompute(windowSize);
-    }
-    toRawBytes() {
-      return this.toBytes();
-    }
-  }
-  Point.BASE = new Point(CURVE.Gx, CURVE.Gy, _1n4, modP(CURVE.Gx * CURVE.Gy));
-  Point.ZERO = new Point(_0n4, _1n4, _1n4, _0n4);
-  Point.Fp = Fp2;
-  Point.Fn = Fn2;
-  const wnaf = new wNAF(Point, Fn2.BITS);
-  Point.BASE.precompute(8);
-  return Point;
-}
-var PrimeEdwardsPoint = class {
-  constructor(ep) {
-    this.ep = ep;
-  }
-  // Static methods that must be implemented by subclasses
-  static fromBytes(_bytes) {
-    notImplemented();
-  }
-  static fromHex(_hex) {
-    notImplemented();
-  }
-  get x() {
-    return this.toAffine().x;
-  }
-  get y() {
-    return this.toAffine().y;
-  }
-  // Common implementations
-  clearCofactor() {
-    return this;
-  }
-  assertValidity() {
-    this.ep.assertValidity();
-  }
-  toAffine(invertedZ) {
-    return this.ep.toAffine(invertedZ);
-  }
-  toHex() {
-    return bytesToHex(this.toBytes());
-  }
-  toString() {
-    return this.toHex();
-  }
-  isTorsionFree() {
-    return true;
-  }
-  isSmallOrder() {
-    return false;
-  }
-  add(other) {
-    this.assertSame(other);
-    return this.init(this.ep.add(other.ep));
-  }
-  subtract(other) {
-    this.assertSame(other);
-    return this.init(this.ep.subtract(other.ep));
-  }
-  multiply(scalar) {
-    return this.init(this.ep.multiply(scalar));
-  }
-  multiplyUnsafe(scalar) {
-    return this.init(this.ep.multiplyUnsafe(scalar));
-  }
-  double() {
-    return this.init(this.ep.double());
-  }
-  negate() {
-    return this.init(this.ep.negate());
-  }
-  precompute(windowSize, isLazy) {
-    return this.init(this.ep.precompute(windowSize, isLazy));
-  }
-  /** @deprecated use `toBytes` */
-  toRawBytes() {
-    return this.toBytes();
-  }
-};
-function eddsa(Point, cHash, eddsaOpts = {}) {
-  if (typeof cHash !== "function")
-    throw new Error('"hash" function param is required');
-  _validateObject(eddsaOpts, {}, {
-    adjustScalarBytes: "function",
-    randomBytes: "function",
-    domain: "function",
-    prehash: "function",
-    mapToCurve: "function"
-  });
-  const { prehash } = eddsaOpts;
-  const { BASE, Fp: Fp2, Fn: Fn2 } = Point;
-  const randomBytes8 = eddsaOpts.randomBytes || randomBytes2;
-  const adjustScalarBytes3 = eddsaOpts.adjustScalarBytes || ((bytes) => bytes);
-  const domain = eddsaOpts.domain || ((data2, ctx, phflag) => {
-    _abool2(phflag, "phflag");
-    if (ctx.length || phflag)
-      throw new Error("Contexts/pre-hash are not supported");
-    return data2;
-  });
-  function modN_LE(hash) {
-    return Fn2.create(bytesToNumberLE(hash));
-  }
-  function getPrivateScalar(key) {
-    const len = lengths.secretKey;
-    key = ensureBytes("private key", key, len);
-    const hashed = ensureBytes("hashed private key", cHash(key), 2 * len);
-    const head = adjustScalarBytes3(hashed.slice(0, len));
-    const prefix = hashed.slice(len, 2 * len);
-    const scalar = modN_LE(head);
-    return { head, prefix, scalar };
-  }
-  function getExtendedPublicKey(secretKey2) {
-    const { head, prefix, scalar } = getPrivateScalar(secretKey2);
-    const point = BASE.multiply(scalar);
-    const pointBytes = point.toBytes();
-    return { head, prefix, scalar, point, pointBytes };
-  }
-  function getPublicKey(secretKey2) {
-    return getExtendedPublicKey(secretKey2).pointBytes;
-  }
-  function hashDomainToScalar(context = Uint8Array.of(), ...msgs) {
-    const msg = concatBytes(...msgs);
-    return modN_LE(cHash(domain(msg, ensureBytes("context", context), !!prehash)));
-  }
-  function sign(msg, secretKey2, options = {}) {
-    msg = ensureBytes("message", msg);
-    if (prehash)
-      msg = prehash(msg);
-    const { prefix, scalar, pointBytes } = getExtendedPublicKey(secretKey2);
-    const r = hashDomainToScalar(options.context, prefix, msg);
-    const R = BASE.multiply(r).toBytes();
-    const k = hashDomainToScalar(options.context, R, pointBytes, msg);
-    const s2 = Fn2.create(r + k * scalar);
-    if (!Fn2.isValid(s2))
-      throw new Error("sign failed: invalid s");
-    const rs = concatBytes(R, Fn2.toBytes(s2));
-    return _abytes2(rs, lengths.signature, "result");
-  }
-  const verifyOpts = { zip215: true };
-  function verify(sig, msg, publicKey, options = verifyOpts) {
-    const { context, zip215 } = options;
-    const len = lengths.signature;
-    sig = ensureBytes("signature", sig, len);
-    msg = ensureBytes("message", msg);
-    publicKey = ensureBytes("publicKey", publicKey, lengths.publicKey);
-    if (zip215 !== void 0)
-      _abool2(zip215, "zip215");
-    if (prehash)
-      msg = prehash(msg);
-    const mid = len / 2;
-    const r = sig.subarray(0, mid);
-    const s2 = bytesToNumberLE(sig.subarray(mid, len));
-    let A, R, SB;
-    try {
-      A = Point.fromBytes(publicKey, zip215);
-      R = Point.fromBytes(r, zip215);
-      SB = BASE.multiplyUnsafe(s2);
-    } catch (error) {
-      return false;
-    }
-    if (!zip215 && A.isSmallOrder())
-      return false;
-    const k = hashDomainToScalar(context, R.toBytes(), A.toBytes(), msg);
-    const RkA = R.add(A.multiplyUnsafe(k));
-    return RkA.subtract(SB).clearCofactor().is0();
-  }
-  const _size = Fp2.BYTES;
-  const lengths = {
-    secretKey: _size,
-    publicKey: _size,
-    signature: 2 * _size,
-    seed: _size
-  };
-  function randomSecretKey(seed = randomBytes8(lengths.seed)) {
-    return _abytes2(seed, lengths.seed, "seed");
-  }
-  function keygen(seed) {
-    const secretKey2 = utils.randomSecretKey(seed);
-    return { secretKey: secretKey2, publicKey: getPublicKey(secretKey2) };
-  }
-  function isValidSecretKey(key) {
-    return isBytes(key) && key.length === Fn2.BYTES;
-  }
-  function isValidPublicKey(key, zip215) {
-    try {
-      return !!Point.fromBytes(key, zip215);
-    } catch (error) {
-      return false;
-    }
-  }
-  const utils = {
-    getExtendedPublicKey,
-    randomSecretKey,
-    isValidSecretKey,
-    isValidPublicKey,
-    /**
-     * Converts ed public key to x public key. Uses formula:
-     * - ed25519:
-     *   - `(u, v) = ((1+y)/(1-y), sqrt(-486664)*u/x)`
-     *   - `(x, y) = (sqrt(-486664)*u/v, (u-1)/(u+1))`
-     * - ed448:
-     *   - `(u, v) = ((y-1)/(y+1), sqrt(156324)*u/x)`
-     *   - `(x, y) = (sqrt(156324)*u/v, (1+u)/(1-u))`
-     */
-    toMontgomery(publicKey) {
-      const { y } = Point.fromBytes(publicKey);
-      const size = lengths.publicKey;
-      const is25519 = size === 32;
-      if (!is25519 && size !== 57)
-        throw new Error("only defined for 25519 and 448");
-      const u = is25519 ? Fp2.div(_1n4 + y, _1n4 - y) : Fp2.div(y - _1n4, y + _1n4);
-      return Fp2.toBytes(u);
-    },
-    toMontgomerySecret(secretKey2) {
-      const size = lengths.secretKey;
-      _abytes2(secretKey2, size);
-      const hashed = cHash(secretKey2.subarray(0, size));
-      return adjustScalarBytes3(hashed).subarray(0, size);
-    },
-    /** @deprecated */
-    randomPrivateKey: randomSecretKey,
-    /** @deprecated */
-    precompute(windowSize = 8, point = Point.BASE) {
-      return point.precompute(windowSize, false);
-    }
-  };
-  return Object.freeze({
-    keygen,
-    getPublicKey,
-    sign,
-    verify,
-    utils,
-    Point,
-    lengths
-  });
-}
-function _eddsa_legacy_opts_to_new(c) {
-  const CURVE = {
-    a: c.a,
-    d: c.d,
-    p: c.Fp.ORDER,
-    n: c.n,
-    h: c.h,
-    Gx: c.Gx,
-    Gy: c.Gy
-  };
-  const Fp2 = c.Fp;
-  const Fn2 = Field(CURVE.n, c.nBitLength, true);
-  const curveOpts = { Fp: Fp2, Fn: Fn2, uvRatio: c.uvRatio };
-  const eddsaOpts = {
-    randomBytes: c.randomBytes,
-    adjustScalarBytes: c.adjustScalarBytes,
-    domain: c.domain,
-    prehash: c.prehash,
-    mapToCurve: c.mapToCurve
-  };
-  return { CURVE, curveOpts, hash: c.hash, eddsaOpts };
-}
-function _eddsa_new_output_to_legacy(c, eddsa3) {
-  const Point = eddsa3.Point;
-  const legacy = Object.assign({}, eddsa3, {
-    ExtendedPoint: Point,
-    CURVE: c,
-    nBitLength: Point.Fn.BITS,
-    nByteLength: Point.Fn.BYTES
-  });
-  return legacy;
-}
-function twistedEdwards(c) {
-  const { CURVE, curveOpts, hash, eddsaOpts } = _eddsa_legacy_opts_to_new(c);
-  const Point = edwards(CURVE, curveOpts);
-  const EDDSA = eddsa(Point, hash, eddsaOpts);
-  return _eddsa_new_output_to_legacy(c, EDDSA);
-}
 
 // node_modules/@noble/curves/esm/abstract/montgomery.js
-var _0n5 = BigInt(0);
-var _1n5 = BigInt(1);
-var _2n3 = BigInt(2);
+var _0n3 = BigInt(0);
+var _1n2 = BigInt(1);
 function validateOpts(curve) {
-  _validateObject(curve, {
+  validateObject(curve, {
+    a: "bigint"
+  }, {
+    montgomeryBits: "isSafeInteger",
+    nByteLength: "isSafeInteger",
     adjustScalarBytes: "function",
-    powPminus2: "function"
+    domain: "function",
+    powPminus2: "function",
+    Gu: "bigint"
   });
   return Object.freeze({ ...curve });
 }
 function montgomery(curveDef) {
   const CURVE = validateOpts(curveDef);
-  const { P, type, adjustScalarBytes: adjustScalarBytes3, powPminus2, randomBytes: rand } = CURVE;
-  const is25519 = type === "x25519";
-  if (!is25519 && type !== "x448")
-    throw new Error("invalid type");
-  const randomBytes_ = rand || randomBytes2;
-  const montgomeryBits = is25519 ? 255 : 448;
-  const fieldLen = is25519 ? 32 : 56;
-  const Gu = is25519 ? BigInt(9) : BigInt(5);
-  const a24 = is25519 ? BigInt(121665) : BigInt(39081);
-  const minScalar = is25519 ? _2n3 ** BigInt(254) : _2n3 ** BigInt(447);
-  const maxAdded = is25519 ? BigInt(8) * _2n3 ** BigInt(251) - _1n5 : BigInt(4) * _2n3 ** BigInt(445) - _1n5;
-  const maxScalar = minScalar + maxAdded + _1n5;
+  const { P } = CURVE;
   const modP = (n) => mod(n, P);
-  const GuBytes = encodeU(Gu);
-  function encodeU(u) {
-    return numberToBytesLE(modP(u), fieldLen);
-  }
-  function decodeU(u) {
-    const _u = ensureBytes("u coordinate", u, fieldLen);
-    if (is25519)
-      _u[31] &= 127;
-    return modP(bytesToNumberLE(_u));
-  }
-  function decodeScalar(scalar) {
-    return bytesToNumberLE(adjustScalarBytes3(ensureBytes("scalar", scalar, fieldLen)));
-  }
-  function scalarMult(scalar, u) {
-    const pu = montgomeryLadder(decodeU(u), decodeScalar(scalar));
-    if (pu === _0n5)
-      throw new Error("invalid private or public key received");
-    return encodeU(pu);
-  }
-  function scalarMultBase(scalar) {
-    return scalarMult(scalar, GuBytes);
-  }
+  const montgomeryBits = CURVE.montgomeryBits;
+  const montgomeryBytes = Math.ceil(montgomeryBits / 8);
+  const fieldLen = CURVE.nByteLength;
+  const adjustScalarBytes3 = CURVE.adjustScalarBytes || ((bytes) => bytes);
+  const powPminus2 = CURVE.powPminus2 || ((x) => pow(x, P - BigInt(2), P));
   function cswap2(swap, x_2, x_3) {
     const dummy = modP(swap * (x_2 - x_3));
     x_2 = modP(x_2 - dummy);
     x_3 = modP(x_3 + dummy);
-    return { x_2, x_3 };
+    return [x_2, x_3];
   }
+  const a24 = (CURVE.a - BigInt(2)) / BigInt(4);
   function montgomeryLadder(u, scalar) {
-    aInRange("u", u, _0n5, P);
-    aInRange("scalar", scalar, minScalar, maxScalar);
+    aInRange("u", u, _0n3, P);
+    aInRange("scalar", scalar, _0n3, P);
     const k = scalar;
     const x_1 = u;
-    let x_2 = _1n5;
-    let z_2 = _0n5;
+    let x_2 = _1n2;
+    let z_2 = _0n3;
     let x_3 = u;
-    let z_3 = _1n5;
-    let swap = _0n5;
-    for (let t = BigInt(montgomeryBits - 1); t >= _0n5; t--) {
-      const k_t = k >> t & _1n5;
+    let z_3 = _1n2;
+    let swap = _0n3;
+    let sw;
+    for (let t = BigInt(montgomeryBits - 1); t >= _0n3; t--) {
+      const k_t = k >> t & _1n2;
       swap ^= k_t;
-      ({ x_2, x_3 } = cswap2(swap, x_2, x_3));
-      ({ x_2: z_2, x_3: z_3 } = cswap2(swap, z_2, z_3));
+      sw = cswap2(swap, x_2, x_3);
+      x_2 = sw[0];
+      x_3 = sw[1];
+      sw = cswap2(swap, z_2, z_3);
+      z_2 = sw[0];
+      z_3 = sw[1];
       swap = k_t;
       const A = x_2 + z_2;
       const AA = modP(A * A);
@@ -16765,72 +9796,78 @@ function montgomery(curveDef) {
       x_2 = modP(AA * BB);
       z_2 = modP(E * (AA + modP(a24 * E)));
     }
-    ({ x_2, x_3 } = cswap2(swap, x_2, x_3));
-    ({ x_2: z_2, x_3: z_3 } = cswap2(swap, z_2, z_3));
+    sw = cswap2(swap, x_2, x_3);
+    x_2 = sw[0];
+    x_3 = sw[1];
+    sw = cswap2(swap, z_2, z_3);
+    z_2 = sw[0];
+    z_3 = sw[1];
     const z2 = powPminus2(z_2);
     return modP(x_2 * z2);
   }
-  const lengths = {
-    secretKey: fieldLen,
-    publicKey: fieldLen,
-    seed: fieldLen
-  };
-  const randomSecretKey = (seed = randomBytes_(fieldLen)) => {
-    abytes(seed, lengths.seed);
-    return seed;
-  };
-  function keygen(seed) {
-    const secretKey2 = randomSecretKey(seed);
-    return { secretKey: secretKey2, publicKey: scalarMultBase(secretKey2) };
+  function encodeUCoordinate(u) {
+    return numberToBytesLE(modP(u), montgomeryBytes);
   }
-  const utils = {
-    randomSecretKey,
-    randomPrivateKey: randomSecretKey
-  };
+  function decodeUCoordinate(uEnc) {
+    const u = ensureBytes("u coordinate", uEnc, montgomeryBytes);
+    if (fieldLen === 32)
+      u[31] &= 127;
+    return bytesToNumberLE(u);
+  }
+  function decodeScalar(n) {
+    const bytes = ensureBytes("scalar", n);
+    const len = bytes.length;
+    if (len !== montgomeryBytes && len !== fieldLen) {
+      let valid = "" + montgomeryBytes + " or " + fieldLen;
+      throw new Error("invalid scalar, expected " + valid + " bytes, got " + len);
+    }
+    return bytesToNumberLE(adjustScalarBytes3(bytes));
+  }
+  function scalarMult(scalar, u) {
+    const pointU = decodeUCoordinate(u);
+    const _scalar = decodeScalar(scalar);
+    const pu = montgomeryLadder(pointU, _scalar);
+    if (pu === _0n3)
+      throw new Error("invalid private or public key received");
+    return encodeUCoordinate(pu);
+  }
+  const GuBytes = encodeUCoordinate(CURVE.Gu);
+  function scalarMultBase(scalar) {
+    return scalarMult(scalar, GuBytes);
+  }
   return {
-    keygen,
-    getSharedSecret: (secretKey2, publicKey) => scalarMult(secretKey2, publicKey),
-    getPublicKey: (secretKey2) => scalarMultBase(secretKey2),
     scalarMult,
     scalarMultBase,
-    utils,
-    GuBytes: GuBytes.slice(),
-    lengths
+    getSharedSecret: (privateKey, publicKey) => scalarMult(privateKey, publicKey),
+    getPublicKey: (privateKey) => scalarMultBase(privateKey),
+    utils: { randomPrivateKey: () => CURVE.randomBytes(CURVE.nByteLength) },
+    GuBytes
   };
 }
 
 // node_modules/@noble/curves/esm/ed25519.js
-var _0n6 = /* @__PURE__ */ BigInt(0);
-var _1n6 = BigInt(1);
-var _2n4 = BigInt(2);
-var _3n2 = BigInt(3);
-var _5n2 = BigInt(5);
-var _8n3 = BigInt(8);
-var ed25519_CURVE_p = BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed");
-var ed25519_CURVE = /* @__PURE__ */ (() => ({
-  p: ed25519_CURVE_p,
-  n: BigInt("0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed"),
-  h: _8n3,
-  a: BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffec"),
-  d: BigInt("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3"),
-  Gx: BigInt("0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a"),
-  Gy: BigInt("0x6666666666666666666666666666666666666666666666666666666666666658")
-}))();
+var ED25519_P = BigInt("57896044618658097711785492504343953926634992332820282019728792003956564819949");
+var _0n4 = BigInt(0);
+var _1n3 = BigInt(1);
+var _2n = BigInt(2);
+var _3n = BigInt(3);
+var _5n = BigInt(5);
+var _8n = BigInt(8);
 function ed25519_pow_2_252_3(x) {
   const _10n = BigInt(10), _20n = BigInt(20), _40n = BigInt(40), _80n = BigInt(80);
-  const P = ed25519_CURVE_p;
+  const P = ED25519_P;
   const x2 = x * x % P;
   const b2 = x2 * x % P;
-  const b4 = pow2(b2, _2n4, P) * b2 % P;
-  const b5 = pow2(b4, _1n6, P) * x % P;
-  const b10 = pow2(b5, _5n2, P) * b5 % P;
+  const b4 = pow2(b2, _2n, P) * b2 % P;
+  const b5 = pow2(b4, _1n3, P) * x % P;
+  const b10 = pow2(b5, _5n, P) * b5 % P;
   const b20 = pow2(b10, _10n, P) * b10 % P;
   const b40 = pow2(b20, _20n, P) * b20 % P;
   const b80 = pow2(b40, _40n, P) * b40 % P;
   const b160 = pow2(b80, _80n, P) * b80 % P;
   const b240 = pow2(b160, _80n, P) * b80 % P;
   const b250 = pow2(b240, _10n, P) * b10 % P;
-  const pow_p_5_8 = pow2(b250, _2n4, P) * x % P;
+  const pow_p_5_8 = pow2(b250, _2n, P) * x % P;
   return { pow_p_5_8, b2 };
 }
 function adjustScalarBytes(bytes) {
@@ -16839,200 +9876,21 @@ function adjustScalarBytes(bytes) {
   bytes[31] |= 64;
   return bytes;
 }
-var ED25519_SQRT_M1 = /* @__PURE__ */ BigInt("19681161376707505956807079304988542015446066515923890162744021073123829784752");
-function uvRatio(u, v) {
-  const P = ed25519_CURVE_p;
-  const v3 = mod(v * v * v, P);
-  const v7 = mod(v3 * v3 * v, P);
-  const pow3 = ed25519_pow_2_252_3(u * v7).pow_p_5_8;
-  let x = mod(u * v3 * pow3, P);
-  const vx2 = mod(v * x * x, P);
-  const root1 = x;
-  const root2 = mod(x * ED25519_SQRT_M1, P);
-  const useRoot1 = vx2 === u;
-  const useRoot2 = vx2 === mod(-u, P);
-  const noRoot = vx2 === mod(-u * ED25519_SQRT_M1, P);
-  if (useRoot1)
-    x = root1;
-  if (useRoot2 || noRoot)
-    x = root2;
-  if (isNegativeLE(x, P))
-    x = mod(-x, P);
-  return { isValid: useRoot1 || useRoot2, value: x };
-}
-var Fp = /* @__PURE__ */ (() => Field(ed25519_CURVE.p, { isLE: true }))();
-var Fn = /* @__PURE__ */ (() => Field(ed25519_CURVE.n, { isLE: true }))();
-var ed25519Defaults = /* @__PURE__ */ (() => ({
-  ...ed25519_CURVE,
-  Fp,
-  hash: sha512,
+var x25519 = /* @__PURE__ */ (() => montgomery({
+  P: ED25519_P,
+  a: BigInt(486662),
+  montgomeryBits: 255,
+  // n is 253 bits
+  nByteLength: 32,
+  Gu: BigInt(9),
+  powPminus2: (x) => {
+    const P = ED25519_P;
+    const { pow_p_5_8, b2 } = ed25519_pow_2_252_3(x);
+    return mod(pow2(pow_p_5_8, _3n, P) * b2, P);
+  },
   adjustScalarBytes,
-  // dom2
-  // Ratio of u to v. Allows us to combine inversion and square root. Uses algo from RFC8032 5.1.3.
-  // Constant-time, u/√v
-  uvRatio
+  randomBytes: randomBytes2
 }))();
-var ed25519 = /* @__PURE__ */ (() => twistedEdwards(ed25519Defaults))();
-var x25519 = /* @__PURE__ */ (() => {
-  const P = Fp.ORDER;
-  return montgomery({
-    P,
-    type: "x25519",
-    powPminus2: (x) => {
-      const { pow_p_5_8, b2 } = ed25519_pow_2_252_3(x);
-      return mod(pow2(pow_p_5_8, _3n2, P) * b2, P);
-    },
-    adjustScalarBytes
-  });
-})();
-var SQRT_M1 = ED25519_SQRT_M1;
-var SQRT_AD_MINUS_ONE = /* @__PURE__ */ BigInt("25063068953384623474111414158702152701244531502492656460079210482610430750235");
-var INVSQRT_A_MINUS_D = /* @__PURE__ */ BigInt("54469307008909316920995813868745141605393597292927456921205312896311721017578");
-var ONE_MINUS_D_SQ = /* @__PURE__ */ BigInt("1159843021668779879193775521855586647937357759715417654439879720876111806838");
-var D_MINUS_ONE_SQ = /* @__PURE__ */ BigInt("40440834346308536858101042469323190826248399146238708352240133220865137265952");
-var invertSqrt = (number) => uvRatio(_1n6, number);
-var MAX_255B = /* @__PURE__ */ BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-var bytes255ToNumberLE = (bytes) => ed25519.Point.Fp.create(bytesToNumberLE(bytes) & MAX_255B);
-function calcElligatorRistrettoMap(r0) {
-  const { d } = ed25519_CURVE;
-  const P = ed25519_CURVE_p;
-  const mod3 = (n) => Fp.create(n);
-  const r = mod3(SQRT_M1 * r0 * r0);
-  const Ns = mod3((r + _1n6) * ONE_MINUS_D_SQ);
-  let c = BigInt(-1);
-  const D = mod3((c - d * r) * mod3(r + d));
-  let { isValid: Ns_D_is_sq, value: s2 } = uvRatio(Ns, D);
-  let s_ = mod3(s2 * r0);
-  if (!isNegativeLE(s_, P))
-    s_ = mod3(-s_);
-  if (!Ns_D_is_sq)
-    s2 = s_;
-  if (!Ns_D_is_sq)
-    c = r;
-  const Nt = mod3(c * (r - _1n6) * D_MINUS_ONE_SQ - D);
-  const s22 = s2 * s2;
-  const W0 = mod3((s2 + s2) * D);
-  const W1 = mod3(Nt * SQRT_AD_MINUS_ONE);
-  const W2 = mod3(_1n6 - s22);
-  const W3 = mod3(_1n6 + s22);
-  return new ed25519.Point(mod3(W0 * W3), mod3(W2 * W1), mod3(W1 * W3), mod3(W0 * W2));
-}
-function ristretto255_map(bytes) {
-  abytes(bytes, 64);
-  const r1 = bytes255ToNumberLE(bytes.subarray(0, 32));
-  const R1 = calcElligatorRistrettoMap(r1);
-  const r2 = bytes255ToNumberLE(bytes.subarray(32, 64));
-  const R2 = calcElligatorRistrettoMap(r2);
-  return new _RistrettoPoint(R1.add(R2));
-}
-var _RistrettoPoint = class __RistrettoPoint extends PrimeEdwardsPoint {
-  constructor(ep) {
-    super(ep);
-  }
-  static fromAffine(ap) {
-    return new __RistrettoPoint(ed25519.Point.fromAffine(ap));
-  }
-  assertSame(other) {
-    if (!(other instanceof __RistrettoPoint))
-      throw new Error("RistrettoPoint expected");
-  }
-  init(ep) {
-    return new __RistrettoPoint(ep);
-  }
-  /** @deprecated use `import { ristretto255_hasher } from '@noble/curves/ed25519.js';` */
-  static hashToCurve(hex) {
-    return ristretto255_map(ensureBytes("ristrettoHash", hex, 64));
-  }
-  static fromBytes(bytes) {
-    abytes(bytes, 32);
-    const { a, d } = ed25519_CURVE;
-    const P = ed25519_CURVE_p;
-    const mod3 = (n) => Fp.create(n);
-    const s2 = bytes255ToNumberLE(bytes);
-    if (!equalBytes(Fp.toBytes(s2), bytes) || isNegativeLE(s2, P))
-      throw new Error("invalid ristretto255 encoding 1");
-    const s22 = mod3(s2 * s2);
-    const u1 = mod3(_1n6 + a * s22);
-    const u2 = mod3(_1n6 - a * s22);
-    const u1_2 = mod3(u1 * u1);
-    const u2_2 = mod3(u2 * u2);
-    const v = mod3(a * d * u1_2 - u2_2);
-    const { isValid: isValid2, value: I } = invertSqrt(mod3(v * u2_2));
-    const Dx = mod3(I * u2);
-    const Dy = mod3(I * Dx * v);
-    let x = mod3((s2 + s2) * Dx);
-    if (isNegativeLE(x, P))
-      x = mod3(-x);
-    const y = mod3(u1 * Dy);
-    const t = mod3(x * y);
-    if (!isValid2 || isNegativeLE(t, P) || y === _0n6)
-      throw new Error("invalid ristretto255 encoding 2");
-    return new __RistrettoPoint(new ed25519.Point(x, y, _1n6, t));
-  }
-  /**
-   * Converts ristretto-encoded string to ristretto point.
-   * Described in [RFC9496](https://www.rfc-editor.org/rfc/rfc9496#name-decode).
-   * @param hex Ristretto-encoded 32 bytes. Not every 32-byte string is valid ristretto encoding
-   */
-  static fromHex(hex) {
-    return __RistrettoPoint.fromBytes(ensureBytes("ristrettoHex", hex, 32));
-  }
-  static msm(points, scalars) {
-    return pippenger(__RistrettoPoint, ed25519.Point.Fn, points, scalars);
-  }
-  /**
-   * Encodes ristretto point to Uint8Array.
-   * Described in [RFC9496](https://www.rfc-editor.org/rfc/rfc9496#name-encode).
-   */
-  toBytes() {
-    let { X, Y, Z, T } = this.ep;
-    const P = ed25519_CURVE_p;
-    const mod3 = (n) => Fp.create(n);
-    const u1 = mod3(mod3(Z + Y) * mod3(Z - Y));
-    const u2 = mod3(X * Y);
-    const u2sq = mod3(u2 * u2);
-    const { value: invsqrt } = invertSqrt(mod3(u1 * u2sq));
-    const D1 = mod3(invsqrt * u1);
-    const D2 = mod3(invsqrt * u2);
-    const zInv = mod3(D1 * D2 * T);
-    let D;
-    if (isNegativeLE(T * zInv, P)) {
-      let _x = mod3(Y * SQRT_M1);
-      let _y = mod3(X * SQRT_M1);
-      X = _x;
-      Y = _y;
-      D = mod3(D1 * INVSQRT_A_MINUS_D);
-    } else {
-      D = D2;
-    }
-    if (isNegativeLE(X * zInv, P))
-      Y = mod3(-Y);
-    let s2 = mod3((Z - Y) * D);
-    if (isNegativeLE(s2, P))
-      s2 = mod3(-s2);
-    return Fp.toBytes(s2);
-  }
-  /**
-   * Compares two Ristretto points.
-   * Described in [RFC9496](https://www.rfc-editor.org/rfc/rfc9496#name-equals).
-   */
-  equals(other) {
-    this.assertSame(other);
-    const { X: X1, Y: Y1 } = this.ep;
-    const { X: X2, Y: Y2 } = other.ep;
-    const mod3 = (n) => Fp.create(n);
-    const one = mod3(X1 * Y2) === mod3(Y1 * X2);
-    const two = mod3(Y1 * Y2) === mod3(X1 * X2);
-    return one || two;
-  }
-  is0() {
-    return this.equals(__RistrettoPoint.ZERO);
-  }
-};
-_RistrettoPoint.BASE = /* @__PURE__ */ (() => new _RistrettoPoint(ed25519.Point.BASE))();
-_RistrettoPoint.ZERO = /* @__PURE__ */ (() => new _RistrettoPoint(ed25519.Point.ZERO))();
-_RistrettoPoint.Fp = /* @__PURE__ */ (() => Fp)();
-_RistrettoPoint.Fn = /* @__PURE__ */ (() => Fn)();
 
 // node_modules/@lukeburns/clatterjs/dist/constants.js
 var MAX_KEY_LEN = 32;
@@ -17571,19 +10429,19 @@ var TransportState = class {
 };
 
 // node_modules/@noble/hashes/_u64.js
-var U32_MASK642 = /* @__PURE__ */ (() => BigInt(2 ** 32 - 1))();
-var _32n2 = /* @__PURE__ */ BigInt(32);
-function fromBig2(n, le = false) {
+var U32_MASK64 = /* @__PURE__ */ (() => BigInt(2 ** 32 - 1))();
+var _32n = /* @__PURE__ */ BigInt(32);
+function fromBig(n, le = false) {
   if (le)
-    return { h: Number(n & U32_MASK642), l: Number(n >> _32n2 & U32_MASK642) };
-  return { h: Number(n >> _32n2 & U32_MASK642) | 0, l: Number(n & U32_MASK642) | 0 };
+    return { h: Number(n & U32_MASK64), l: Number(n >> _32n & U32_MASK64) };
+  return { h: Number(n >> _32n & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
 }
-function split2(lst, le = false) {
+function split(lst, le = false) {
   const len = lst.length;
   let Ah = new Uint32Array(len);
   let Al = new Uint32Array(len);
   for (let i = 0; i < len; i++) {
-    const { h, l } = fromBig2(lst[i], le);
+    const { h, l } = fromBig(lst[i], le);
     [Ah[i], Al[i]] = [h, l];
   }
   return [Ah, Al];
@@ -17596,31 +10454,31 @@ function setU64FromNum(view, byteOffset, n, isLE3) {
   view.setUint32(byteOffset, isLE3 ? l : h, isLE3);
   view.setUint32(byteOffset + 4, isLE3 ? h : l, isLE3);
 }
-var shrSH2 = (h, _l, s2) => h >>> s2;
-var shrSL2 = (h, l, s2) => h << 32 - s2 | l >>> s2;
-var rotrSH2 = (h, l, s2) => h >>> s2 | l << 32 - s2;
-var rotrSL2 = (h, l, s2) => h << 32 - s2 | l >>> s2;
-var rotrBH2 = (h, l, s2) => h << 64 - s2 | l >>> s2 - 32;
-var rotrBL2 = (h, l, s2) => h >>> s2 - 32 | l << 64 - s2;
+var shrSH = (h, _l, s2) => h >>> s2;
+var shrSL = (h, l, s2) => h << 32 - s2 | l >>> s2;
+var rotrSH = (h, l, s2) => h >>> s2 | l << 32 - s2;
+var rotrSL = (h, l, s2) => h << 32 - s2 | l >>> s2;
+var rotrBH = (h, l, s2) => h << 64 - s2 | l >>> s2 - 32;
+var rotrBL = (h, l, s2) => h >>> s2 - 32 | l << 64 - s2;
 var rotr32H = (_h, l) => l;
 var rotr32L = (h, _l) => h;
-function add2(Ah, Al, Bh, Bl) {
+function add(Ah, Al, Bh, Bl) {
   const l = (Al >>> 0) + (Bl >>> 0);
   return { h: Ah + Bh + (l / 2 ** 32 | 0) | 0, l: l | 0 };
 }
-var add3L2 = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
-var add3H2 = (low, Ah, Bh, Ch) => Ah + Bh + Ch + (low / 2 ** 32 | 0) | 0;
-var add4L2 = (Al, Bl, Cl, Dl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0);
-var add4H2 = (low, Ah, Bh, Ch, Dh) => Ah + Bh + Ch + Dh + (low / 2 ** 32 | 0) | 0;
-var add5L2 = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0) + (El >>> 0);
-var add5H2 = (low, Ah, Bh, Ch, Dh, Eh) => Ah + Bh + Ch + Dh + Eh + (low / 2 ** 32 | 0) | 0;
+var add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
+var add3H = (low, Ah, Bh, Ch) => Ah + Bh + Ch + (low / 2 ** 32 | 0) | 0;
+var add4L = (Al, Bl, Cl, Dl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0);
+var add4H = (low, Ah, Bh, Ch, Dh) => Ah + Bh + Ch + Dh + (low / 2 ** 32 | 0) | 0;
+var add5L = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0) + (El >>> 0);
+var add5H = (low, Ah, Bh, Ch, Dh, Eh) => Ah + Bh + Ch + Dh + Eh + (low / 2 ** 32 | 0) | 0;
 
 // node_modules/@noble/hashes/utils.js
 function isBytes2(a) {
   return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array" && "BYTES_PER_ELEMENT" in a && a.BYTES_PER_ELEMENT === 1;
 }
 var atitle = (title) => title ? `"${title}" ` : "";
-function anumber2(n, title = "") {
+function anumber(n, title = "") {
   if (typeof n !== "number")
     throw new TypeError(atitle(title) + "expected number, got " + typeof n);
   if (!Number.isSafeInteger(n) || n < 0)
@@ -17631,7 +10489,7 @@ function abytes2(value, length, title = "") {
   if (isBytes2(value) && (length === void 0 || value.length === length))
     return value;
   if (length !== void 0)
-    anumber2(length, "length");
+    anumber(length, "length");
   const bytes = isBytes2(value);
   const ofLen = length !== void 0 ? ` of length ${length}` : "";
   const got = bytes ? `length=${value.length}` : `type=${typeof value}`;
@@ -17640,14 +10498,14 @@ function abytes2(value, length, title = "") {
     throw new TypeError(message);
   throw new RangeError(message);
 }
-function copyBytes2(bytes) {
+function copyBytes(bytes) {
   return Uint8Array.from(abytes2(bytes));
 }
 function ahash(h) {
   if (typeof h !== "function" || typeof h.create !== "function")
     throw new TypeError("expected hash wrapped by utils.createHasher");
-  anumber2(h.outputLen);
-  anumber2(h.blockLen);
+  anumber(h.outputLen);
+  anumber(h.blockLen);
   if (h.outputLen < 1 || h.blockLen < 1)
     throw new Error("hash blockLen / outputLen must be >= 1");
 }
@@ -17655,13 +10513,21 @@ var aobject = (value, label) => {
   if (value === null || typeof value !== "object" || Array.isArray(value))
     throw new TypeError((label === "object" ? "" : `"${label}" `) + "expected object, got type=" + typeof value);
 };
-function aexists2(instance, checkFinished = true) {
+var aopts = (value, label) => {
+  aobject(value, label);
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null)
+    throw new TypeError(`"${label}" expected plain object`);
+  if (Object.hasOwn(value, "__proto__"))
+    throw new TypeError(`"${label}.__proto__" is not allowed`);
+};
+function aexists(instance, checkFinished = true) {
   if (instance.destroyed)
     throw new Error("hash was destroyed");
   if (checkFinished && instance.finished)
     throw new Error("digest() was already called");
 }
-function aoutput2(out, instance) {
+function aoutput(out, instance) {
   abytes2(out, void 0, "output");
   const min = instance.outputLen;
   if (!(out.length >= min)) {
@@ -17671,15 +10537,15 @@ function aoutput2(out, instance) {
 function u32(arr) {
   return new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
 }
-function clean2(...arrays) {
+function clean(...arrays) {
   for (let i = 0; i < arrays.length; i++) {
     arrays[i].fill(0);
   }
 }
-function createView2(arr) {
+function createView(arr) {
   return new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
 }
-function rotr2(word, shift) {
+function rotr(word, shift) {
   return word << 32 - shift | word >>> shift;
 }
 var isLE = /* @__PURE__ */ (() => new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68)();
@@ -17694,14 +10560,14 @@ function byteSwap32(arr) {
   return arr;
 }
 var swap32IfBE = isLE ? (u) => u : byteSwap32;
-var hasHexBuiltin2 = /* @__PURE__ */ (() => (
+var hasHexBuiltin = /* @__PURE__ */ (() => (
   // @ts-ignore
   typeof Uint8Array.from([]).toHex === "function" && typeof Uint8Array.fromHex === "function"
 ))();
 var hexes2 = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
 function bytesToHex2(bytes) {
   abytes2(bytes);
-  if (hasHexBuiltin2)
+  if (hasHexBuiltin)
     return bytes.toHex();
   let hex = "";
   for (let i = 0; i < bytes.length; i++) {
@@ -17715,7 +10581,7 @@ function asciiToBase162(ch) {
 function hexToBytes2(hex) {
   if (typeof hex !== "string")
     throw new TypeError("hex string expected, got " + typeof hex);
-  if (hasHexBuiltin2) {
+  if (hasHexBuiltin) {
     try {
       return Uint8Array.fromHex(hex);
     } catch (error) {
@@ -17756,13 +10622,13 @@ function concatBytes2(...arrays) {
   return res;
 }
 function checkOpts(defaults, opts, title = "opts") {
-  aobject(defaults, "defaults");
+  aopts(defaults, "defaults");
   if (opts !== void 0)
-    aobject(opts, title);
-  const merged = Object.assign(defaults, opts);
+    aopts(opts, title);
+  const merged = Object.assign(/* @__PURE__ */ Object.create(null), defaults, opts);
   return merged;
 }
-function createHasher2(hashCons, info = {}) {
+function createHasher(hashCons, info = {}) {
   if (typeof hashCons !== "function")
     throw new TypeError('"hashCons" expected function, got type=' + typeof hashCons);
   info = checkOpts({}, info, "info");
@@ -17776,7 +10642,7 @@ function createHasher2(hashCons, info = {}) {
   return Object.freeze(hashC);
 }
 function randomBytes3(bytesLength = 32) {
-  anumber2(bytesLength, "bytesLength");
+  anumber(bytesLength, "bytesLength");
   const cr = typeof globalThis === "object" ? globalThis.crypto : null;
   if (typeof cr?.getRandomValues !== "function")
     throw new Error("crypto.getRandomValues must be defined");
@@ -17791,13 +10657,13 @@ var oidNist = (suffix) => ({
 });
 
 // node_modules/@noble/hashes/_md.js
-function Chi2(a, b, c) {
+function Chi(a, b, c) {
   return a & b ^ ~a & c;
 }
-function Maj2(a, b, c) {
+function Maj(a, b, c) {
   return a & b ^ a & c ^ b & c;
 }
-var HashMD2 = class {
+var HashMD = class {
   blockLen;
   outputLen;
   canXOF = false;
@@ -17816,10 +10682,10 @@ var HashMD2 = class {
     this.padOffset = padOffset;
     this.isLE = isLE3;
     this.buffer = new Uint8Array(blockLen);
-    this.view = createView2(this.buffer);
+    this.view = createView(this.buffer);
   }
   update(data2) {
-    aexists2(this);
+    aexists(this);
     abytes2(data2);
     const { view, buffer, blockLen } = this;
     const len = data2.length;
@@ -17827,7 +10693,7 @@ var HashMD2 = class {
     for (let pos = 0; pos < len; ) {
       const take = Math.min(blockLen - this.pos, len - pos);
       if (take === blockLen) {
-        const dataView = createView2(data2);
+        const dataView = createView(data2);
         for (; blockLen <= len - pos; pos += blockLen)
           this.process(dataView, pos);
         processed = true;
@@ -17848,8 +10714,8 @@ var HashMD2 = class {
     return this;
   }
   digestInto(out) {
-    aexists2(this);
-    aoutput2(out, this);
+    aexists(this);
+    aoutput(out, this);
     this.finished = true;
     const { buffer, view, blockLen, isLE: isLE3 } = this;
     let { pos } = this;
@@ -17862,7 +10728,7 @@ var HashMD2 = class {
     setU64FromNum(view, blockLen - 8, this.length * 8, isLE3);
     this.process(view, 0);
     this.roundClean();
-    const oview = out === buffer ? view : createView2(out);
+    const oview = out === buffer ? view : createView(out);
     const len = this.outputLen;
     const outLen = len / 4;
     const state = this.get();
@@ -17892,7 +10758,7 @@ var HashMD2 = class {
     return this._cloneInto();
   }
 };
-var SHA256_IV2 = /* @__PURE__ */ Uint32Array.from([
+var SHA256_IV = /* @__PURE__ */ Uint32Array.from([
   1779033703,
   3144134277,
   1013904242,
@@ -17902,7 +10768,7 @@ var SHA256_IV2 = /* @__PURE__ */ Uint32Array.from([
   528734635,
   1541459225
 ]);
-var SHA512_IV2 = /* @__PURE__ */ Uint32Array.from([
+var SHA512_IV = /* @__PURE__ */ Uint32Array.from([
   1779033703,
   4089235720,
   3144134277,
@@ -17989,7 +10855,7 @@ var SHA256_K = /* @__PURE__ */ Uint32Array.from([
   3329325298
 ]);
 var SHA256_W = /* @__PURE__ */ new Uint32Array(64);
-var SHA2_32B = class extends HashMD2 {
+var SHA2_32B = class extends HashMD {
   // We cannot use array here since array allows indexing by variable
   // which means optimizer/compiler cannot use registers.
   // Numeric initializers matter: starting the fields as `undefined` changes
@@ -18038,16 +10904,16 @@ var SHA2_32B = class extends HashMD2 {
     for (let i = 16; i < 64; i++) {
       const W15 = SHA256_W[i - 15];
       const W2 = SHA256_W[i - 2];
-      const s0 = rotr2(W15, 7) ^ rotr2(W15, 18) ^ W15 >>> 3;
-      const s1 = rotr2(W2, 17) ^ rotr2(W2, 19) ^ W2 >>> 10;
+      const s0 = rotr(W15, 7) ^ rotr(W15, 18) ^ W15 >>> 3;
+      const s1 = rotr(W2, 17) ^ rotr(W2, 19) ^ W2 >>> 10;
       SHA256_W[i] = s1 + SHA256_W[i - 7] + s0 + SHA256_W[i - 16] | 0;
     }
     let { A, B, C, D, E, F, G, H } = this;
     for (let i = 0; i < 64; i++) {
-      const sigma1 = rotr2(E, 6) ^ rotr2(E, 11) ^ rotr2(E, 25);
-      const T1 = H + sigma1 + Chi2(E, F, G) + SHA256_K[i] + SHA256_W[i] | 0;
-      const sigma0 = rotr2(A, 2) ^ rotr2(A, 13) ^ rotr2(A, 22);
-      const T2 = sigma0 + Maj2(A, B, C) | 0;
+      const sigma1 = rotr(E, 6) ^ rotr(E, 11) ^ rotr(E, 25);
+      const T1 = H + sigma1 + Chi(E, F, G) + SHA256_K[i] + SHA256_W[i] | 0;
+      const sigma0 = rotr(A, 2) ^ rotr(A, 13) ^ rotr(A, 22);
+      const T2 = sigma0 + Maj(A, B, C) | 0;
       H = G;
       G = F;
       F = E;
@@ -18068,20 +10934,20 @@ var SHA2_32B = class extends HashMD2 {
     this.set(A, B, C, D, E, F, G, H);
   }
   roundClean() {
-    clean2(SHA256_W);
+    clean(SHA256_W);
   }
   destroy() {
     this.destroyed = true;
     this.set(0, 0, 0, 0, 0, 0, 0, 0);
-    clean2(this.buffer);
+    clean(this.buffer);
   }
 };
 var _SHA256 = class extends SHA2_32B {
   constructor() {
-    super(32, SHA256_IV2);
+    super(32, SHA256_IV);
   }
 };
-var K5122 = /* @__PURE__ */ (() => split2([
+var K512 = /* @__PURE__ */ (() => split([
   "0x428a2f98d728ae22",
   "0x7137449123ef65cd",
   "0xb5c0fbcfec4d3b2f",
@@ -18163,11 +11029,11 @@ var K5122 = /* @__PURE__ */ (() => split2([
   "0x5fcb6fab3ad6faec",
   "0x6c44198c4a475817"
 ].map((n) => BigInt(n))))();
-var SHA512_Kh2 = /* @__PURE__ */ (() => K5122[0])();
-var SHA512_Kl2 = /* @__PURE__ */ (() => K5122[1])();
-var SHA512_W_H2 = /* @__PURE__ */ new Uint32Array(80);
-var SHA512_W_L2 = /* @__PURE__ */ new Uint32Array(80);
-var SHA2_64B = class extends HashMD2 {
+var SHA512_Kh = /* @__PURE__ */ (() => K512[0])();
+var SHA512_Kl = /* @__PURE__ */ (() => K512[1])();
+var SHA512_W_H = /* @__PURE__ */ new Uint32Array(80);
+var SHA512_W_L = /* @__PURE__ */ new Uint32Array(80);
+var SHA2_64B = class extends HashMD {
   // We cannot use array here since array allows indexing by variable
   // which means optimizer/compiler cannot use registers.
   // h -- high 32 bits, l -- low 32 bits
@@ -18238,34 +11104,34 @@ var SHA2_64B = class extends HashMD2 {
   }
   process(view, offset) {
     for (let i = 0; i < 16; i++, offset += 4) {
-      SHA512_W_H2[i] = view.getUint32(offset);
-      SHA512_W_L2[i] = view.getUint32(offset += 4);
+      SHA512_W_H[i] = view.getUint32(offset);
+      SHA512_W_L[i] = view.getUint32(offset += 4);
     }
     for (let i = 16; i < 80; i++) {
-      const W15h = SHA512_W_H2[i - 15] | 0;
-      const W15l = SHA512_W_L2[i - 15] | 0;
-      const s0h = rotrSH2(W15h, W15l, 1) ^ rotrSH2(W15h, W15l, 8) ^ shrSH2(W15h, W15l, 7);
-      const s0l = rotrSL2(W15h, W15l, 1) ^ rotrSL2(W15h, W15l, 8) ^ shrSL2(W15h, W15l, 7);
-      const W2h = SHA512_W_H2[i - 2] | 0;
-      const W2l = SHA512_W_L2[i - 2] | 0;
-      const s1h = rotrSH2(W2h, W2l, 19) ^ rotrBH2(W2h, W2l, 61) ^ shrSH2(W2h, W2l, 6);
-      const s1l = rotrSL2(W2h, W2l, 19) ^ rotrBL2(W2h, W2l, 61) ^ shrSL2(W2h, W2l, 6);
-      const SUMl = add4L2(s0l, s1l, SHA512_W_L2[i - 7], SHA512_W_L2[i - 16]);
-      const SUMh = add4H2(SUMl, s0h, s1h, SHA512_W_H2[i - 7], SHA512_W_H2[i - 16]);
-      SHA512_W_H2[i] = SUMh | 0;
-      SHA512_W_L2[i] = SUMl | 0;
+      const W15h = SHA512_W_H[i - 15] | 0;
+      const W15l = SHA512_W_L[i - 15] | 0;
+      const s0h = rotrSH(W15h, W15l, 1) ^ rotrSH(W15h, W15l, 8) ^ shrSH(W15h, W15l, 7);
+      const s0l = rotrSL(W15h, W15l, 1) ^ rotrSL(W15h, W15l, 8) ^ shrSL(W15h, W15l, 7);
+      const W2h = SHA512_W_H[i - 2] | 0;
+      const W2l = SHA512_W_L[i - 2] | 0;
+      const s1h = rotrSH(W2h, W2l, 19) ^ rotrBH(W2h, W2l, 61) ^ shrSH(W2h, W2l, 6);
+      const s1l = rotrSL(W2h, W2l, 19) ^ rotrBL(W2h, W2l, 61) ^ shrSL(W2h, W2l, 6);
+      const SUMl = add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16]);
+      const SUMh = add4H(SUMl, s0h, s1h, SHA512_W_H[i - 7], SHA512_W_H[i - 16]);
+      SHA512_W_H[i] = SUMh | 0;
+      SHA512_W_L[i] = SUMl | 0;
     }
     let { Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl } = this;
     for (let i = 0; i < 80; i++) {
-      const sigma1h = rotrSH2(Eh, El, 14) ^ rotrSH2(Eh, El, 18) ^ rotrBH2(Eh, El, 41);
-      const sigma1l = rotrSL2(Eh, El, 14) ^ rotrSL2(Eh, El, 18) ^ rotrBL2(Eh, El, 41);
+      const sigma1h = rotrSH(Eh, El, 14) ^ rotrSH(Eh, El, 18) ^ rotrBH(Eh, El, 41);
+      const sigma1l = rotrSL(Eh, El, 14) ^ rotrSL(Eh, El, 18) ^ rotrBL(Eh, El, 41);
       const CHIh = Eh & Fh ^ ~Eh & Gh;
       const CHIl = El & Fl ^ ~El & Gl;
-      const T1ll = add5L2(Hl, sigma1l, CHIl, SHA512_Kl2[i], SHA512_W_L2[i]);
-      const T1h = add5H2(T1ll, Hh, sigma1h, CHIh, SHA512_Kh2[i], SHA512_W_H2[i]);
+      const T1ll = add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
+      const T1h = add5H(T1ll, Hh, sigma1h, CHIh, SHA512_Kh[i], SHA512_W_H[i]);
       const T1l = T1ll | 0;
-      const sigma0h = rotrSH2(Ah, Al, 28) ^ rotrBH2(Ah, Al, 34) ^ rotrBH2(Ah, Al, 39);
-      const sigma0l = rotrSL2(Ah, Al, 28) ^ rotrBL2(Ah, Al, 34) ^ rotrBL2(Ah, Al, 39);
+      const sigma0h = rotrSH(Ah, Al, 28) ^ rotrBH(Ah, Al, 34) ^ rotrBH(Ah, Al, 39);
+      const sigma0l = rotrSL(Ah, Al, 28) ^ rotrBL(Ah, Al, 34) ^ rotrBL(Ah, Al, 39);
       const MAJh = Ah & Bh ^ Ah & Ch ^ Bh & Ch;
       const MAJl = Al & Bl ^ Al & Cl ^ Bl & Cl;
       Hh = Gh | 0;
@@ -18274,46 +11140,46 @@ var SHA2_64B = class extends HashMD2 {
       Gl = Fl | 0;
       Fh = Eh | 0;
       Fl = El | 0;
-      ({ h: Eh, l: El } = add2(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
+      ({ h: Eh, l: El } = add(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
       Dh = Ch | 0;
       Dl = Cl | 0;
       Ch = Bh | 0;
       Cl = Bl | 0;
       Bh = Ah | 0;
       Bl = Al | 0;
-      const All = add3L2(T1l, sigma0l, MAJl);
-      Ah = add3H2(All, T1h, sigma0h, MAJh);
+      const All = add3L(T1l, sigma0l, MAJl);
+      Ah = add3H(All, T1h, sigma0h, MAJh);
       Al = All | 0;
     }
-    ({ h: Ah, l: Al } = add2(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
-    ({ h: Bh, l: Bl } = add2(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
-    ({ h: Ch, l: Cl } = add2(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
-    ({ h: Dh, l: Dl } = add2(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
-    ({ h: Eh, l: El } = add2(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
-    ({ h: Fh, l: Fl } = add2(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
-    ({ h: Gh, l: Gl } = add2(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
-    ({ h: Hh, l: Hl } = add2(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
+    ({ h: Ah, l: Al } = add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
+    ({ h: Bh, l: Bl } = add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
+    ({ h: Ch, l: Cl } = add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
+    ({ h: Dh, l: Dl } = add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
+    ({ h: Eh, l: El } = add(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
+    ({ h: Fh, l: Fl } = add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
+    ({ h: Gh, l: Gl } = add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
+    ({ h: Hh, l: Hl } = add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
     this.set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl);
   }
   roundClean() {
-    clean2(SHA512_W_H2, SHA512_W_L2);
+    clean(SHA512_W_H, SHA512_W_L);
   }
   destroy() {
     this.destroyed = true;
-    clean2(this.buffer);
+    clean(this.buffer);
     this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 };
 var _SHA512 = class extends SHA2_64B {
   constructor() {
-    super(64, SHA512_IV2);
+    super(64, SHA512_IV);
   }
 };
-var sha256 = /* @__PURE__ */ createHasher2(
+var sha256 = /* @__PURE__ */ createHasher(
   () => new _SHA256(),
   /* @__PURE__ */ oidNist(1)
 );
-var sha5122 = /* @__PURE__ */ createHasher2(
+var sha512 = /* @__PURE__ */ createHasher(
   () => new _SHA512(),
   /* @__PURE__ */ oidNist(3)
 );
@@ -18328,7 +11194,7 @@ function aarray(item, title, inner = () => {
   return item;
 }
 var abytes3 = (value, length, title) => abytes2(value, length, title);
-var anumber3 = anumber2;
+var anumber2 = anumber;
 function aobject2(value, title = "object") {
   if (value === null || typeof value !== "object" || Array.isArray(value))
     throw new TypeError(title === "object" ? "expected valid options object" : `"${title}" expected object, got type=${typeof value}`);
@@ -18343,8 +11209,8 @@ var bytesToHex3 = bytesToHex2;
 var hexToBytes3 = (hex) => hexToBytes2(hex);
 var isBytes3 = isBytes2;
 var randomBytes4 = (bytesLength) => randomBytes3(bytesLength);
-var _0n7 = /* @__PURE__ */ BigInt(0);
-var _1n7 = /* @__PURE__ */ BigInt(1);
+var _0n5 = /* @__PURE__ */ BigInt(0);
+var _1n4 = /* @__PURE__ */ BigInt(1);
 var atitle2 = (title) => title ? `"${title}" ` : "";
 function abool(value, title = "") {
   if (typeof value !== "boolean")
@@ -18356,7 +11222,7 @@ function abignumber(n) {
     if (!isPosBig2(n))
       throw new RangeError("positive bigint expected, got " + n);
   } else
-    anumber3(n);
+    anumber2(n);
   return n;
 }
 function asafenumber(value, title = "") {
@@ -18372,16 +11238,16 @@ function asafenumber(value, title = "") {
 function hexToNumber2(hex) {
   if (typeof hex !== "string")
     throw new TypeError("hex string expected, got " + typeof hex);
-  return hex === "" ? _0n7 : BigInt("0x" + hex);
+  return hex === "" ? _0n5 : BigInt("0x" + hex);
 }
-function bytesToNumberBE2(bytes) {
+function bytesToNumberBE(bytes) {
   return hexToNumber2(bytesToHex2(bytes));
 }
 function bytesToNumberLE2(bytes) {
-  return hexToNumber2(bytesToHex2(copyBytes3(abytes2(bytes)).reverse()));
+  return hexToNumber2(bytesToHex2(copyBytes2(abytes2(bytes)).reverse()));
 }
 function numberToBytesBE2(n, len) {
-  anumber2(len);
+  anumber(len);
   if (len === 0)
     throw new Error("zero output length is invalid");
   n = abignumber(n);
@@ -18394,11 +11260,11 @@ function numberToBytesBE2(n, len) {
 function numberToBytesLE2(n, len) {
   return numberToBytesBE2(n, len).reverse();
 }
-function copyBytes3(bytes) {
+function copyBytes2(bytes) {
   return Uint8Array.from(abytes3(bytes));
 }
 function isPosBig2(n) {
-  return typeof n === "bigint" && _0n7 <= n;
+  return typeof n === "bigint" && _0n5 <= n;
 }
 function inRange2(n, min, max) {
   return isPosBig2(n) && isPosBig2(min) && isPosBig2(max) && min <= n && n < max;
@@ -18407,14 +11273,14 @@ function aInRange2(title, n, min, max) {
   if (!inRange2(n, min, max))
     throw new RangeError("expected valid " + title + ": " + min + " <= n < " + max + ", got " + n);
 }
-function bitLen2(n) {
-  if (n < _0n7)
+function bitLen(n) {
+  if (n < _0n5)
     throw new Error("expected non-negative bigint, got " + n);
-  return n === _0n7 ? 0 : n.toString(2).length;
+  return n === _0n5 ? 0 : n.toString(2).length;
 }
-var bitMask2 = (n) => {
+var bitMask = (n) => {
   asafenumber(n, "n");
-  return (_1n7 << BigInt(n)) - _1n7;
+  return (_1n4 << BigInt(n)) - _1n4;
 };
 function validateObject2(object, fields = {}, optFields = {}, title = "object") {
   aobject2(object, title);
@@ -18438,55 +11304,55 @@ function validateObject2(object, fields = {}, optFields = {}, title = "object") 
 }
 
 // node_modules/@noble/curves/abstract/modular.js
-var _0n8 = /* @__PURE__ */ BigInt(0);
-var _1n8 = /* @__PURE__ */ BigInt(1);
-var _2n5 = /* @__PURE__ */ BigInt(2);
-var _3n3 = /* @__PURE__ */ BigInt(3);
-var _4n2 = /* @__PURE__ */ BigInt(4);
-var _5n3 = /* @__PURE__ */ BigInt(5);
-var _7n2 = /* @__PURE__ */ BigInt(7);
-var _8n4 = /* @__PURE__ */ BigInt(8);
-var _9n2 = /* @__PURE__ */ BigInt(9);
+var _0n6 = /* @__PURE__ */ BigInt(0);
+var _1n5 = /* @__PURE__ */ BigInt(1);
+var _2n2 = /* @__PURE__ */ BigInt(2);
+var _3n2 = /* @__PURE__ */ BigInt(3);
+var _4n = /* @__PURE__ */ BigInt(4);
+var _5n2 = /* @__PURE__ */ BigInt(5);
+var _7n = /* @__PURE__ */ BigInt(7);
+var _8n2 = /* @__PURE__ */ BigInt(8);
+var _9n = /* @__PURE__ */ BigInt(9);
 var _15n = /* @__PURE__ */ BigInt(15);
-var _16n2 = /* @__PURE__ */ BigInt(16);
+var _16n = /* @__PURE__ */ BigInt(16);
 var POW_WINDOWED_MIN = /* @__PURE__ */ BigInt("0x10000000000000000");
 function mod2(a, b) {
-  if (b <= _0n8)
+  if (b <= _0n6)
     throw new Error("mod: expected positive modulus, got " + b);
   const result = a % b;
-  return result >= _0n8 ? result : b + result;
+  return result >= _0n6 ? result : b + result;
 }
-function pow(num, power, modulo) {
-  if (modulo <= _1n8)
+function pow3(num, power, modulo) {
+  if (modulo <= _1n5)
     throw new Error("pow: expected modulus > 1, got " + modulo);
   if (typeof power !== "bigint")
     throw new TypeError("invalid exponent: expected bigint, got " + typeof power);
-  if (power < _0n8)
+  if (power < _0n6)
     throw new Error("invalid exponent, negatives unsupported");
-  if (power === _0n8)
-    return _1n8;
-  if (power === _1n8)
+  if (power === _0n6)
+    return _1n5;
+  if (power === _1n5)
     return num;
   let d = num % modulo;
-  if (d < _0n8)
+  if (d < _0n6)
     d += modulo;
   if (power < POW_WINDOWED_MIN) {
-    let p2 = _1n8;
-    while (power > _0n8) {
-      if (power & _1n8)
+    let p2 = _1n5;
+    while (power > _0n6) {
+      if (power & _1n5)
         p2 = p2 * d % modulo;
       d = d * d % modulo;
-      power >>= _1n8;
+      power >>= _1n5;
     }
     return p2;
   }
   const digits = [];
-  while (power > _0n8) {
+  while (power > _0n6) {
     digits.push(Number(power & _15n));
-    power >>= _4n2;
+    power >>= _4n;
   }
   const table = new Array(16);
-  table[0] = _1n8;
+  table[0] = _1n5;
   table[1] = d;
   for (let i = 2; i < 16; i++)
     table[i] = table[i - 1] * d % modulo;
@@ -18503,72 +11369,72 @@ function pow(num, power, modulo) {
   return p;
 }
 function pow22(x, power, modulo) {
-  if (modulo <= _1n8)
+  if (modulo <= _1n5)
     throw new Error("pow2: expected modulus > 1, got " + modulo);
-  if (power < _0n8)
+  if (power < _0n6)
     throw new Error("pow2: expected non-negative exponent, got " + power);
   let res = x;
-  while (power-- > _0n8) {
+  while (power-- > _0n6) {
     res *= res;
     res %= modulo;
   }
   return res;
 }
-function invert2(number, modulo) {
-  if (number === _0n8)
+function invert(number, modulo) {
+  if (number === _0n6)
     throw new Error("invert: expected non-zero number");
-  if (modulo <= _1n8)
+  if (modulo <= _1n5)
     throw new Error("invert: expected modulus > 1, got " + modulo);
   let a = mod2(number, modulo);
   let b = modulo;
-  let x = _0n8, u = _1n8;
-  while (a !== _0n8) {
+  let x = _0n6, u = _1n5;
+  while (a !== _0n6) {
     const q = b / a;
     const r = b - a * q;
     const m = x - u * q;
     b = a, a = r, x = u, u = m;
   }
   const gcd = b;
-  if (gcd !== _1n8)
+  if (gcd !== _1n5)
     throw new Error("invert: does not exist");
   return mod2(x, modulo);
 }
-function assertIsSquare2(Fp2, root, n) {
-  const F = Fp2;
+function assertIsSquare(Fp, root, n) {
+  const F = Fp;
   if (!F.eql(F.sqr(root), n))
     throw new Error("Cannot find square root");
 }
 function aoddModulus(order, fnName) {
-  if ((order & _1n8) === _0n8)
+  if ((order & _1n5) === _0n6)
     throw new Error(fnName + ": expected odd modulus, got " + order);
 }
-function sqrt3mod42(Fp2, n) {
-  const F = Fp2;
-  const p1div4 = (F.ORDER + _1n8) / _4n2;
+function sqrt3mod4(Fp, n) {
+  const F = Fp;
+  const p1div4 = (F.ORDER + _1n5) / _4n;
   const root = F.pow(n, p1div4);
-  assertIsSquare2(F, root, n);
+  assertIsSquare(F, root, n);
   return root;
 }
-function sqrt5mod82(Fp2, n) {
-  const F = Fp2;
-  const p5div8 = (F.ORDER - _5n3) / _8n4;
-  const n2 = F.mul(n, _2n5);
+function sqrt5mod8(Fp, n) {
+  const F = Fp;
+  const p5div8 = (F.ORDER - _5n2) / _8n2;
+  const n2 = F.mul(n, _2n2);
   const v = F.pow(n2, p5div8);
   const nv = F.mul(n, v);
-  const i = F.mul(F.mul(nv, _2n5), v);
+  const i = F.mul(F.mul(nv, _2n2), v);
   const root = F.mul(nv, F.sub(i, F.ONE));
-  assertIsSquare2(F, root, n);
+  assertIsSquare(F, root, n);
   return root;
 }
-function sqrt9mod162(P) {
+function sqrt9mod16(P) {
   const Fp_ = Field2(P);
-  const tn = tonelliShanks2(P);
+  const tn = tonelliShanks(P);
   const c1 = tn(Fp_, Fp_.neg(Fp_.ONE));
   const c2 = tn(Fp_, c1);
   const c3 = tn(Fp_, Fp_.neg(c1));
-  const c4 = (P + _7n2) / _16n2;
-  return ((Fp2, n) => {
-    const F = Fp2;
+  const c4 = (P + _7n) / _16n;
+  return (Fp, n) => {
+    const F = Fp;
     let tv1 = F.pow(n, c4);
     let tv2 = F.mul(tv1, c1);
     const tv3 = F.mul(tv1, c2);
@@ -18579,35 +11445,35 @@ function sqrt9mod162(P) {
     tv2 = F.cmov(tv4, tv3, e2);
     const e3 = F.eql(F.sqr(tv2), n);
     const root = F.cmov(tv1, tv2, e3);
-    assertIsSquare2(F, root, n);
+    assertIsSquare(F, root, n);
     return root;
-  });
+  };
 }
-function tonelliShanks2(P) {
-  if (P < _3n3)
+function tonelliShanks(P) {
+  if (P < _3n2)
     throw new Error("sqrt is not defined for small field");
   aoddModulus(P, "tonelliShanks");
-  let Q = P - _1n8;
+  let Q = P - _1n5;
   let S = 0;
-  while (Q % _2n5 === _0n8) {
-    Q /= _2n5;
+  while (Q % _2n2 === _0n6) {
+    Q /= _2n2;
     S++;
   }
-  let Z = _2n5;
+  let Z = _2n2;
   const _Fp = Field2(P);
-  while (FpLegendre2(_Fp, Z) === 1) {
+  while (FpLegendre(_Fp, Z) === 1) {
     if (Z++ > 1e3)
       throw new Error("Cannot find square root: probably non-prime P");
   }
   if (S === 1)
-    return sqrt3mod42;
+    return sqrt3mod4;
   let cc = _Fp.pow(Z, Q);
-  const Q1div2 = (Q + _1n8) / _2n5;
-  return function tonelliSlow(Fp2, n) {
-    const F = Fp2;
+  const Q1div2 = (Q + _1n5) / _2n2;
+  return function tonelliSlow(Fp, n) {
+    const F = Fp;
     if (F.is0(n))
       return n;
-    if (FpLegendre2(F, n) !== 1)
+    if (FpLegendre(F, n) !== 1)
       throw new Error("Cannot find square root");
     let M = S;
     let c = F.mul(F.ONE, cc);
@@ -18624,7 +11490,7 @@ function tonelliShanks2(P) {
         if (i === M)
           throw new Error("Cannot find square root");
       }
-      const exponent = _1n8 << BigInt(M - i - 1);
+      const exponent = _1n5 << BigInt(M - i - 1);
       const b = F.pow(c, exponent);
       M = i;
       c = F.sqr(b);
@@ -18634,18 +11500,18 @@ function tonelliShanks2(P) {
     return R;
   };
 }
-function FpSqrt2(P) {
+function FpSqrt(P) {
   aoddModulus(P, "Fp.sqrt");
-  if (P % _4n2 === _3n3)
-    return sqrt3mod42;
-  if (P % _8n4 === _5n3)
-    return sqrt5mod82;
-  if (P % _16n2 === _9n2)
-    return sqrt9mod162(P);
-  return tonelliShanks2(P);
+  if (P % _4n === _3n2)
+    return sqrt3mod4;
+  if (P % _8n2 === _5n2)
+    return sqrt5mod8;
+  if (P % _16n === _9n)
+    return sqrt9mod16(P);
+  return tonelliShanks(P);
 }
-var isNegativeLE2 = (num, modulo) => (mod2(num, modulo) & _1n8) === _1n8;
-var FIELD_FIELDS2 = [
+var isNegativeLE2 = (num, modulo) => (mod2(num, modulo) & _1n5) === _1n5;
+var FIELD_FIELDS = [
   "create",
   "isValid",
   "is0",
@@ -18664,25 +11530,25 @@ var FIELD_FIELDS2 = [
   "mulN",
   "sqrN"
 ];
-function validateField2(field) {
+function validateField(field) {
   aobject2(field, "field");
   if (typeof field.ORDER !== "bigint")
     throw new TypeError('param "ORDER" is invalid: expected bigint, got ' + typeof field.ORDER);
   asafenumber(field.BYTES, "BYTES");
   asafenumber(field.BITS, "BITS");
-  for (const name2 of FIELD_FIELDS2)
+  for (const name2 of FIELD_FIELDS)
     afunction(field[name2], "field." + name2);
   if (field.BYTES < 1 || field.BITS < 1)
     throw new Error("invalid field: expected BYTES/BITS > 0");
-  if (field.ORDER <= _1n8)
+  if (field.ORDER <= _1n5)
     throw new Error("invalid field: expected ORDER > 1, got " + field.ORDER);
   return field;
 }
-function FpInvertBatch2(Fp2, nums, passZero = false) {
-  validateField2(Fp2);
+function FpInvertBatch(Fp, nums, passZero = false) {
+  validateField(Fp);
   aarray(nums, "nums");
   abool(passZero, "passZero");
-  const F = Fp2;
+  const F = Fp;
   const inverted = new Array(nums.length).fill(passZero ? F.ZERO : void 0);
   const multipliedAcc = nums.reduce((acc, num, i) => {
     if (F.is0(num))
@@ -18699,11 +11565,11 @@ function FpInvertBatch2(Fp2, nums, passZero = false) {
   }, invertedAcc);
   return inverted;
 }
-function FpLegendre2(Fp2, n) {
-  validateField2(Fp2);
-  const F = Fp2;
+function FpLegendre(Fp, n) {
+  validateField(Fp);
+  const F = Fp;
   aoddModulus(F.ORDER, "FpLegendre");
-  const p1mod2 = (F.ORDER - _1n8) / _2n5;
+  const p1mod2 = (F.ORDER - _1n5) / _2n2;
   const powered = F.pow(n, p1mod2);
   const yes = F.eql(powered, F.ONE);
   const zero = F.eql(powered, F.ZERO);
@@ -18712,14 +11578,14 @@ function FpLegendre2(Fp2, n) {
     throw new Error("invalid Legendre symbol result");
   return yes ? 1 : zero ? 0 : -1;
 }
-function nLength2(n, nBitLength) {
+function nLength(n, nBitLength) {
   if (nBitLength !== void 0)
-    anumber3(nBitLength);
-  if (n <= _0n8)
+    anumber2(nBitLength);
+  if (n <= _0n6)
     throw new Error("invalid n length: expected positive n, got " + n);
   if (nBitLength !== void 0 && nBitLength < 1)
     throw new Error("invalid n length: expected positive bit length, got " + nBitLength);
-  const bits = bitLen2(n);
+  const bits = bitLen(n);
   if (nBitLength !== void 0 && nBitLength < bits)
     throw new Error(`invalid n length: expected nBitLength (${nBitLength}) >= bitLen(n) (${bits})`);
   const _nBitLength = nBitLength !== void 0 ? nBitLength : bits;
@@ -18732,12 +11598,12 @@ var _Field = class {
   BITS;
   BYTES;
   isLE;
-  ZERO = _0n8;
-  ONE = _1n8;
+  ZERO = _0n6;
+  ONE = _1n5;
   _lengths;
   _mod;
   constructor(ORDER, opts = {}) {
-    if (ORDER <= _1n8)
+    if (ORDER <= _1n5)
       throw new Error("invalid field: expected ORDER > 1, got " + ORDER);
     let _nbitLength = void 0;
     this.isLE = false;
@@ -18753,7 +11619,7 @@ var _Field = class {
       if (typeof opts.modFromBytes === "boolean")
         this._mod = opts.modFromBytes;
     }
-    const { nBitLength, nByteLength } = nLength2(ORDER, _nbitLength);
+    const { nBitLength, nByteLength } = nLength(ORDER, _nbitLength);
     if (nByteLength > 2048)
       throw new Error("invalid field: expected ORDER of <= 2048 bytes");
     this.ORDER = ORDER;
@@ -18767,17 +11633,17 @@ var _Field = class {
   isValid(num) {
     if (typeof num !== "bigint")
       throw new TypeError("invalid field element: expected bigint, got " + typeof num);
-    return _0n8 <= num && num < this.ORDER;
+    return _0n6 <= num && num < this.ORDER;
   }
   is0(num) {
-    return num === _0n8;
+    return num === _0n6;
   }
   // is valid and invertible
   isValidNot0(num) {
     return !this.is0(num) && this.isValid(num);
   }
   isOdd(num) {
-    return (num & _1n8) === _1n8;
+    return (num & _1n5) === _1n5;
   }
   neg(num) {
     return mod2(-num, this.ORDER);
@@ -18798,10 +11664,10 @@ var _Field = class {
     return mod2(lhs * rhs, this.ORDER);
   }
   pow(num, power) {
-    return pow(num, power, this.ORDER);
+    return pow3(num, power, this.ORDER);
   }
   div(lhs, rhs) {
-    return mod2(lhs * invert2(rhs, this.ORDER), this.ORDER);
+    return mod2(lhs * invert(rhs, this.ORDER), this.ORDER);
   }
   // Same as above, but doesn't normalize
   sqrN(num) {
@@ -18817,12 +11683,12 @@ var _Field = class {
     return lhs * rhs;
   }
   inv(num) {
-    return invert2(num, this.ORDER);
+    return invert(num, this.ORDER);
   }
   sqrt(num) {
     let sqrt = FIELD_SQRT.get(this);
     if (!sqrt)
-      FIELD_SQRT.set(this, sqrt = FpSqrt2(this.ORDER));
+      FIELD_SQRT.set(this, sqrt = FpSqrt(this.ORDER));
     return sqrt(this, num);
   }
   toBytes(num) {
@@ -18841,7 +11707,7 @@ var _Field = class {
     }
     if (bytes.length !== BYTES)
       throw new Error("Field.fromBytes: expected " + BYTES + " bytes, got " + bytes.length);
-    let scalar = isLE3 ? bytesToNumberLE2(bytes) : bytesToNumberBE2(bytes);
+    let scalar = isLE3 ? bytesToNumberLE2(bytes) : bytesToNumberBE(bytes);
     if (modFromBytes)
       scalar = mod2(scalar, ORDER);
     if (!skipValidation) {
@@ -18852,7 +11718,7 @@ var _Field = class {
   }
   // TODO: we don't need it here, move out to separate fn
   invertBatch(lst) {
-    return FpInvertBatch2(this, lst, true);
+    return FpInvertBatch(this, lst, true);
   }
   // We can't move this out because Fp6, Fp12 implement it
   // and it's unclear what to return in there.
@@ -18867,9 +11733,9 @@ function Field2(ORDER, opts = {}) {
 }
 
 // node_modules/@noble/curves/abstract/curve.js
-var _0n9 = /* @__PURE__ */ BigInt(0);
-var _1n9 = /* @__PURE__ */ BigInt(1);
-var _4n3 = /* @__PURE__ */ BigInt(4);
+var _0n7 = /* @__PURE__ */ BigInt(0);
+var _1n6 = /* @__PURE__ */ BigInt(1);
+var _4n2 = /* @__PURE__ */ BigInt(4);
 var BLIND_BYTES = 16;
 var BLIND_BITS = 128;
 var FW_WINDOW = 5;
@@ -18883,16 +11749,16 @@ function validatePointCons(Point) {
   afunction(pc.fromHex, "Point.fromHex");
   aobject2(pc.BASE, "Point.BASE");
   aobject2(pc.ZERO, "Point.ZERO");
-  validateField2(pc.Fp);
-  validateField2(pc.Fn);
+  validateField(pc.Fp);
+  validateField(pc.Fn);
 }
-function normalizeZ2(c, points) {
+function normalizeZ(c, points) {
   validatePointCons(c);
-  validateMSMPoints2(points, c);
-  const invertedZs = FpInvertBatch2(c.Fp, points.map((p) => p.Z));
+  validateMSMPoints(points, c);
+  const invertedZs = FpInvertBatch(c.Fp, points.map((p) => p.Z));
   return points.map((p, i) => c.fromAffine(p.toAffine(invertedZs[i])));
 }
-function validateW2(W, bits, min = 1) {
+function validateW(W, bits, min = 1) {
   if (!Number.isSafeInteger(W) || W < min || W > bits)
     throw new Error("invalid window size, expected [" + min + ".." + bits + "], got W=" + W);
 }
@@ -18914,14 +11780,14 @@ function probeRandomBytes(randomBytes8, length) {
   }
   return randomBytes8;
 }
-function validateMSMPoints2(points, c) {
+function validateMSMPoints(points, c) {
   aarray(points, "points");
   points.forEach((p, i) => {
     if (!(p instanceof c))
       throw new Error("invalid point at index " + i);
   });
 }
-function validateMSMScalars2(scalars, field, maxScalar) {
+function validateMSMScalars(scalars, field, maxScalar) {
   if (!Array.isArray(scalars))
     throw new Error("array of scalars expected");
   scalars.forEach((s2, i) => {
@@ -18930,9 +11796,9 @@ function validateMSMScalars2(scalars, field, maxScalar) {
       throw new Error("invalid scalar at index " + i);
   });
 }
-var pointWindowSizes2 = /* @__PURE__ */ new WeakMap();
+var pointWindowSizes = /* @__PURE__ */ new WeakMap();
 function getWindowSize(P) {
-  return pointWindowSizes2.get(P) || 1;
+  return pointWindowSizes.get(P) || 1;
 }
 function oddMultiples(p, size) {
   const dbl = p.double();
@@ -18946,16 +11812,16 @@ function wnafDigits(n, W) {
   const half = size / 2;
   const mask = BigInt(size - 1);
   const d = [];
-  while (n > _0n9) {
+  while (n > _0n7) {
     let w = 0;
-    if (n & _1n9) {
+    if (n & _1n6) {
       w = Number(n & mask);
       if (w >= half)
         w -= size;
       n -= BigInt(w);
     }
     d.push(w);
-    n >>= _1n9;
+    n >>= _1n6;
   }
   return d;
 }
@@ -18970,11 +11836,11 @@ function signedWindowDigits(n, W, windows) {
     n >>= shiftBy;
     if (v > half) {
       v -= size;
-      n += _1n9;
+      n += _1n6;
     }
     d.push(v);
   }
-  if (n !== _0n9)
+  if (n !== _0n7)
     throw new Error("invalid wnaf");
   return d;
 }
@@ -19095,7 +11961,7 @@ var ScalarMultiplier = class {
   // Uses inRange instead of Fn.isValidNot0: validateField() only certifies the arithmetic subset.
   validateMulInput(point, scalar) {
     this.assertPoint(point);
-    if (!inRange2(scalar, _1n9, this.Point.Fn.ORDER))
+    if (!inRange2(scalar, _1n6, this.Point.Fn.ORDER))
       throw new Error("invalid scalar");
   }
   // Constant-time dispatch shared by mulCT / mulCTBlinded. Un-precomputed points (W===1, e.g.
@@ -19120,7 +11986,7 @@ var ScalarMultiplier = class {
     if (!isBytes3(blind) || blind.length !== BLIND_BYTES)
       throw new Error("randomBytes returned invalid byte array");
     blind[0] = blind[0] & 63 | 128;
-    const n = scalar + bytesToNumberBE2(blind) * this.Point.Fn.ORDER;
+    const n = scalar + bytesToNumberBE(blind) * this.Point.Fn.ORDER;
     return this.runCT(point, n, bits, transform);
   }
   /**
@@ -19141,18 +12007,18 @@ var ScalarMultiplier = class {
   fixedWindowCT(point, n, bits) {
     const W = FW_WINDOW;
     const size = 1 << W;
-    const mask = bitMask2(W);
+    const mask = bitMask(W);
     const table = new Array(size);
     table[0] = this.ZERO;
     for (let i = 1; i < size; i++)
       table[i] = table[i - 1].add(point);
     const windows = Math.ceil(bits / W);
     let acc = this.ZERO;
-    for (let window2 = windows - 1; window2 >= 0; window2--) {
-      if (window2 !== windows - 1)
+    for (let window = windows - 1; window >= 0; window--) {
+      if (window !== windows - 1)
         for (let d = 0; d < W; d++)
           acc = acc.double();
-      const digit = Number(n >> BigInt(window2 * W) & mask);
+      const digit = Number(n >> BigInt(window * W) & mask);
       let sel = table[0];
       for (let i = 1; i < size; i++)
         sel = i === digit ? table[i] : sel;
@@ -19163,7 +12029,7 @@ var ScalarMultiplier = class {
   shouldBlind(point, cofactor) {
     if (this.randomBytes === void 0)
       return false;
-    if (cofactor === _1n9)
+    if (cofactor === _1n6)
       return true;
     if (point !== this.BASE)
       return false;
@@ -19190,10 +12056,10 @@ var ScalarMultiplier = class {
   // W is additionally capped so tables stay under ~2 GiB ({@link TABLE_BYTES_MAX}).
   setWindowSize(point, W) {
     this.assertPoint(point);
-    validateW2(W, this.bits);
+    validateW(W, this.bits);
     const windows = Math.ceil((this.bits + BLIND_BITS) / W) + 1;
     validateTableBytes(windows * 2 ** (W - 1), this.Point.Fp.BYTES);
-    pointWindowSizes2.set(point, W);
+    pointWindowSizes.set(point, W);
     this.wnafPrecomputes.delete(point);
   }
   // True when a window size is set: tables themselves are built lazily on first multiply.
@@ -19203,20 +12069,20 @@ var ScalarMultiplier = class {
 };
 function mulAddUnsafe(c, points, scalars, allowOversized = false) {
   validatePointCons(c);
-  validateMSMPoints2(points, c);
+  validateMSMPoints(points, c);
   abool(allowOversized, "allowOversized");
-  validateMSMScalars2(scalars, c.Fn, allowOversized ? c.Fn.ORDER ** _4n3 : void 0);
+  validateMSMScalars(scalars, c.Fn, allowOversized ? c.Fn.ORDER ** _4n2 : void 0);
   if (points.length !== scalars.length)
     throw new Error("arrays of points and scalars must have equal length");
   const tables = points.map((p) => oddMultiples(p, 4));
   const digits = scalars.map((n) => wnafDigits(n, 4));
   return wnafWalk(c.ZERO, tables, digits);
 }
-function createField2(order, field, isLE3) {
+function createField(order, field, isLE3) {
   if (field) {
     if (field.ORDER !== order)
       throw new Error("Field.ORDER must match order: Fp == p, Fn == n");
-    validateField2(field);
+    validateField(field);
     return field;
   } else {
     return Field2(order, { isLE: isLE3 });
@@ -19232,19 +12098,19 @@ function createCurveFields(type, CURVE, curveOpts = {}, FpFnLE) {
   validateObject2(curveOpts);
   for (const p of ["p", "n", "h"]) {
     const val = CURVE[p];
-    if (!(isPosBig2(val) && val !== _0n9))
+    if (!(isPosBig2(val) && val !== _0n7))
       throw new Error(`CURVE.${p} must be positive bigint`);
   }
-  const Fp2 = createField2(CURVE.p, curveOpts.Fp, FpFnLE);
-  const Fn2 = createField2(CURVE.n, curveOpts.Fn, FpFnLE);
+  const Fp = createField(CURVE.p, curveOpts.Fp, FpFnLE);
+  const Fn = createField(CURVE.n, curveOpts.Fn, FpFnLE);
   const _b = type === "weierstrass" ? "b" : "d";
   const params = ["Gx", "Gy", "a", _b];
   for (const p of params) {
-    if (!Fp2.isValid(CURVE[p]))
+    if (!Fp.isValid(CURVE[p]))
       throw new Error(`CURVE.${p} must be valid field element of CURVE.Fp`);
   }
   CURVE = Object.freeze(Object.assign({}, CURVE));
-  return { CURVE, Fp: Fp2, Fn: Fn2 };
+  return { CURVE, Fp, Fn };
 }
 function createKeygen(randomSecretKey, getPublicKey) {
   return function keygen(seed) {
@@ -19254,49 +12120,49 @@ function createKeygen(randomSecretKey, getPublicKey) {
 }
 
 // node_modules/@noble/curves/abstract/edwards.js
-var _0n10 = /* @__PURE__ */ BigInt(0);
-var _1n10 = /* @__PURE__ */ BigInt(1);
-var _2n6 = /* @__PURE__ */ BigInt(2);
-var _4n4 = /* @__PURE__ */ BigInt(4);
-var _8n5 = /* @__PURE__ */ BigInt(8);
-function isEdValidXY2(Fp2, CURVE, x, y) {
-  const x2 = Fp2.sqr(x);
-  const y2 = Fp2.sqr(y);
-  const left = Fp2.add(Fp2.mul(CURVE.a, x2), y2);
-  const right = Fp2.add(Fp2.ONE, Fp2.mul(CURVE.d, Fp2.mul(x2, y2)));
-  return Fp2.eql(left, right);
+var _0n8 = /* @__PURE__ */ BigInt(0);
+var _1n7 = /* @__PURE__ */ BigInt(1);
+var _2n3 = /* @__PURE__ */ BigInt(2);
+var _4n3 = /* @__PURE__ */ BigInt(4);
+var _8n3 = /* @__PURE__ */ BigInt(8);
+function isEdValidXY(Fp, CURVE, x, y) {
+  const x2 = Fp.sqr(x);
+  const y2 = Fp.sqr(y);
+  const left = Fp.add(Fp.mul(CURVE.a, x2), y2);
+  const right = Fp.add(Fp.ONE, Fp.mul(CURVE.d, Fp.mul(x2, y2)));
+  return Fp.eql(left, right);
 }
-function edwards2(params, extraOpts = {}) {
+function edwards(params, extraOpts = {}) {
   validateObject2(extraOpts, {}, {}, "extraOpts");
   const opts = extraOpts;
   const validated = createCurveFields("edwards", params, opts, opts.FpFnLE);
-  const { Fp: Fp2, Fn: Fn2 } = validated;
+  const { Fp, Fn } = validated;
   let CURVE = validated.CURVE;
   const { h: cofactor } = CURVE;
-  if (FpLegendre2(Fp2, CURVE.a) !== 1)
+  if (FpLegendre(Fp, CURVE.a) !== 1)
     throw new Error("edwards: CURVE.a must be a square in Fp for complete addition formulas");
-  if (FpLegendre2(Fp2, CURVE.d) !== -1)
+  if (FpLegendre(Fp, CURVE.d) !== -1)
     throw new Error("edwards: CURVE.d must be a non-square in Fp for complete addition formulas");
   validateObject2(opts, {}, { uvRatio: "function", randomBytes: "function" });
   const randomBytes8 = opts.randomBytes === void 0 ? randomBytes4 : opts.randomBytes;
-  const MASK = _2n6 << BigInt(Fp2.BYTES * 8) - _1n10;
+  const MASK = _2n3 << BigInt(Fp.BYTES * 8) - _1n7;
   function isOdd(n) {
-    if (!Fp2.isOdd)
+    if (!Fp.isOdd)
       throw new Error("Field does not have .isOdd()");
-    return Fp2.isOdd(n);
+    return Fp.isOdd(n);
   }
-  const uvRatio3 = opts.uvRatio === void 0 ? (u, v) => {
+  const uvRatio2 = opts.uvRatio === void 0 ? (u, v) => {
     try {
-      return { isValid: true, value: Fp2.sqrt(Fp2.div(u, v)) };
+      return { isValid: true, value: Fp.sqrt(Fp.div(u, v)) };
     } catch (e) {
-      return { isValid: false, value: _0n10 };
+      return { isValid: false, value: _0n8 };
     }
   } : opts.uvRatio;
-  if (!isEdValidXY2(Fp2, CURVE, CURVE.Gx, CURVE.Gy))
+  if (!isEdValidXY(Fp, CURVE, CURVE.Gx, CURVE.Gy))
     throw new Error("bad curve params: generator point");
-  const mulA = Fp2.eql(CURVE.a, Fp2.neg(Fp2.ONE)) ? (x) => Fp2.neg(x) : Fp2.eql(CURVE.a, Fp2.ONE) ? (x) => x : (x) => Fp2.mul(CURVE.a, x);
+  const mulA = Fp.eql(CURVE.a, Fp.neg(Fp.ONE)) ? (x) => Fp.neg(x) : Fp.eql(CURVE.a, Fp.ONE) ? (x) => x : (x) => Fp.mul(CURVE.a, x);
   function acoord(title, n, banZero = false) {
-    const min = banZero ? _1n10 : _0n10;
+    const min = banZero ? _1n7 : _0n8;
     aInRange2("coordinate " + title, n, min, MASK);
     return n;
   }
@@ -19305,10 +12171,10 @@ function edwards2(params, extraOpts = {}) {
       throw new Error("EdwardsPoint expected");
   }
   class Point {
-    static BASE = new Point(CURVE.Gx, CURVE.Gy, Fp2.ONE, Fp2.mul(CURVE.Gx, CURVE.Gy));
-    static ZERO = new Point(Fp2.ZERO, Fp2.ONE, Fp2.ONE, Fp2.ZERO);
-    static Fp = Fp2;
-    static Fn = Fn2;
+    static BASE = new Point(CURVE.Gx, CURVE.Gy, Fp.ONE, Fp.mul(CURVE.Gx, CURVE.Gy));
+    static ZERO = new Point(Fp.ZERO, Fp.ONE, Fp.ONE, Fp.ZERO);
+    static Fp = Fp;
+    static Fn = Fn;
     X;
     Y;
     Z;
@@ -19334,32 +12200,32 @@ function edwards2(params, extraOpts = {}) {
       const { x, y } = p || {};
       acoord("x", x);
       acoord("y", y);
-      return new Point(x, y, Fp2.ONE, Fp2.mul(x, y));
+      return new Point(x, y, Fp.ONE, Fp.mul(x, y));
     }
     // Uses algo from RFC8032 5.1.3.
     static fromBytes(bytes, zip215 = false) {
-      const len = Fp2.BYTES;
+      const len = Fp.BYTES;
       const { a, d } = CURVE;
-      bytes = copyBytes3(abytes3(bytes, len, "point"));
+      bytes = copyBytes2(abytes3(bytes, len, "point"));
       abool(zip215, "zip215");
-      const normed = copyBytes3(bytes);
+      const normed = copyBytes2(bytes);
       const lastByte = bytes[len - 1];
       normed[len - 1] = lastByte & ~128;
       const y = bytesToNumberLE2(normed);
-      const max = zip215 ? MASK : Fp2.ORDER;
-      aInRange2("point.y", y, _0n10, max);
-      const y2 = Fp2.sqr(y);
-      const u = Fp2.sub(y2, Fp2.ONE);
-      const v = Fp2.sub(Fp2.mulN(d, y2), a);
-      let { isValid: isValid2, value: x } = uvRatio3(u, v);
+      const max = zip215 ? MASK : Fp.ORDER;
+      aInRange2("point.y", y, _0n8, max);
+      const y2 = Fp.sqr(y);
+      const u = Fp.sub(y2, Fp.ONE);
+      const v = Fp.sub(Fp.mulN(d, y2), a);
+      let { isValid: isValid2, value: x } = uvRatio2(u, v);
       if (!isValid2)
         throw new Error("bad point: invalid y coordinate");
       const isXOdd = isOdd(x);
       const isLastByteOdd = (lastByte & 128) !== 0;
-      if (!zip215 && Fp2.is0(x) && isLastByteOdd)
+      if (!zip215 && Fp.is0(x) && isLastByteOdd)
         throw new Error("bad point: x=0 and x_0=1");
       if (isLastByteOdd !== isXOdd)
-        x = Fp2.neg(x);
+        x = Fp.neg(x);
       return Point.fromAffine({ x, y });
     }
     static fromHex(hex, zip215 = false) {
@@ -19374,7 +12240,7 @@ function edwards2(params, extraOpts = {}) {
     precompute(windowSize = 6, isLazy = true) {
       wnaf.setWindowSize(this, windowSize);
       if (!isLazy)
-        this.multiply(_2n6);
+        this.multiply(_2n3);
       return this;
     }
     // Useful in fromAffine() - not for fromBytes(), which always created valid points.
@@ -19384,18 +12250,18 @@ function edwards2(params, extraOpts = {}) {
       if (p.is0())
         throw new Error("bad point: ZERO");
       const { X, Y, Z, T } = p;
-      const X2 = Fp2.sqr(X);
-      const Y2 = Fp2.sqr(Y);
-      const Z2 = Fp2.sqr(Z);
-      const Z4 = Fp2.sqr(Z2);
-      const aX2 = Fp2.mul(X2, a);
-      const left = Fp2.mul(Fp2.add(aX2, Y2), Z2);
-      const right = Fp2.add(Z4, Fp2.mul(d, Fp2.mul(X2, Y2)));
-      if (!Fp2.eql(left, right))
+      const X2 = Fp.sqr(X);
+      const Y2 = Fp.sqr(Y);
+      const Z2 = Fp.sqr(Z);
+      const Z4 = Fp.sqr(Z2);
+      const aX2 = Fp.mul(X2, a);
+      const left = Fp.mul(Fp.add(aX2, Y2), Z2);
+      const right = Fp.add(Z4, Fp.mul(d, Fp.mul(X2, Y2)));
+      if (!Fp.eql(left, right))
         throw new Error("bad point: equation left != right (1)");
-      const XY = Fp2.mul(X, Y);
-      const ZT = Fp2.mul(Z, T);
-      if (!Fp2.eql(XY, ZT))
+      const XY = Fp.mul(X, Y);
+      const ZT = Fp.mul(Z, T);
+      if (!Fp.eql(XY, ZT))
         throw new Error("bad point: equation left != right (2)");
     }
     // Compare one point to another.
@@ -19403,36 +12269,36 @@ function edwards2(params, extraOpts = {}) {
       aedpoint(other);
       const { X: X1, Y: Y1, Z: Z1 } = this;
       const { X: X2, Y: Y2, Z: Z2 } = other;
-      const X1Z2 = Fp2.mul(X1, Z2);
-      const X2Z1 = Fp2.mul(X2, Z1);
-      const Y1Z2 = Fp2.mul(Y1, Z2);
-      const Y2Z1 = Fp2.mul(Y2, Z1);
-      return Fp2.eql(X1Z2, X2Z1) && Fp2.eql(Y1Z2, Y2Z1);
+      const X1Z2 = Fp.mul(X1, Z2);
+      const X2Z1 = Fp.mul(X2, Z1);
+      const Y1Z2 = Fp.mul(Y1, Z2);
+      const Y2Z1 = Fp.mul(Y2, Z1);
+      return Fp.eql(X1Z2, X2Z1) && Fp.eql(Y1Z2, Y2Z1);
     }
     is0() {
       return this.equals(Point.ZERO);
     }
     negate() {
-      return new Point(Fp2.neg(this.X), this.Y, this.Z, Fp2.neg(this.T));
+      return new Point(Fp.neg(this.X), this.Y, this.Z, Fp.neg(this.T));
     }
     // Fast algo for doubling Extended Point.
     // https://hyperelliptic.org/EFD/g1p/auto-twisted-extended.html#doubling-dbl-2008-hwcd
     // Cost: 4M + 4S + 1*a + 6add + 1*2.
     double() {
       const { X: X1, Y: Y1, Z: Z1 } = this;
-      const A = Fp2.sqr(X1);
-      const B = Fp2.sqr(Y1);
-      const C = Fp2.mul(Fp2.sqr(Z1), _2n6);
+      const A = Fp.sqr(X1);
+      const B = Fp.sqr(Y1);
+      const C = Fp.mul(Fp.sqr(Z1), _2n3);
       const D = mulA(A);
-      const x1y1 = Fp2.addN(X1, Y1);
-      const E = Fp2.sub(Fp2.subN(Fp2.sqr(x1y1), A), B);
-      const G = Fp2.addN(D, B);
-      const F = Fp2.subN(G, C);
-      const H = Fp2.subN(D, B);
-      const X3 = Fp2.mul(E, F);
-      const Y3 = Fp2.mul(G, H);
-      const T3 = Fp2.mul(E, H);
-      const Z3 = Fp2.mul(F, G);
+      const x1y1 = Fp.addN(X1, Y1);
+      const E = Fp.sub(Fp.subN(Fp.sqr(x1y1), A), B);
+      const G = Fp.addN(D, B);
+      const F = Fp.subN(G, C);
+      const H = Fp.subN(D, B);
+      const X3 = Fp.mul(E, F);
+      const Y3 = Fp.mul(G, H);
+      const T3 = Fp.mul(E, H);
+      const Z3 = Fp.mul(F, G);
       return new Point(X3, Y3, Z3, T3);
     }
     // Fast algo for adding 2 Extended Points.
@@ -19443,18 +12309,18 @@ function edwards2(params, extraOpts = {}) {
       const { d } = CURVE;
       const { X: X1, Y: Y1, Z: Z1, T: T1 } = this;
       const { X: X2, Y: Y2, Z: Z2, T: T2 } = other;
-      const A = Fp2.mul(X1, X2);
-      const B = Fp2.mul(Y1, Y2);
-      const C = Fp2.mul(Fp2.mulN(T1, d), T2);
-      const D = Fp2.mul(Z1, Z2);
-      const E = Fp2.sub(Fp2.subN(Fp2.mulN(Fp2.addN(X1, Y1), Fp2.addN(X2, Y2)), A), B);
-      const F = Fp2.subN(D, C);
-      const G = Fp2.addN(D, C);
-      const H = Fp2.sub(B, mulA(A));
-      const X3 = Fp2.mul(E, F);
-      const Y3 = Fp2.mul(G, H);
-      const T3 = Fp2.mul(E, H);
-      const Z3 = Fp2.mul(F, G);
+      const A = Fp.mul(X1, X2);
+      const B = Fp.mul(Y1, Y2);
+      const C = Fp.mul(Fp.mulN(T1, d), T2);
+      const D = Fp.mul(Z1, Z2);
+      const E = Fp.sub(Fp.subN(Fp.mulN(Fp.addN(X1, Y1), Fp.addN(X2, Y2)), A), B);
+      const F = Fp.subN(D, C);
+      const G = Fp.addN(D, C);
+      const H = Fp.sub(B, mulA(A));
+      const X3 = Fp.mul(E, F);
+      const Y3 = Fp.mul(G, H);
+      const T3 = Fp.mul(E, H);
+      const Z3 = Fp.mul(F, G);
       return new Point(X3, Y3, Z3, T3);
     }
     subtract(other) {
@@ -19463,7 +12329,7 @@ function edwards2(params, extraOpts = {}) {
     }
     // Constant-time multiplication.
     multiply(scalar) {
-      if (!Fn2.isValidNot0(scalar))
+      if (!Fn.isValidNot0(scalar))
         throw new RangeError("invalid scalar: expected 1 <= sc < curve.n");
       const { p, f } = wnaf.mulSecret(this, scalar, cofactor, normalize);
       return normalize([p, f])[0];
@@ -19474,11 +12340,11 @@ function edwards2(params, extraOpts = {}) {
     // Keeps the same subgroup-scalar contract: 0 is allowed for public-scalar callers, but
     // n and larger values are rejected instead of being reduced mod n to the identity point.
     multiplyUnsafe(scalar) {
-      if (!Fn2.isValid(scalar))
+      if (!Fn.isValid(scalar))
         throw new RangeError("invalid scalar: expected 0 <= sc < curve.n");
-      if (scalar === _0n10)
+      if (scalar === _0n8)
         return Point.ZERO;
-      if (this.is0() || scalar === _1n10)
+      if (this.is0() || scalar === _1n7)
         return this;
       return wnaf.mulUnsafe(this, scalar, normalize);
     }
@@ -19504,30 +12370,30 @@ function edwards2(params, extraOpts = {}) {
       const { X, Y, Z } = p;
       const is0 = p.is0();
       if (iz == null)
-        iz = is0 ? Fp2.create(_8n5) : Fp2.inv(Z);
-      const x = Fp2.mul(X, iz);
-      const y = Fp2.mul(Y, iz);
-      const zz = Fp2.mul(Z, iz);
+        iz = is0 ? Fp.create(_8n3) : Fp.inv(Z);
+      const x = Fp.mul(X, iz);
+      const y = Fp.mul(Y, iz);
+      const zz = Fp.mul(Z, iz);
       if (is0)
-        return { x: Fp2.ZERO, y: Fp2.ONE };
-      if (!Fp2.eql(zz, Fp2.ONE))
+        return { x: Fp.ZERO, y: Fp.ONE };
+      if (!Fp.eql(zz, Fp.ONE))
         throw new Error("invZ was invalid");
       return { x, y };
     }
     clearCofactor() {
-      if (cofactor === _1n10)
+      if (cofactor === _1n7)
         return this;
-      if (cofactor === _2n6)
+      if (cofactor === _2n3)
         return this.double();
-      if (cofactor === _4n4)
+      if (cofactor === _4n3)
         return this.double().double();
-      if (cofactor === _8n5)
+      if (cofactor === _8n3)
         return this.double().double().double();
       return this.multiplyUnsafe(cofactor);
     }
     toBytes() {
       const { x, y } = this.toAffine();
-      const bytes = Fp2.toBytes(y);
+      const bytes = Fp.toBytes(y);
       bytes[bytes.length - 1] |= isOdd(x) ? 128 : 0;
       return bytes;
     }
@@ -19538,7 +12404,7 @@ function edwards2(params, extraOpts = {}) {
       return `<Point ${this.is0() ? "ZERO" : this.toHex()}>`;
     }
   }
-  const normalize = (points) => normalizeZ2(Point, points);
+  const normalize = (points) => normalizeZ(Point, points);
   const wnaf = new ScalarMultiplier(Point, randomBytes8);
   if (wnaf.bits >= 6)
     Point.BASE.precompute(6);
@@ -19548,11 +12414,11 @@ function edwards2(params, extraOpts = {}) {
 }
 
 // node_modules/@noble/curves/abstract/montgomery.js
-var _0n11 = /* @__PURE__ */ BigInt(0);
-var _1n11 = /* @__PURE__ */ BigInt(1);
-var _2n7 = /* @__PURE__ */ BigInt(2);
+var _0n9 = /* @__PURE__ */ BigInt(0);
+var _1n8 = /* @__PURE__ */ BigInt(1);
+var _2n4 = /* @__PURE__ */ BigInt(2);
 function cmask(P, swap) {
-  return P + swap - (swap >> _1n11 << _1n11);
+  return P + swap - (swap >> _1n8 << _1n8);
 }
 function cswap(P) {
   const offset = BigInt(6) * P;
@@ -19588,36 +12454,36 @@ function montgomery2(curveDef) {
   const fieldLen = is25519 ? 32 : 56;
   const Gu = is25519 ? BigInt(9) : BigInt(5);
   const a24 = is25519 ? BigInt(121665) : BigInt(39081);
-  const minScalar = is25519 ? _2n7 ** BigInt(254) : _2n7 ** BigInt(447);
-  const maxAdded = is25519 ? BigInt(8) * (_2n7 ** BigInt(251) - _1n11) : BigInt(4) * (_2n7 ** BigInt(445) - _1n11);
-  const maxScalar = minScalar + maxAdded + _1n11;
+  const minScalar = is25519 ? _2n4 ** BigInt(254) : _2n4 ** BigInt(447);
+  const maxAdded = is25519 ? BigInt(8) * (_2n4 ** BigInt(251) - _1n8) : BigInt(4) * (_2n4 ** BigInt(445) - _1n8);
+  const maxScalar = minScalar + maxAdded + _1n8;
   const modP = (n) => mod2(n, P);
   const GuBytes = encodeU(Gu);
   function encodeU(u) {
     return numberToBytesLE2(modP(u), fieldLen);
   }
   function decodeU(u) {
-    const _u = copyBytes3(abytes3(u, fieldLen, "uCoordinate"));
+    const _u = copyBytes2(abytes3(u, fieldLen, "uCoordinate"));
     if (is25519)
       _u[31] &= 127;
     return modP(bytesToNumberLE2(_u));
   }
   function decodeScalar(scalar) {
-    return bytesToNumberLE2(adjustScalarBytes3(copyBytes3(abytes3(scalar, fieldLen, "scalar"))));
+    return bytesToNumberLE2(adjustScalarBytes3(copyBytes2(abytes3(scalar, fieldLen, "scalar"))));
   }
   const lowOrderU = new Set(is25519 ? [
-    _0n11,
-    _1n11,
-    P - _1n11,
+    _0n9,
+    _1n8,
+    P - _1n8,
     BigInt("325606250916557431795983626356110631294008115727848805560023387167927233504"),
     BigInt("39382357235489614581723060781553021112529911719440698176882885853963445705823")
-  ] : [_0n11, _1n11, P - _1n11]);
+  ] : [_0n9, _1n8, P - _1n8]);
   function scalarMult(scalar, u) {
     const pointU = decodeU(u);
     if (lowOrderU.has(pointU))
       throw new Error("invalid private or public key received");
     const pu = montgomeryLadder(pointU, decodeScalar(scalar));
-    if (pu === _0n11)
+    if (pu === _0n9)
       throw new Error("invalid private or public key received");
     return encodeU(pu);
   }
@@ -19627,23 +12493,23 @@ function montgomery2(curveDef) {
     const k = decodeScalar(scalar);
     aInRange2("scalar", k, minScalar, maxScalar);
     const pu = modP(mulBaseHook(k));
-    if (pu === _0n11)
+    if (pu === _0n9)
       throw new Error("invalid private or public key received");
     return encodeU(pu);
   }
   const getPublicKey = scalarMultBase;
   const getSharedSecret = scalarMult;
   function montgomeryLadder(u, scalar) {
-    aInRange2("u", u, _0n11, P);
+    aInRange2("u", u, _0n9, P);
     aInRange2("scalar", scalar, minScalar, maxScalar);
     const k = scalar;
     const x_1 = u;
-    let x_2 = _1n11;
-    let z_2 = _0n11;
+    let x_2 = _1n8;
+    let z_2 = _0n9;
     let x_3 = u;
-    let z_3 = _1n11;
-    const kx = k ^ k >> _1n11;
-    for (let t = BigInt(montgomeryBits - 1); t >= _0n11; t--) {
+    let z_3 = _1n8;
+    const kx = k ^ k >> _1n8;
+    for (let t = BigInt(montgomeryBits - 1); t >= _0n9; t--) {
       const mask2 = cmask(P, kx >> t);
       ({ x_2, x_3 } = swap(mask2, x_2, x_3));
       ({ x_2: z_2, x_3: z_3 } = swap(mask2, z_2, z_3));
@@ -19695,17 +12561,17 @@ function montgomery2(curveDef) {
 }
 
 // node_modules/@noble/curves/ed25519.js
-var _0n12 = /* @__PURE__ */ BigInt(0);
-var _1n12 = /* @__PURE__ */ BigInt(1);
-var _2n8 = /* @__PURE__ */ BigInt(2);
-var _3n4 = /* @__PURE__ */ BigInt(3);
-var _5n4 = /* @__PURE__ */ BigInt(5);
-var _8n6 = /* @__PURE__ */ BigInt(8);
-var ed25519_CURVE_p2 = /* @__PURE__ */ BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed");
-var ed25519_CURVE2 = /* @__PURE__ */ (() => ({
-  p: ed25519_CURVE_p2,
+var _0n10 = /* @__PURE__ */ BigInt(0);
+var _1n9 = /* @__PURE__ */ BigInt(1);
+var _2n5 = /* @__PURE__ */ BigInt(2);
+var _3n3 = /* @__PURE__ */ BigInt(3);
+var _5n3 = /* @__PURE__ */ BigInt(5);
+var _8n4 = /* @__PURE__ */ BigInt(8);
+var ed25519_CURVE_p = /* @__PURE__ */ BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed");
+var ed25519_CURVE = /* @__PURE__ */ (() => ({
+  p: ed25519_CURVE_p,
   n: BigInt("0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed"),
-  h: _8n6,
+  h: _8n4,
   a: BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffec"),
   d: BigInt("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3"),
   Gx: BigInt("0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a"),
@@ -19713,19 +12579,19 @@ var ed25519_CURVE2 = /* @__PURE__ */ (() => ({
 }))();
 function ed25519_pow_2_252_32(x) {
   const _10n = BigInt(10), _20n = BigInt(20), _40n = BigInt(40), _80n = BigInt(80);
-  const P = ed25519_CURVE_p2;
+  const P = ed25519_CURVE_p;
   const x2 = x * x % P;
   const b2 = x2 * x % P;
-  const b4 = pow22(b2, _2n8, P) * b2 % P;
-  const b5 = pow22(b4, _1n12, P) * x % P;
-  const b10 = pow22(b5, _5n4, P) * b5 % P;
+  const b4 = pow22(b2, _2n5, P) * b2 % P;
+  const b5 = pow22(b4, _1n9, P) * x % P;
+  const b10 = pow22(b5, _5n3, P) * b5 % P;
   const b20 = pow22(b10, _10n, P) * b10 % P;
   const b40 = pow22(b20, _20n, P) * b20 % P;
   const b80 = pow22(b40, _40n, P) * b40 % P;
   const b160 = pow22(b80, _80n, P) * b80 % P;
   const b240 = pow22(b160, _80n, P) * b80 % P;
   const b250 = pow22(b240, _10n, P) * b10 % P;
-  const pow_p_5_8 = pow22(b250, _2n8, P) * x % P;
+  const pow_p_5_8 = pow22(b250, _2n5, P) * x % P;
   return { pow_p_5_8, b2 };
 }
 function adjustScalarBytes2(bytes) {
@@ -19734,19 +12600,19 @@ function adjustScalarBytes2(bytes) {
   bytes[31] |= 64;
   return bytes;
 }
-var ED25519_SQRT_M12 = /* @__PURE__ */ BigInt("19681161376707505956807079304988542015446066515923890162744021073123829784752");
-function uvRatio2(u, v) {
-  const P = ed25519_CURVE_p2;
+var ED25519_SQRT_M1 = /* @__PURE__ */ BigInt("19681161376707505956807079304988542015446066515923890162744021073123829784752");
+function uvRatio(u, v) {
+  const P = ed25519_CURVE_p;
   const v3 = mod2(v * v * v, P);
   const v7 = mod2(v3 * v3 * v, P);
-  const pow3 = ed25519_pow_2_252_32(u * v7).pow_p_5_8;
-  let x = mod2(u * v3 * pow3, P);
+  const pow4 = ed25519_pow_2_252_32(u * v7).pow_p_5_8;
+  let x = mod2(u * v3 * pow4, P);
   const vx2 = mod2(v * x * x, P);
   const root1 = x;
-  const root2 = mod2(x * ED25519_SQRT_M12, P);
+  const root2 = mod2(x * ED25519_SQRT_M1, P);
   const useRoot1 = vx2 === u;
   const useRoot2 = vx2 === mod2(-u, P);
-  const noRoot = vx2 === mod2(-u * ED25519_SQRT_M12, P);
+  const noRoot = vx2 === mod2(-u * ED25519_SQRT_M1, P);
   if (useRoot1)
     x = root1;
   if (useRoot2 || noRoot)
@@ -19755,12 +12621,12 @@ function uvRatio2(u, v) {
     x = mod2(-x, P);
   return { isValid: useRoot1 || useRoot2, value: x };
 }
-var ed25519_Point = /* @__PURE__ */ edwards2(ed25519_CURVE2, { uvRatio: uvRatio2 });
+var ed25519_Point = /* @__PURE__ */ edwards(ed25519_CURVE, { uvRatio });
 var x255192 = /* @__PURE__ */ (() => {
-  const P = ed25519_CURVE_p2;
+  const P = ed25519_CURVE_p;
   const powPminus2 = (x) => {
     const { pow_p_5_8, b2 } = ed25519_pow_2_252_32(x);
-    return mod2(pow22(pow_p_5_8, _3n4, P) * b2, P);
+    return mod2(pow22(pow_p_5_8, _3n3, P) * b2, P);
   };
   return montgomery2({
     P,
@@ -19772,8 +12638,8 @@ var x255192 = /* @__PURE__ */ (() => {
     // Same construction as libsodium's crypto_scalarmult_curve25519_base.
     scalarMultBase: (k) => {
       const kn = mod2(k, ed25519_Point.Fn.ORDER);
-      if (kn === _0n12)
-        return _0n12;
+      if (kn === _0n10)
+        return _0n10;
       const p = ed25519_Point.BASE.multiply(kn);
       return mod2((p.Z + p.Y) * powPminus2(mod2(p.Z - p.Y, P)), P);
     }
@@ -20434,16 +13300,16 @@ var BSIGMA = /* @__PURE__ */ Uint8Array.from([
 ]);
 function G1s(a, b, c, d, x) {
   a = a + b + x | 0;
-  d = rotr2(d ^ a, 16);
+  d = rotr(d ^ a, 16);
   c = c + d | 0;
-  b = rotr2(b ^ c, 12);
+  b = rotr(b ^ c, 12);
   return { a, b, c, d };
 }
 function G2s(a, b, c, d, x) {
   a = a + b + x | 0;
-  d = rotr2(d ^ a, 8);
+  d = rotr(d ^ a, 8);
   c = c + d | 0;
-  b = rotr2(b ^ c, 7);
+  b = rotr(b ^ c, 7);
   return { a, b, c, d };
 }
 
@@ -20473,17 +13339,17 @@ function G1b(a, b, c, d, msg, x) {
   let Bl = BBUF[2 * b], Bh = BBUF[2 * b + 1];
   let Cl = BBUF[2 * c], Ch = BBUF[2 * c + 1];
   let Dl = BBUF[2 * d], Dh = BBUF[2 * d + 1];
-  const ll = add3L2(Al, Bl, Xl);
-  Ah = add3H2(ll, Ah, Bh, Xh);
+  const ll = add3L(Al, Bl, Xl);
+  Ah = add3H(ll, Ah, Bh, Xh);
   Al = ll | 0;
   let xh = Dh ^ Ah, xl = Dl ^ Al;
   Dh = rotr32H(xh, xl);
   Dl = rotr32L(xh, xl);
-  ({ h: Ch, l: Cl } = add2(Ch, Cl, Dh, Dl));
+  ({ h: Ch, l: Cl } = add(Ch, Cl, Dh, Dl));
   xh = Bh ^ Ch;
   xl = Bl ^ Cl;
-  Bh = rotrSH2(xh, xl, 24);
-  Bl = rotrSL2(xh, xl, 24);
+  Bh = rotrSH(xh, xl, 24);
+  Bl = rotrSL(xh, xl, 24);
   BBUF[2 * a] = Al;
   BBUF[2 * a + 1] = Ah;
   BBUF[2 * b] = Bl;
@@ -20499,17 +13365,17 @@ function G2b(a, b, c, d, msg, x) {
   let Bl = BBUF[2 * b], Bh = BBUF[2 * b + 1];
   let Cl = BBUF[2 * c], Ch = BBUF[2 * c + 1];
   let Dl = BBUF[2 * d], Dh = BBUF[2 * d + 1];
-  const ll = add3L2(Al, Bl, Xl);
-  Ah = add3H2(ll, Ah, Bh, Xh);
+  const ll = add3L(Al, Bl, Xl);
+  Ah = add3H(ll, Ah, Bh, Xh);
   Al = ll | 0;
   let xh = Dh ^ Ah, xl = Dl ^ Al;
-  Dh = rotrSH2(xh, xl, 16);
-  Dl = rotrSL2(xh, xl, 16);
-  ({ h: Ch, l: Cl } = add2(Ch, Cl, Dh, Dl));
+  Dh = rotrSH(xh, xl, 16);
+  Dl = rotrSL(xh, xl, 16);
+  ({ h: Ch, l: Cl } = add(Ch, Cl, Dh, Dl));
   xh = Bh ^ Ch;
   xl = Bl ^ Cl;
-  Bh = rotrBH2(xh, xl, 63);
-  Bl = rotrBL2(xh, xl, 63);
+  Bh = rotrBH(xh, xl, 63);
+  Bl = rotrBL(xh, xl, 63);
   BBUF[2 * a] = Al;
   BBUF[2 * a + 1] = Ah;
   BBUF[2 * b] = Bl;
@@ -20520,7 +13386,7 @@ function G2b(a, b, c, d, msg, x) {
   BBUF[2 * d + 1] = Dh;
 }
 function checkBlake2Opts(outputLen, opts = {}, keyLen, saltLen, persLen) {
-  anumber2(keyLen);
+  anumber(keyLen);
   if (outputLen <= 0 || outputLen > keyLen)
     throw new Error('"dkLen" must be 1..' + keyLen + ", got " + outputLen);
   const { key, salt, personalization } = opts;
@@ -20542,15 +13408,15 @@ var _BLAKE2 = class {
   outputLen;
   canXOF = false;
   constructor(blockLen, outputLen) {
-    anumber2(blockLen);
-    anumber2(outputLen);
+    anumber(blockLen);
+    anumber(outputLen);
     this.blockLen = blockLen;
     this.outputLen = outputLen;
     this.buffer = new Uint8Array(blockLen);
     this.buffer32 = u32(this.buffer);
   }
   update(data2) {
-    aexists2(this);
+    aexists(this);
     abytes2(data2);
     const { blockLen, buffer, buffer32 } = this;
     const len = data2.length;
@@ -20583,8 +13449,8 @@ var _BLAKE2 = class {
     return this;
   }
   digestInto(out) {
-    aexists2(this);
-    aoutput2(out, this);
+    aexists(this);
+    aoutput(out, this);
     if (out.byteOffset & 3)
       throw new RangeError('"output" expected 4-byte aligned byteOffset, got ' + out.byteOffset);
     const { pos, buffer32 } = this;
@@ -20661,7 +13527,7 @@ var _BLAKE2b = class extends _BLAKE2 {
     this.v0l ^= this.outputLen | keyLength << 8 | 1 << 16 | 1 << 24;
     if (salt !== void 0) {
       abytes2(salt, void 0, "salt");
-      const slt = u32(copyBytes2(salt));
+      const slt = u32(copyBytes(salt));
       this.v4l ^= swap8IfBE(slt[0]);
       this.v4h ^= swap8IfBE(slt[1]);
       this.v5l ^= swap8IfBE(slt[2]);
@@ -20669,7 +13535,7 @@ var _BLAKE2b = class extends _BLAKE2 {
     }
     if (personalization !== void 0) {
       abytes2(personalization, void 0, "personalization");
-      const pers = u32(copyBytes2(personalization));
+      const pers = u32(copyBytes(personalization));
       this.v6l ^= swap8IfBE(pers[0]);
       this.v6h ^= swap8IfBE(pers[1]);
       this.v7l ^= swap8IfBE(pers[2]);
@@ -20679,7 +13545,7 @@ var _BLAKE2b = class extends _BLAKE2 {
       const tmp = new Uint8Array(this.blockLen);
       tmp.set(key);
       this.update(tmp);
-      clean2(tmp);
+      clean(tmp);
     }
   }
   // prettier-ignore
@@ -20771,15 +13637,15 @@ var _BLAKE2b = class extends _BLAKE2 {
     this.v6h ^= BBUF[13] ^ BBUF[29];
     this.v7l ^= BBUF[14] ^ BBUF[30];
     this.v7h ^= BBUF[15] ^ BBUF[31];
-    clean2(BBUF);
+    clean(BBUF);
   }
   destroy() {
     this.destroyed = true;
-    clean2(this.buffer32);
+    clean(this.buffer32);
     this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 };
-var blake2b = /* @__PURE__ */ createHasher2((opts) => new _BLAKE2b(opts));
+var blake2b = /* @__PURE__ */ createHasher((opts) => new _BLAKE2b(opts));
 function _compress(s2, offset, msg, rounds, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15) {
   let j = 0;
   for (let i = 0; i < rounds; i++) {
@@ -20802,7 +13668,7 @@ function _compress(s2, offset, msg, rounds, v0, v1, v2, v3, v4, v5, v6, v7, v8, 
   }
   return { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 };
 }
-var B2S_IV = /* @__PURE__ */ SHA256_IV2.slice();
+var B2S_IV = /* @__PURE__ */ SHA256_IV.slice();
 var _BLAKE2s = class extends _BLAKE2 {
   // Internal state, same as SHA-256
   v0 = B2S_IV[0] | 0;
@@ -20827,13 +13693,13 @@ var _BLAKE2s = class extends _BLAKE2 {
     this.v0 ^= this.outputLen | keyLength << 8 | 1 << 16 | 1 << 24;
     if (salt !== void 0) {
       abytes2(salt, void 0, "salt");
-      const slt = u32(copyBytes2(salt));
+      const slt = u32(copyBytes(salt));
       this.v4 ^= swap8IfBE(slt[0]);
       this.v5 ^= swap8IfBE(slt[1]);
     }
     if (personalization !== void 0) {
       abytes2(personalization, void 0, "personalization");
-      const pers = u32(copyBytes2(personalization));
+      const pers = u32(copyBytes(personalization));
       this.v6 ^= swap8IfBE(pers[0]);
       this.v7 ^= swap8IfBE(pers[1]);
     }
@@ -20841,7 +13707,7 @@ var _BLAKE2s = class extends _BLAKE2 {
       const tmp = new Uint8Array(this.blockLen);
       tmp.set(key);
       this.update(tmp);
-      clean2(tmp);
+      clean(tmp);
     }
   }
   get() {
@@ -20874,11 +13740,11 @@ var _BLAKE2s = class extends _BLAKE2 {
   }
   destroy() {
     this.destroyed = true;
-    clean2(this.buffer32);
+    clean(this.buffer32);
     this.set(0, 0, 0, 0, 0, 0, 0, 0);
   }
 };
-var blake2s = /* @__PURE__ */ createHasher2((opts) => new _BLAKE2s(opts));
+var blake2s = /* @__PURE__ */ createHasher((opts) => new _BLAKE2s(opts));
 
 // node_modules/@noble/hashes/hmac.js
 var _HMAC = class {
@@ -20907,16 +13773,16 @@ var _HMAC = class {
     for (let i = 0; i < pad.length; i++)
       pad[i] ^= 54 ^ 92;
     this.oHash.update(pad);
-    clean2(pad);
+    clean(pad);
   }
   update(buf) {
-    aexists2(this);
+    aexists(this);
     this.iHash.update(buf);
     return this;
   }
   digestInto(out) {
-    aexists2(this);
-    aoutput2(out, this);
+    aexists(this);
+    aoutput(out, this);
     this.finished = true;
     const buf = out.subarray(0, this.outputLen);
     this.iHash.digestInto(buf);
@@ -20952,7 +13818,7 @@ var _HMAC = class {
   }
 };
 var hmac = /* @__PURE__ */ (() => {
-  const hmac_ = ((hash, key, message) => new _HMAC(hash, key).update(message).digest());
+  const hmac_ = (hash, key, message) => new _HMAC(hash, key).update(message).digest();
   hmac_.create = (hash, key) => new _HMAC(hash, key);
   return hmac_;
 })();
@@ -20988,7 +13854,7 @@ function makeHash(name2, hash, hashLen, blockLen) {
   };
 }
 var sha256H = makeHash("SHA256", sha256, 32, 64);
-var sha512H = makeHash("SHA512", sha5122, 64, 128);
+var sha512H = makeHash("SHA512", sha512, 64, 128);
 var blake2bH = makeHash("BLAKE2b", blake2b, 64, 128);
 var blake2sH = makeHash("BLAKE2s", blake2s, 32, 64);
 
@@ -21002,7 +13868,7 @@ function abool2(value, title = "") {
     throw new TypeError(atitle3(title) + "expected boolean, got type=" + typeof value);
   return value;
 }
-function anumber4(n, title = "") {
+function anumber3(n, title = "") {
   if (typeof n !== "number")
     throw new TypeError(atitle3(title) + "expected number, got " + typeof n);
   if (!Number.isSafeInteger(n) || n < 0)
@@ -21013,7 +13879,7 @@ function abytes4(value, length, title = "") {
   if (isBytes4(value) && (length === void 0 || value.length === length))
     return value;
   if (length !== void 0)
-    anumber4(length, "length");
+    anumber3(length, "length");
   const bytes = isBytes4(value);
   const ofLen = length !== void 0 ? ` of length ${length}` : "";
   const got = bytes ? `length=${value.length}` : `type=${typeof value}`;
@@ -21026,13 +13892,13 @@ var aobject3 = (value, label) => {
   if (value === null || typeof value !== "object" || Array.isArray(value))
     throw new TypeError(label === "object" ? "expected valid options object" : `"${label}" expected object, got type=${typeof value}`);
 };
-function aexists3(instance, checkFinished = true) {
+function aexists2(instance, checkFinished = true) {
   if (instance.destroyed)
     throw new Error("hash was destroyed");
   if (checkFinished && instance.finished)
     throw new Error("digest() was already called");
 }
-function aoutput3(out, instance) {
+function aoutput2(out, instance) {
   abytes4(out, void 0, "output");
   const min = instance.outputLen;
   if (!(out.length >= min)) {
@@ -21042,12 +13908,12 @@ function aoutput3(out, instance) {
 function u322(arr) {
   return new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
 }
-function clean3(...arrays) {
+function clean2(...arrays) {
   for (let i = 0; i < arrays.length; i++) {
     arrays[i].fill(0);
   }
 }
-function createView3(arr) {
+function createView2(arr) {
   return new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
 }
 var isLE2 = /* @__PURE__ */ (() => new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68)();
@@ -21061,13 +13927,24 @@ function byteSwap322(arr) {
   return arr;
 }
 var swap32IfBE2 = isLE2 ? (u) => u : byteSwap322;
+function overlapBytes(a, b) {
+  if (!a.byteLength || !b.byteLength)
+    return false;
+  return a.buffer === b.buffer && // best we can do, may fail with an obscure Proxy
+  a.byteOffset < b.byteOffset + b.byteLength && // a starts before b end
+  b.byteOffset < a.byteOffset + a.byteLength;
+}
+function complexOverlapBytes(input2, output) {
+  if (overlapBytes(input2, output) && input2.byteOffset < output.byteOffset)
+    throw new Error("complex overlap of input and output is not supported");
+}
 function checkOpts2(defaults, opts) {
   aobject3(defaults, "defaults");
   aobject3(opts, "opts");
   const merged = Object.assign(defaults, opts);
   return merged;
 }
-function equalBytes2(a, b) {
+function equalBytes(a, b) {
   a = abytes4(a);
   b = abytes4(b);
   if (a.length !== b.length)
@@ -21143,11 +14020,11 @@ function getOutput(expectedLength, out, onlyAligned = true) {
   return out;
 }
 function u64Lengths(dataLength, aadLength, isLE3) {
-  anumber4(dataLength);
-  anumber4(aadLength);
+  anumber3(dataLength);
+  anumber3(aadLength);
   abool2(isLE3);
   const num = new Uint8Array(16);
-  const view = createView3(num);
+  const view = createView2(num);
   view.setBigUint64(0, BigInt(aadLength), isLE3);
   view.setBigUint64(8, BigInt(dataLength), isLE3);
   return num;
@@ -21155,7 +14032,7 @@ function u64Lengths(dataLength, aadLength, isLE3) {
 function isAligned32(bytes) {
   return bytes.byteOffset % 4 === 0;
 }
-function copyBytes4(bytes) {
+function copyBytes3(bytes) {
   return Uint8Array.from(abytes4(bytes));
 }
 
@@ -21219,8 +14096,8 @@ function createCipher(core, opts) {
   const { allowShortKeys, extendNonceFn, counterLength, counterRight, rounds } = checkOpts2({ allowShortKeys: false, counterLength: 8, counterRight: false, rounds: 20 }, opts);
   if (typeof core !== "function")
     throw new Error("core must be a function");
-  anumber4(counterLength);
-  anumber4(rounds);
+  anumber3(counterLength);
+  anumber3(rounds);
   abool2(counterRight);
   abool2(allowShortKeys);
   return (key, nonce, data2, output, counter = 0) => {
@@ -21228,8 +14105,11 @@ function createCipher(core, opts) {
     abytes4(nonce, void 0, "nonce");
     abytes4(data2, void 0, "data");
     const len = data2.length;
+    const hasOutput = output !== void 0;
     output = getOutput(len, output, false);
-    anumber4(counter);
+    if (hasOutput)
+      complexOverlapBytes(data2, output);
+    anumber3(counter);
     if (counter < 0 || counter >= MAX_COUNTER)
       throw new Error("arx: counter overflow");
     const toClean = [];
@@ -21237,7 +14117,7 @@ function createCipher(core, opts) {
     let k;
     let sigma;
     if (l === 32) {
-      toClean.push(k = copyBytes4(key));
+      toClean.push(k = copyBytes3(key));
       sigma = sigma32_32;
     } else if (l === 16 && allowShortKeys) {
       k = new Uint8Array(32);
@@ -21250,7 +14130,7 @@ function createCipher(core, opts) {
       throw new Error("invalid key size");
     }
     if (!isLE2 || !isAligned32(nonce))
-      toClean.push(nonce = copyBytes4(nonce));
+      toClean.push(nonce = copyBytes3(nonce));
     let k32 = u322(k);
     if (extendNonceFn) {
       if (nonce.length !== 24)
@@ -21261,7 +14141,7 @@ function createCipher(core, opts) {
       else {
         const sigmaRaw = swap32IfBE2(Uint32Array.from(sigma));
         extendNonceFn(sigmaRaw, k32, u322(n16), k32);
-        clean3(sigmaRaw);
+        clean2(sigmaRaw);
         swap32IfBE2(k32);
       }
       nonce = nonce.subarray(16);
@@ -21281,7 +14161,7 @@ function createCipher(core, opts) {
       runCipher(core, sigma, k32, n32, data2, output, counter, rounds);
       return output;
     } finally {
-      clean3(...toClean);
+      clean2(...toClean);
     }
   };
 }
@@ -21303,7 +14183,7 @@ var Poly1305 = class {
   destroyed = false;
   // Can be speed-up using BigUint64Array, at the cost of complexity
   constructor(key) {
-    key = copyBytes4(abytes4(key, 32, "key"));
+    key = copyBytes3(abytes4(key, 32, "key"));
     const t0 = u8to16(key, 0);
     const t1 = u8to16(key, 2);
     const t2 = u8to16(key, 4);
@@ -21479,12 +14359,12 @@ var Poly1305 = class {
       f = (h[i] + pad[i] | 0) + (f >>> 16) | 0;
       h[i] = f & 65535;
     }
-    clean3(g);
+    clean2(g);
   }
   update(data2) {
-    aexists3(this);
+    aexists2(this);
     abytes4(data2);
-    data2 = copyBytes4(data2);
+    data2 = copyBytes3(data2);
     const { buffer, blockLen } = this;
     const len = data2.length;
     for (let pos = 0; pos < len; ) {
@@ -21506,11 +14386,11 @@ var Poly1305 = class {
   }
   destroy() {
     this.destroyed = true;
-    clean3(this.h, this.r, this.buffer, this.pad);
+    clean2(this.h, this.r, this.buffer, this.pad);
   }
   digestInto(out) {
-    aexists3(this);
-    aoutput3(out, this);
+    aexists2(this);
+    aoutput2(out, this);
     this.finished = true;
     const { buffer, h } = this;
     let { pos } = this;
@@ -21649,7 +14529,7 @@ function computeTag(fn, key, nonce, ciphertext, AAD) {
   updatePadded(h, ciphertext);
   h.update(lengths);
   const res = h.digest();
-  clean3(authKey, lengths);
+  clean2(authKey, lengths);
   return res;
 }
 var _poly1305_aead = (xorStream) => (key, nonce, AAD) => {
@@ -21663,7 +14543,7 @@ var _poly1305_aead = (xorStream) => (key, nonce, AAD) => {
       xorStream(key, nonce, oPlain, oPlain, 1);
       const tag = computeTag(xorStream, key, nonce, oPlain, AAD);
       output.set(tag, plength);
-      clean3(tag);
+      clean2(tag);
       return output;
     },
     decrypt(ciphertext, output) {
@@ -21671,13 +14551,13 @@ var _poly1305_aead = (xorStream) => (key, nonce, AAD) => {
       const data2 = ciphertext.subarray(0, -tagLength);
       const passedTag = ciphertext.subarray(-tagLength);
       const tag = computeTag(xorStream, key, nonce, data2, AAD);
-      if (!equalBytes2(passedTag, tag)) {
-        clean3(tag);
+      if (!equalBytes(passedTag, tag)) {
+        clean2(tag);
         throw new Error("invalid tag");
       }
       output.set(ciphertext.subarray(0, -tagLength));
       xorStream(key, nonce, output, output, 1);
-      clean3(tag);
+      clean2(tag);
       return output;
     }
   };
@@ -21741,8 +14621,8 @@ var chachaPoly = /* @__PURE__ */ (() => {
     },
     rekey(key) {
       const kNew = new Uint8Array(MAX_KEY_LEN + MAX_TAG_LEN);
-      const z = new Uint8Array(keyLen);
-      const ct = chacha20poly1305(key, chachaNonce(U64_MAX2), new Uint8Array(0)).encrypt(z);
+      const z2 = new Uint8Array(keyLen);
+      const ct = chacha20poly1305(key, chachaNonce(U64_MAX2), new Uint8Array(0)).encrypt(z2);
       kNew.set(ct);
       return kNew.subarray(0, keyLen);
     }
@@ -21770,7 +14650,7 @@ function noiseIk() {
   ]]);
 }
 
-// ../crypto/dist/noise.js
+// ../crypto/src/noise.ts
 var NOISE_IK_PROTOCOL = "Noise_IK_25519_ChaChaPoly_SHA256";
 var NoiseIkSession = class {
   handshake;
@@ -21822,24 +14702,20 @@ var NoiseIkSession = class {
   }
   encrypt(plaintext) {
     this.assertLive();
-    if (this.transport === void 0)
-      throw new NoiseSessionError("NOISE_NOT_READY", "The Noise handshake is not complete.");
+    if (this.transport === void 0) throw new NoiseSessionError("NOISE_NOT_READY", "The Noise handshake is not complete.");
     return this.transport.sendVec(plaintext);
   }
   decrypt(ciphertext) {
     this.assertLive();
-    if (this.transport === void 0)
-      throw new NoiseSessionError("NOISE_NOT_READY", "The Noise handshake is not complete.");
+    if (this.transport === void 0) throw new NoiseSessionError("NOISE_NOT_READY", "The Noise handshake is not complete.");
     return this.transport.receiveVec(ciphertext);
   }
   sendingCounter() {
-    if (this.transport === void 0)
-      return 0n;
+    if (this.transport === void 0) return 0n;
     return this.transport.sendingNonce();
   }
   receivingCounter() {
-    if (this.transport === void 0)
-      return 0n;
+    if (this.transport === void 0) return 0n;
     return this.transport.receivingNonce();
   }
   destroy() {
@@ -21848,8 +14724,7 @@ var NoiseIkSession = class {
     this.transport = void 0;
   }
   finishIfReady() {
-    if (!this.handshake.isFinished())
-      return;
+    if (!this.handshake.isFinished()) return;
     this.verifyRemoteStatic();
     this.transport = this.handshake.finalize();
   }
@@ -21862,19 +14737,16 @@ var NoiseIkSession = class {
   }
   assertHandshake(reading) {
     this.assertLive();
-    if (this.complete)
-      throw new NoiseSessionError("NOISE_ALREADY_READY", "The Noise handshake is already complete.");
+    if (this.complete) throw new NoiseSessionError("NOISE_ALREADY_READY", "The Noise handshake is already complete.");
     if (this.handshake.isWriteTurn() === reading) {
       throw new NoiseSessionError("NOISE_HANDSHAKE_ORDER", "The Noise handshake message arrived out of order.");
     }
   }
   assertLive() {
-    if (this.destroyed)
-      throw new NoiseSessionError("NOISE_DESTROYED", "The Noise session is closed.");
+    if (this.destroyed) throw new NoiseSessionError("NOISE_DESTROYED", "The Noise session is closed.");
   }
 };
 var NoiseSessionError = class extends Error {
-  code;
   constructor(code, message) {
     super(message);
     this.code = code;
@@ -21882,31 +14754,28 @@ var NoiseSessionError = class extends Error {
 };
 function createNoisePrologue(connectionId, hostDeviceId, clientDeviceId) {
   for (const [name2, value] of Object.entries({ connectionId, hostDeviceId, clientDeviceId })) {
-    if (value.length === 0 || value.includes("\0"))
-      throw new TypeError(`${name2} is not safe for a Noise prologue`);
+    if (value.length === 0 || value.includes("\0")) throw new TypeError(`${name2} is not safe for a Noise prologue`);
   }
-  return new TextEncoder().encode(`DSH-REMOTE\0v=1\0connection=${connectionId}\0host=${hostDeviceId}\0client=${clientDeviceId}`);
+  return new TextEncoder().encode(
+    `DSH-REMOTE\0v=1\0connection=${connectionId}\0host=${hostDeviceId}\0client=${clientDeviceId}`
+  );
 }
 function requireKey(value, label) {
   const key = fromBase64Url2(value);
-  if (key.byteLength !== 32)
-    throw new NoiseSessionError("INVALID_KEY", `${label} must be a 32-byte X25519 key.`);
+  if (key.byteLength !== 32) throw new NoiseSessionError("INVALID_KEY", `${label} must be a 32-byte X25519 key.`);
   return Uint8Array.from(key);
 }
 function constantTimeEqual(left, right) {
-  if (left.byteLength !== right.byteLength)
-    return false;
+  if (left.byteLength !== right.byteLength) return false;
   let different = 0;
-  for (let index = 0; index < left.byteLength; index += 1)
-    different |= left[index] ^ right[index];
+  for (let index = 0; index < left.byteLength; index += 1) different |= left[index] ^ right[index];
   return different === 0;
 }
 
-// ../crypto/dist/index.js
+// ../crypto/src/index.ts
 function generateKeyPair(privateKeyBytes) {
   const privateKey = privateKeyBytes ?? x25519.utils.randomPrivateKey();
-  if (privateKey.byteLength !== 32)
-    throw new Error("X25519 private keys must be 32 bytes");
+  if (privateKey.byteLength !== 32) throw new Error("X25519 private keys must be 32 bytes");
   const publicKey = x25519.getPublicKey(privateKey);
   return {
     privateKey: toBase64Url2(privateKey),
@@ -22274,23 +15143,6 @@ import { WebSocketServer } from "ws";
 // src/loopback-host.ts
 import { request as httpRequest } from "node:http";
 import { WebSocket as WebSocket2 } from "ws";
-
-// src/safe-error.ts
-var RpcError = class extends Error {
-  constructor(code, message, details, retryable = false) {
-    super(message);
-    this.code = code;
-    this.details = details;
-    this.retryable = retryable;
-  }
-};
-function safeErrorCode(error) {
-  if (error instanceof RpcError) return error.code;
-  if (error instanceof external_exports.ZodError) return "INVALID_MESSAGE";
-  return "INTERNAL_ERROR";
-}
-
-// src/loopback-host.ts
 var HOP_HEADERS = /* @__PURE__ */ new Set([
   "connection",
   "keep-alive",
@@ -22735,7 +15587,7 @@ var LoopbackPreview = class {
   websocket(id5, socket) {
     let input2 = Promise.resolve();
     let queued = 0;
-    let count = 0;
+    let count2 = 0;
     const controller = new AbortController();
     const signal = AbortSignal.any([controller.signal, this.lifetime.signal]);
     const close = () => {
@@ -22748,15 +15600,15 @@ var LoopbackPreview = class {
     socket.on("message", (data2, binary) => {
       const bytes = Buffer.from(data2);
       queued += bytes.length;
-      count += 1;
-      if (queued > 1024 * 1024 || count > 256) {
+      count2 += 1;
+      if (queued > 1024 * 1024 || count2 > 256) {
         close();
         return;
       }
       input2 = input2.then(async () => {
         await this.client.rpc("loopback.call", { op: "ws.send", id: id5, data: bytes.toString("base64"), binary }, signal);
         queued -= bytes.length;
-        count -= 1;
+        count2 -= 1;
       }).catch(close);
     });
     void (async () => {
@@ -22815,14 +15667,14 @@ var BOT_REMOTE_OPERATIONS = [
 function isAllowedPluginRoute(route) {
   return PLUGIN_ROUTE_ALLOWLIST.some((allowed) => allowed === route);
 }
-var callSchema = external_exports.object({
-  route: external_exports.enum(PLUGIN_ROUTE_ALLOWLIST),
-  body: external_exports.object({
-    endpoint: external_exports.enum(BOT_REMOTE_OPERATIONS),
-    payload: external_exports.record(external_exports.string(), external_exports.unknown()).nullable().optional()
+var callSchema = z.object({
+  route: z.enum(PLUGIN_ROUTE_ALLOWLIST),
+  body: z.object({
+    endpoint: z.enum(BOT_REMOTE_OPERATIONS),
+    payload: z.record(z.string(), z.unknown()).nullable().optional()
   }).strict().superRefine((body, ctx) => {
     if (body.endpoint === "approval-answer" && body.payload?.choice !== "allow" && body.payload?.choice !== "reject") {
-      ctx.addIssue({ code: external_exports.ZodIssueCode.custom, message: "Only one-time approval or rejection is supported." });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Only one-time approval or rejection is supported." });
     }
   })
 }).strict();
@@ -22837,7 +15689,7 @@ var PluginRouteBridge = class {
     try {
       params = callSchema.parse(input2);
     } catch (error) {
-      if (error instanceof external_exports.ZodError) {
+      if (error instanceof z.ZodError) {
         throw new RpcError("INVALID_MESSAGE", "The plugin route call is invalid for the remote channel.");
       }
       throw error;
@@ -23077,7 +15929,7 @@ var ClientControl = class {
         if (typeof value.route !== "string" || !isAllowedPluginRoute(value.route)) {
           throw new ClientModeError("INVALID_MESSAGE", "A valid plugin route is required.");
         }
-        if (!isRecord4(value.body)) throw new ClientModeError("INVALID_MESSAGE", "A plugin route body object is required.");
+        if (!isRecord5(value.body)) throw new ClientModeError("INVALID_MESSAGE", "A plugin route body object is required.");
         return ok(await this.context.pluginRoute(value.route, value.body, signal));
       }
       if (endpoint === "codex.stream.open") return ok(await this.context.openCodexStream(payload, signal));
@@ -23156,11 +16008,11 @@ async function readRemoteWorkspaceBaseline(gateway, signal) {
   const iterator = source[Symbol.asyncIterator]();
   try {
     const first = await iterator.next();
-    if (first.done || !isRecord4(first.value) || first.value.type !== "baseline" || !isRecord4(first.value.value) || !Array.isArray(first.value.value.items)) {
+    if (first.done || !isRecord5(first.value) || first.value.type !== "baseline" || !isRecord5(first.value.value) || !Array.isArray(first.value.value.items)) {
       throw new ClientModeError("INVALID_MESSAGE", "The remote Host returned an invalid Workspace baseline.");
     }
     return first.value.value.items.map((item) => {
-      if (!isRecord4(item) || typeof item.workspaceId !== "string" || typeof item.path !== "string" || typeof item.title !== "string") {
+      if (!isRecord5(item) || typeof item.workspaceId !== "string" || typeof item.path !== "string" || typeof item.title !== "string") {
         throw new ClientModeError("INVALID_MESSAGE", "The remote Host returned an invalid Workspace row.");
       }
       return { workspaceId: item.workspaceId, path: item.path, title: item.title };
@@ -23220,9 +16072,9 @@ function nativeThreadId(sessionId) {
   return sessionId.slice(CODEX_SESSION_PREFIX.length);
 }
 function record4(value) {
-  return isRecord5(value) ? value : {};
+  return isRecord6(value) ? value : {};
 }
-function isRecord5(value) {
+function isRecord6(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function array2(value) {
@@ -23558,11 +16410,11 @@ var DATA_IMAGE_URL2 = /^data:(image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/
 function string3(value) {
   return typeof value === "string" ? value : void 0;
 }
-function isRecord6(value) {
+function isRecord7(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function record5(value) {
-  return isRecord6(value) ? value : {};
+  return isRecord7(value) ? value : {};
 }
 function toolOutputImageBlocks(item) {
   const candidates = [
@@ -23652,7 +16504,7 @@ function collectImageBlocks(value, output = []) {
     for (const item of value) collectImageBlocks(item, output);
     return output;
   }
-  if (!isRecord6(value)) return output;
+  if (!isRecord7(value)) return output;
   if (value.type === "image") output.push(value);
   for (const [key, child] of Object.entries(value)) {
     if (key === "attachment") continue;
@@ -23812,7 +16664,7 @@ function codexPromptInput(content) {
   if (content.length === 0 || content.length > MAX_CODEX_PROMPT_PARTS) return void 0;
   const input2 = [];
   for (const value of content) {
-    if (!isRecord5(value)) return void 0;
+    if (!isRecord6(value)) return void 0;
     if (value.type === "text") {
       if (typeof value.text !== "string" || value.text.length === 0 || value.text.length > MAX_CODEX_PROMPT_TEXT) return void 0;
       input2.push({ type: "text", text: value.text });
@@ -23901,7 +16753,7 @@ function isLegacySessionHistoryUnsupported(error) {
   return errorCode(error) === "METHOD_NOT_ALLOWED" || errorCode(error) === "METHOD_NOT_FOUND" || error.message.includes("The requested Codex method is not available over Remote.");
 }
 function errorDetails(error) {
-  return "details" in error && isRecord5(error.details) ? error.details : {};
+  return "details" in error && isRecord6(error.details) ? error.details : {};
 }
 function truncateCodePoints(value, maximum) {
   return [...value].slice(0, maximum).join("");
@@ -24007,7 +16859,7 @@ var CodexEventCarrier = class {
       this.broadcastRcHost({ type: "host/session-status", sessionId, running: args[1] });
     } else if (event === "api-session/removed" && sessionId !== void 0) {
       this.broadcastRcHost({ type: "host/session-removed", sessionId });
-    } else if (event === "api-session/added" && isRecord5(args[0])) {
+    } else if (event === "api-session/added" && isRecord6(args[0])) {
       const summary = args[0];
       this.broadcastRcHost({
         type: "host/session-added",
@@ -24046,7 +16898,7 @@ var CodexEventCarrier = class {
   }
   createApiProxy() {
     const call = (endpoint) => async (request, signal) => {
-      const payload = endpoint === "session.prompt" && isRecord5(request.payload) ? { ...request.payload, requestId: String(request.rpcId) } : request.payload;
+      const payload = endpoint === "session.prompt" && isRecord6(request.payload) ? { ...request.payload, requestId: String(request.rpcId) } : request.payload;
       const result = await this.context.dispatch(rcEndpoint2(endpoint), { args: { request: payload } }, signal ?? new AbortController().signal);
       return {
         rpcId: request.rpcId,
@@ -24089,8 +16941,8 @@ var CodexEventCarrier = class {
       credentials: {},
       llm: {},
       events: {
-        mux: ((request, signal) => this.rcMux(request, signal)),
-        host: ((request, signal) => this.rcHost(request, signal))
+        mux: (request, signal) => this.rcMux(request, signal),
+        host: (request, signal) => this.rcHost(request, signal)
       },
       downloads: {},
       respond: async (message) => {
@@ -24149,7 +17001,7 @@ var DEFAULT_HISTORY_MESSAGES = 50;
 function projectCodexNativeHistory(thread, sessionId, sessionGeneration = "legacy") {
   const entries = [];
   let seq = 0;
-  let turnNumber = 0;
+  let turnNumber2 = 0;
   const active = activeTurnId(thread.turns);
   const append = (type, data2, time = Date.now(), view, sourceEventSeqs) => {
     const eventSeq = seq++;
@@ -24175,17 +17027,17 @@ function projectCodexNativeHistory(thread, sessionId, sessionGeneration = "legac
     for (let index = 0; index < turnItems.length; index += 1) {
       if (turnItems[index].type === "agentMessage") imageOwner = index;
     }
-    turnNumber += 1;
+    turnNumber2 += 1;
     const turnActive = isActiveCodexTurn(turn);
     const time = normalizeTime(turn.createdAt) || normalizeTime(turn.startedAt) || normalizeTime(thread.createdAt) || Date.now();
-    append("turn/start", { turn: turnNumber }, time);
-    append("step/start", { turn: turnNumber, step: 1 }, time);
+    append("turn/start", { turn: turnNumber2 }, time);
+    append("step/start", { turn: turnNumber2, step: 1 }, time);
     for (let itemIndex = 0; itemIndex < turnItems.length; itemIndex += 1) {
       const item = turnItems[itemIndex];
       let toolCallSeq;
       for (const event of itemEvents(
         item,
-        turnNumber,
+        turnNumber2,
         1,
         void 0,
         modelSelection(),
@@ -24203,9 +17055,9 @@ function projectCodexNativeHistory(thread, sessionId, sessionGeneration = "legac
       }
     }
     if (turnActive) continue;
-    append("step/end", { turn: turnNumber, step: 1 }, normalizeTime(turn.updatedAt) || normalizeTime(turn.completedAt) || time);
+    append("step/end", { turn: turnNumber2, step: 1 }, normalizeTime(turn.updatedAt) || normalizeTime(turn.completedAt) || time);
     append("turn/end", {
-      turn: turnNumber,
+      turn: turnNumber2,
       reason: turn.status === "failed" || turn.error !== void 0 && turn.error !== null ? { kind: "error", error: { message: "CodeX turn failed.", code: "codex-turn-failed" } } : { kind: "completed" }
     }, normalizeTime(turn.updatedAt) || normalizeTime(turn.completedAt) || time);
   }
@@ -24220,19 +17072,19 @@ function projectCodexNativeHistory(thread, sessionId, sessionGeneration = "legac
     },
     entries,
     lastSeq: seq - 1,
-    nextTurn: turnNumber,
+    nextTurn: turnNumber2,
     ...active === void 0 ? {} : { activeTurnId: active }
   };
 }
 function paginateCodexNativeHistory(history, request) {
   const throughSeq = Math.min(request.throughSeq ?? history.lastSeq, history.lastSeq);
   const endSeq = Math.min(throughSeq, request.beforeSeq === void 0 ? throughSeq : request.beforeSeq - 1);
-  const window2 = endSeq < 0 ? [] : history.entries.filter((entry) => entry.event.seq <= endSeq);
+  const window = endSeq < 0 ? [] : history.entries.filter((entry) => entry.event.seq <= endSeq);
   const maxMessages = request.maxMessages ?? DEFAULT_HISTORY_MESSAGES;
   let messages = 0;
   let cut = 0;
-  for (let index = window2.length - 1; index >= 0; index -= 1) {
-    const event = window2[index].event;
+  for (let index = window.length - 1; index >= 0; index -= 1) {
+    const event = window[index].event;
     if (!isSurfaceEvent2(event.type) || event.surfaceOp !== "append") continue;
     messages += 1;
     if (messages >= maxMessages) {
@@ -24244,8 +17096,8 @@ function paginateCodexNativeHistory(history, request) {
     header: history.header,
     cursor: history.lastSeq,
     nextTurn: history.nextTurn,
-    records: window2.filter((entry) => entry.event.seq >= cut),
-    hasMore: window2.some((entry) => entry.event.seq < cut),
+    records: window.filter((entry) => entry.event.seq >= cut),
+    hasMore: window.some((entry) => entry.event.seq < cut),
     ...history.activeTurnId === void 0 ? {} : { activeTurnId: history.activeTurnId }
   };
 }
@@ -24404,8 +17256,8 @@ function toolEventName(type) {
 function toolResultText(item, type, text) {
   if (type === "fileChange") return fileChangeSummary(item);
   if (type === "webSearch") {
-    const count = array2(item.results).length;
-    return count === 0 ? "Web search completed." : `Web search returned ${count} result${count === 1 ? "" : "s"}.`;
+    const count2 = array2(item.results).length;
+    return count2 === 0 ? "Web search completed." : `Web search returned ${count2} result${count2 === 1 ? "" : "s"}.`;
   }
   if (type === "imageView") return `Viewed image: ${string2(item.path) ?? "image"}`;
   if (type === "imageGeneration") {
@@ -25363,6 +18215,8 @@ var CodexVirtualHarness = class _CodexVirtualHarness {
           return business2(await this.sessionHistory(requestArg2(args), signal));
         case "session/page":
           return business2(await this.sessionPage(requestArg2(args), signal));
+        case "session/usage":
+          return business2(await this.sessionUsage(requestArg2(args), signal));
         case "session/prompt":
           return business2(await this.prompt(requestArg2(args), signal));
         case "session/cancel":
@@ -25827,6 +18681,18 @@ var CodexVirtualHarness = class _CodexVirtualHarness {
     }, signal);
     return success2({ records: page.records, hasMore: page.hasMore });
   }
+  async sessionUsage(request, signal) {
+    const sessionId = typeof request.sessionId === "string" && request.sessionId.length > 0 ? request.sessionId : sessionIdFromAddress2(record4(request.address));
+    const threadId = nativeThreadId(sessionId);
+    const usage = await collectSessionTokenUsage(sessionId, async (beforeSeq) => {
+      const page = await this.readHistoryPage(threadId, {
+        beforeSeq,
+        maxMessages: 60
+      }, signal);
+      return { records: page.records, hasMore: page.hasMore };
+    }, signal);
+    return success2(usage);
+  }
   activeTurnId(threadId) {
     for (const follow of this.follows) if (follow.threadId === threadId && follow.stepOpen) return follow.activeTurnId;
     return void 0;
@@ -26211,7 +19077,7 @@ var RemoteHarnessApiProxy = class {
   }
   normalizeLegacyWelcomeSettings(method, payload, response) {
     if (!isLegacyRemoteHost(this.harnessVersion)) return response;
-    if (method === "settings.describe" && response.result.ok && isRecord7(response.result.value)) {
+    if (method === "settings.describe" && response.result.ok && isRecord8(response.result.value)) {
       this.settingsDescribeValue = response.result.value;
       return this.legacyWelcomeAcknowledged ? patchWelcomeDescribe(response) : response;
     }
@@ -26323,7 +19189,7 @@ function normalizeLegacyResponse(method, response) {
   };
 }
 function normalizeLegacyRequest(method, payload) {
-  if (!isRecord7(payload)) return payload;
+  if (!isRecord8(payload)) return payload;
   if (method === "agentPreset.read") return replaceAgentPreset(payload, "agentPreset");
   if (method === "agentPreset.select") return replaceAgentPreset(payload, "agentPreset");
   if (method === "agentPreset.copy") return replaceAgentPreset(payload, "from");
@@ -26338,7 +19204,7 @@ function replaceAgentPreset(payload, key) {
   return replacement === void 0 ? payload : { ...payload, [key]: replacement };
 }
 function replaceAgentPresetSettings(payload) {
-  if (payload.ns !== AGENT_PRESET_SETTINGS_NS || !isRecord7(payload.patch)) return payload;
+  if (payload.ns !== AGENT_PRESET_SETTINGS_NS || !isRecord8(payload.patch)) return payload;
   const patch = replaceAgentPreset(payload.patch, "default");
   return patch === payload.patch ? payload : { ...payload, patch };
 }
@@ -26348,11 +19214,11 @@ function isLegacyRemoteHost(version) {
   return match !== null && Number(match[1]) === 0 && Number(match[2]) === 1 && Number(match[3]) < 7;
 }
 function isWelcomeNoticeRequest(payload) {
-  if (!isRecord7(payload) || payload.ns !== WELCOME_NOTICE_NAMESPACE || !Array.isArray(payload.ops)) return false;
-  return payload.ops.some((operation) => isRecord7(operation) && operation.op === "set" && Array.isArray(operation.path) && operation.path.length === 1 && operation.path[0] === WELCOME_NOTICE_FIELD && operation.value === WELCOME_NOTICE_VERSION);
+  if (!isRecord8(payload) || payload.ns !== WELCOME_NOTICE_NAMESPACE || !Array.isArray(payload.ops)) return false;
+  return payload.ops.some((operation) => isRecord8(operation) && operation.op === "set" && Array.isArray(operation.path) && operation.path.length === 1 && operation.path[0] === WELCOME_NOTICE_FIELD && operation.value === WELCOME_NOTICE_VERSION);
 }
 function patchWelcomeDescribe(response) {
-  if (!response.result.ok || !isRecord7(response.result.value) || !Array.isArray(response.result.value.namespaces)) return response;
+  if (!response.result.ok || !isRecord8(response.result.value) || !Array.isArray(response.result.value.namespaces)) return response;
   return {
     ...response,
     result: {
@@ -26360,8 +19226,8 @@ function patchWelcomeDescribe(response) {
       value: {
         ...response.result.value,
         namespaces: response.result.value.namespaces.map((namespace) => {
-          if (!isRecord7(namespace) || namespace.ns !== WELCOME_NOTICE_NAMESPACE) return namespace;
-          const value = isRecord7(namespace.value) ? namespace.value : {};
+          if (!isRecord8(namespace) || namespace.ns !== WELCOME_NOTICE_NAMESPACE) return namespace;
+          const value = isRecord8(namespace.value) ? namespace.value : {};
           return { ...namespace, value: { ...value, [WELCOME_NOTICE_FIELD]: WELCOME_NOTICE_VERSION } };
         })
       }
@@ -26375,8 +19241,8 @@ function patchWelcomeMutate(value, rpcId2) {
   };
   const namespaces = Array.isArray(value.namespaces) ? value.namespaces : [];
   response.result.value.namespaces = namespaces.map((namespace) => {
-    if (!isRecord7(namespace) || namespace.ns !== WELCOME_NOTICE_NAMESPACE) return namespace;
-    const current = isRecord7(namespace.value) ? namespace.value : {};
+    if (!isRecord8(namespace) || namespace.ns !== WELCOME_NOTICE_NAMESPACE) return namespace;
+    const current = isRecord8(namespace.value) ? namespace.value : {};
     return { ...namespace, value: { ...current, [WELCOME_NOTICE_FIELD]: WELCOME_NOTICE_VERSION } };
   });
   return response;
@@ -26384,7 +19250,7 @@ function patchWelcomeMutate(value, rpcId2) {
 function isRemoteDisconnect(error) {
   return error instanceof RemoteClientError && (error.code === "TRANSPORT_CLOSED" || error.code === "CLIENT_CLOSED");
 }
-function isRecord7(value) {
+function isRecord8(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 var AsyncFrameQueue = class {
@@ -26456,15 +19322,15 @@ function normalizeLegacySessionGatewayValue(endpoint, value) {
   return value;
 }
 function normalizeAssistantMessageStreamValue(endpoint, value) {
-  if (endpoint === "session/page" && isRecord8(value)) return { ...value, records: normalizeRecords(value.records) };
-  if (endpoint === "session/follow" && isRecord8(value) && value.type === "snapshot") {
+  if (endpoint === "session/page" && isRecord9(value)) return { ...value, records: normalizeRecords(value.records) };
+  if (endpoint === "session/follow" && isRecord9(value) && value.type === "snapshot") {
     return { ...value, records: normalizeRecords(value.records) };
   }
   if (endpoint === "session/follow") return normalizeEntry(value);
   return value;
 }
 function normalizeFollowFrame(value) {
-  if (!isRecord8(value)) return value;
+  if (!isRecord9(value)) return value;
   if (value.type === "snapshot") {
     return {
       ...value,
@@ -26476,7 +19342,7 @@ function normalizeFollowFrame(value) {
   return normalizeEntry(value);
 }
 function normalizePage(value) {
-  if (!isRecord8(value)) return value;
+  if (!isRecord9(value)) return value;
   return { ...value, records: normalizeRecords(value.records) };
 }
 function normalizeRecords(value) {
@@ -26521,10 +19387,10 @@ function eventTime(value) {
   return typeof value.event.time === "number" && Number.isSafeInteger(value.event.time) ? value.event.time : 0;
 }
 function isEventEntry(value) {
-  return isRecord8(value) && value.type === "event" && isRecord8(value.event);
+  return isRecord9(value) && value.type === "event" && isRecord9(value.event);
 }
 function normalizeHeader(value) {
-  if (!isRecord8(value)) return value;
+  if (!isRecord9(value)) return value;
   const next = {
     ...value,
     version: 3,
@@ -26533,7 +19399,7 @@ function normalizeHeader(value) {
   return next.agentPreset === "code" ? { ...next, agentPreset: "ptc" } : next;
 }
 function normalizeEvent(value) {
-  if (!isRecord8(value)) return value;
+  if (!isRecord9(value)) return value;
   let next = value;
   const type = normalizeEventType(value.type);
   if (type !== value.type) next = { ...next, type };
@@ -26553,7 +19419,7 @@ function normalizeEventType(value) {
   return value;
 }
 function normalizeEventData(type, value) {
-  if (!isRecord8(value)) return value;
+  if (!isRecord9(value)) return value;
   if (type === "assistant/message" && Object.hasOwn(value, "stream") && !Array.isArray(value.stream)) {
     const { stream: _stream, ...rest } = value;
     return rest;
@@ -26570,7 +19436,7 @@ function normalizeEventData(type, value) {
   return value;
 }
 function normalizeRequestHeaderData(value) {
-  if (!isRecord8(value.header)) return value;
+  if (!isRecord9(value.header)) return value;
   const header = normalizeRequestHeader(value.header);
   return header === value.header ? value : { ...value, header };
 }
@@ -26586,7 +19452,7 @@ function normalizeRequestHeader(value) {
       changed = true;
       continue;
     }
-    if (key === "adapterDefaults" && isRecord8(field) && Object.keys(field).length === 0) {
+    if (key === "adapterDefaults" && isRecord9(field) && Object.keys(field).length === 0) {
       changed = true;
       continue;
     }
@@ -26595,12 +19461,12 @@ function normalizeRequestHeader(value) {
   return changed ? next : value;
 }
 function normalizeMessage(value) {
-  if (!isRecord8(value) || !isRecord8(value.source)) return value;
+  if (!isRecord9(value) || !isRecord9(value.source)) return value;
   if (value.source.kind !== "plugin" || value.source.plugin !== "tools-code-mode") return value;
   return { ...value, source: { ...value.source, plugin: "tools-ptc" } };
 }
 function normalizeSurfaceOp(value) {
-  if (!isRecord8(value) || value.op !== "replace") return value;
+  if (!isRecord9(value) || value.op !== "replace") return value;
   const { start, end, ...rest } = value;
   if (start === void 0 && end === void 0) return value;
   return {
@@ -26610,7 +19476,7 @@ function normalizeSurfaceOp(value) {
     ...end === void 0 ? {} : { endSeq: end }
   };
 }
-function isRecord8(value) {
+function isRecord9(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function isEventSeq(value) {
@@ -26665,11 +19531,11 @@ var RemoteTypertGateway2 = class {
   /** DSH <=0.1.6 cannot persist the 0.1.7 welcome acknowledgement remotely. */
   normalizeLegacyWelcomeSettings(endpoint, payload, result) {
     if (!isLegacyRemoteHost2(this.harnessVersion)) return void 0;
-    if (endpoint === "settings/describe" && result.ok && isRecord9(result.value)) {
+    if (endpoint === "settings/describe" && result.ok && isRecord10(result.value)) {
       this.settingsDescribeValue = result.value;
       return this.legacyWelcomeAcknowledged ? { ...result, value: patchWelcomeDescribe2(result.value) } : void 0;
     }
-    if (endpoint !== "settings/mutate" || !isRecord9(payload) || !isRecord9(payload.args)) return void 0;
+    if (endpoint !== "settings/mutate" || !isRecord10(payload) || !isRecord10(payload.args)) return void 0;
     const args = payload.args;
     if (args.ns !== WELCOME_NOTICE_NAMESPACE2 || !isWelcomeNoticeOperation(args.ops)) return void 0;
     const value = patchWelcomeDescribe2(this.settingsDescribeValue ?? { namespaces: [] });
@@ -26833,16 +19699,16 @@ function routeStreamEvent2(event, streamId, queue) {
     queue.fail(remoteFailure({
       code: typeof failure3?.code === "string" ? failure3.code : "internal",
       message: typeof failure3?.message === "string" ? failure3.message : "The remote Harness stream failed.",
-      details: isRecord9(failure3?.details) ? failure3.details : {}
+      details: isRecord10(failure3?.details) ? failure3.details : {}
     }));
   } else {
     queue.close();
   }
 }
 function parseRpcResult(value) {
-  if (!isRecord9(value)) throw new Error("The remote Host returned an invalid Gateway result.");
+  if (!isRecord10(value)) throw new Error("The remote Host returned an invalid Gateway result.");
   if (value.ok === true) return Object.hasOwn(value, "value") ? { ok: true, value: value.value } : { ok: true };
-  if (value.ok !== false || !isRecord9(value.error) || typeof value.error.code !== "string" || typeof value.error.message !== "string" || !isRecord9(value.error.details)) {
+  if (value.ok !== false || !isRecord10(value.error) || typeof value.error.code !== "string" || typeof value.error.message !== "string" || !isRecord10(value.error.details)) {
     throw new Error("The remote Host returned an invalid Gateway failure.");
   }
   return {
@@ -26878,10 +19744,10 @@ function base64ToBytes3(value) {
 }
 function normalizeWorkspaceBinaryResult(endpoint, value) {
   if (endpoint !== "workspaceFiles/readBytes" && endpoint !== "officeToPdf/render") return value;
-  if (!isRecord9(value) || typeof value.data !== "string") return value;
+  if (!isRecord10(value) || typeof value.data !== "string") return value;
   return { ...value, data: base64ToBytes3(value.data) };
 }
-function isRecord9(value) {
+function isRecord10(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function hasErrorCode(error, code) {
@@ -26894,13 +19760,13 @@ function isLegacyRemoteHost2(version) {
   return Number(match[1]) === 0 && Number(match[2]) === 1 && Number(match[3]) < 7;
 }
 function isWelcomeNoticeOperation(value) {
-  return Array.isArray(value) && value.some((operation) => isRecord9(operation) && operation.op === "set" && Array.isArray(operation.path) && operation.path.length === 1 && operation.path[0] === WELCOME_NOTICE_FIELD2 && operation.value === WELCOME_NOTICE_VERSION2);
+  return Array.isArray(value) && value.some((operation) => isRecord10(operation) && operation.op === "set" && Array.isArray(operation.path) && operation.path.length === 1 && operation.path[0] === WELCOME_NOTICE_FIELD2 && operation.value === WELCOME_NOTICE_VERSION2);
 }
 function patchWelcomeDescribe2(value) {
   if (!Array.isArray(value.namespaces)) return value;
   const namespaces = value.namespaces.map((namespace) => {
-    if (!isRecord9(namespace) || namespace.ns !== WELCOME_NOTICE_NAMESPACE2) return namespace;
-    const current = isRecord9(namespace.value) ? namespace.value : {};
+    if (!isRecord10(namespace) || namespace.ns !== WELCOME_NOTICE_NAMESPACE2) return namespace;
+    const current = isRecord10(namespace.value) ? namespace.value : {};
     return { ...namespace, value: { ...current, [WELCOME_NOTICE_FIELD2]: WELCOME_NOTICE_VERSION2 } };
   });
   return { ...value, namespaces };
@@ -26912,16 +19778,16 @@ import { platform } from "node:os";
 // src/server-credentials.ts
 import { chmod, mkdir, readFile as readFile2, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname as dirname2, join as join2 } from "node:path";
-var credentialSchema = external_exports.object({
-  schemaVersion: external_exports.literal(1),
-  serverUrl: external_exports.string().url(),
-  deviceId: external_exports.string().min(1),
-  authorizationMethod: external_exports.enum(["account", "host_registration_code", "owned_device"]),
-  account: external_exports.string().min(1).max(254).optional(),
-  accessToken: external_exports.string().min(16),
-  accessTokenExpiresAt: external_exports.number().int().positive(),
-  refreshToken: external_exports.string().min(16),
-  refreshTokenExpiresAt: external_exports.number().int().positive()
+var credentialSchema = z.object({
+  schemaVersion: z.literal(1),
+  serverUrl: z.string().url(),
+  deviceId: z.string().min(1),
+  authorizationMethod: z.enum(["account", "host_registration_code", "owned_device"]),
+  account: z.string().min(1).max(254).optional(),
+  accessToken: z.string().min(16),
+  accessTokenExpiresAt: z.number().int().positive(),
+  refreshToken: z.string().min(16),
+  refreshTokenExpiresAt: z.number().int().positive()
 }).strict();
 var ServerCredentialStore = class {
   path;
@@ -27045,34 +19911,34 @@ function withVolatileSchema(schema) {
   return typeof volatile === "function" ? volatile.call(schema) : schema;
 }
 var Config = withVolatileSchema(entryConfigSchema);
-var reconnectSchema = external_exports.union([
-  external_exports.boolean(),
-  external_exports.object({
-    initialDelayMs: external_exports.number().int().min(100).max(6e4).optional(),
-    maxDelayMs: external_exports.number().int().min(1e3).max(3e5).optional(),
-    jitter: external_exports.number().min(0).max(1).optional()
+var reconnectSchema = z.union([
+  z.boolean(),
+  z.object({
+    initialDelayMs: z.number().int().min(100).max(6e4).optional(),
+    maxDelayMs: z.number().int().min(1e3).max(3e5).optional(),
+    jitter: z.number().min(0).max(1).optional()
   }).strict()
 ]);
-var configSchema = external_exports.object({
-  enabled: external_exports.boolean().optional(),
-  role: external_exports.enum(["host", "client", "both"]).optional(),
-  serverUrl: external_exports.string().url().optional(),
-  deviceName: external_exports.string().trim().min(1).max(80).optional(),
-  terminal: external_exports.object({ enabled: external_exports.boolean().optional() }).strict().optional(),
-  hostControl: external_exports.object({ enabled: external_exports.boolean().optional() }).strict().optional(),
-  loopback: external_exports.object({ ports: external_exports.array(external_exports.number().int().min(1024).max(65535)).max(16).optional() }).strict().optional(),
-  forceRelay: external_exports.boolean().optional(),
-  logLevel: external_exports.enum(["debug", "info", "warn", "error"]).optional(),
+var configSchema = z.object({
+  enabled: z.boolean().optional(),
+  role: z.enum(["host", "client", "both"]).optional(),
+  serverUrl: z.string().url().optional(),
+  deviceName: z.string().trim().min(1).max(80).optional(),
+  terminal: z.object({ enabled: z.boolean().optional() }).strict().optional(),
+  hostControl: z.object({ enabled: z.boolean().optional() }).strict().optional(),
+  loopback: z.object({ ports: z.array(z.number().int().min(1024).max(65535)).max(16).optional() }).strict().optional(),
+  forceRelay: z.boolean().optional(),
+  logLevel: z.enum(["debug", "info", "warn", "error"]).optional(),
   reconnect: reconnectSchema.optional(),
-  codex: external_exports.object({
-    enabled: external_exports.boolean().optional(),
-    binary: external_exports.string().trim().min(1).max(4096).optional()
+  codex: z.object({
+    enabled: z.boolean().optional(),
+    binary: z.string().trim().min(1).max(4096).optional()
   }).strict().optional(),
-  cursor: external_exports.object({
-    enabled: external_exports.boolean().optional(),
-    binary: external_exports.string().trim().min(1).max(4096).optional()
+  cursor: z.object({
+    enabled: z.boolean().optional(),
+    binary: z.string().trim().min(1).max(4096).optional()
   }).strict().optional(),
-  acp: external_exports.object({ enabled: external_exports.boolean().optional(), backends: external_exports.array(external_exports.object({ id: external_exports.string().trim().regex(/^[a-z0-9][a-z0-9._-]{0,31}$/i), enabled: external_exports.boolean().optional(), command: external_exports.string().trim().min(1).max(4096).optional(), args: external_exports.array(external_exports.string().max(4096)).max(32).optional(), cwd: external_exports.string().max(4096).optional() }).strict()).max(12).optional(), backend: external_exports.string().trim().regex(/^[a-z0-9][a-z0-9._-]{0,31}$/i).optional(), command: external_exports.string().trim().min(1).max(4096).optional(), args: external_exports.array(external_exports.string().max(4096)).max(32).optional(), cwd: external_exports.string().max(4096).optional() }).strict().optional()
+  acp: z.object({ enabled: z.boolean().optional(), backends: z.array(z.object({ id: z.string().trim().regex(/^[a-z0-9][a-z0-9._-]{0,31}$/i), enabled: z.boolean().optional(), command: z.string().trim().min(1).max(4096).optional(), args: z.array(z.string().max(4096)).max(32).optional(), cwd: z.string().max(4096).optional() }).strict()).max(12).optional(), backend: z.string().trim().regex(/^[a-z0-9][a-z0-9._-]{0,31}$/i).optional(), command: z.string().trim().min(1).max(4096).optional(), args: z.array(z.string().max(4096)).max(32).optional(), cwd: z.string().max(4096).optional() }).strict().optional()
 }).strict();
 function resolveConfig(input2 = {}, env = process.env) {
   const parsed = configSchema.parse(input2);
@@ -27797,13 +20663,13 @@ var TypertGatewaySwitch = class {
     if (normalized !== void 0) return normalized;
     const source = error instanceof Error ? error : new Error("The Harness Gateway rejected the request.");
     const code = "code" in source && typeof source.code === "string" ? source.code : "internal";
-    const details = "details" in source && isRecord10(source.details) ? source.details : {};
+    const details = "details" in source && isRecord11(source.details) ? source.details : {};
     return { code, message: source.message, details };
   }
 };
 function workspaceConnectionResult(endpoint, result) {
   if (endpoint !== "workspaceFiles/readBytes" && endpoint !== "officeToPdf/render") return result;
-  if (!result.ok || !isRecord10(result.value) || !(result.value.data instanceof Uint8Array)) return result;
+  if (!result.ok || !isRecord11(result.value) || !(result.value.data instanceof Uint8Array)) return result;
   return {
     ...result,
     value: { ...result.value, data: null },
@@ -27849,7 +20715,7 @@ function requestFromCarrier(endpoint, payload, signal) {
   if (segments.length !== 2 || segments.some((segment) => segment.length === 0)) {
     throw new Error("The Harness Gateway endpoint is invalid.");
   }
-  if (!isRecord10(payload) || !isRecord10(payload.args)) {
+  if (!isRecord11(payload) || !isRecord11(payload.args)) {
     throw new Error("The Harness Gateway payload is invalid.");
   }
   return { namespace: segments[0], method: segments[1], args: payload.args, signal };
@@ -27864,7 +20730,7 @@ function isLocalOnlyEndpoint(endpoint) {
 function isRemoteCommandMethod(method) {
   return REMOTE_COMMAND_METHODS.includes(method);
 }
-function isRecord10(value) {
+function isRecord11(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -27919,21 +20785,21 @@ function resolveExternalNodeBinaryForRtc() {
 }
 function nodeBinaryCandidates() {
   const candidates = [];
-  const add3 = (value) => {
+  const add2 = (value) => {
     if (value === void 0 || value.trim() === "") return;
     if (!candidates.includes(value)) candidates.push(value);
   };
-  add3(process.env.DSH_REMOTE_NODE);
-  add3(process.env.NODE);
-  add3(process.execPath);
-  for (const part of (process.env.PATH ?? "").split(delimiter)) add3(join3(part, process.platform === "win32" ? "node.exe" : "node"));
-  add3("/opt/homebrew/bin/node");
-  add3("/usr/local/bin/node");
-  add3("/usr/bin/node");
-  add3(join3(process.env.HOME ?? "", ".volta", "bin", process.platform === "win32" ? "node.exe" : "node"));
-  add3(join3(process.env.HOME ?? "", ".asdf", "shims", process.platform === "win32" ? "node.exe" : "node"));
-  add3(join3(process.env.HOME ?? "", ".local", "bin", process.platform === "win32" ? "node.exe" : "node"));
-  for (const nvmNode of nvmNodeCandidates()) add3(nvmNode);
+  add2(process.env.DSH_REMOTE_NODE);
+  add2(process.env.NODE);
+  add2(process.execPath);
+  for (const part of (process.env.PATH ?? "").split(delimiter)) add2(join3(part, process.platform === "win32" ? "node.exe" : "node"));
+  add2("/opt/homebrew/bin/node");
+  add2("/usr/local/bin/node");
+  add2("/usr/bin/node");
+  add2(join3(process.env.HOME ?? "", ".volta", "bin", process.platform === "win32" ? "node.exe" : "node"));
+  add2(join3(process.env.HOME ?? "", ".asdf", "shims", process.platform === "win32" ? "node.exe" : "node"));
+  add2(join3(process.env.HOME ?? "", ".local", "bin", process.platform === "win32" ? "node.exe" : "node"));
+  for (const nvmNode of nvmNodeCandidates()) add2(nvmNode);
   return candidates;
 }
 function nvmNodeCandidates() {
@@ -29663,24 +22529,24 @@ import { createHash } from "node:crypto";
 import { chmod as chmod2, mkdir as mkdir2, readFile as readFile3, rename as rename2, rm as rm2, stat as stat2, writeFile as writeFile2 } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname as dirname4, join as join4 } from "node:path";
-var identitySchema = external_exports.object({
-  schemaVersion: external_exports.literal(1),
-  deviceId: external_exports.string().uuid(),
-  name: external_exports.string().min(1).max(80),
-  publicKey: external_exports.string().min(1)
+var identitySchema = z.object({
+  schemaVersion: z.literal(1),
+  deviceId: z.string().uuid(),
+  name: z.string().min(1).max(80),
+  publicKey: z.string().min(1)
 }).strict();
-var trustedPeerSchema = external_exports.object({
-  deviceId: external_exports.string().min(1),
-  name: external_exports.string().min(1).max(80),
-  platform: external_exports.string().min(1).max(40),
-  publicKey: external_exports.string().min(1),
-  fingerprint: external_exports.string().min(1),
-  trustedAt: external_exports.number().int().nonnegative(),
-  membershipId: external_exports.string().min(1).optional()
+var trustedPeerSchema = z.object({
+  deviceId: z.string().min(1),
+  name: z.string().min(1).max(80),
+  platform: z.string().min(1).max(40),
+  publicKey: z.string().min(1),
+  fingerprint: z.string().min(1),
+  trustedAt: z.number().int().nonnegative(),
+  membershipId: z.string().min(1).optional()
 }).strict();
-var trustedPeersSchema = external_exports.object({
-  schemaVersion: external_exports.literal(1),
-  peers: external_exports.array(trustedPeerSchema)
+var trustedPeersSchema = z.object({
+  schemaVersion: z.literal(1),
+  peers: z.array(trustedPeerSchema)
 }).strict();
 var IdentityInvalidError = class extends Error {
   code = "IDENTITY_INVALID";
@@ -30167,7 +23033,7 @@ var CodexAppServerClient = class {
       this.handleProcessFailure("CODEX_INVALID_RESPONSE", new Error("Codex App Server emitted invalid JSON."));
       return;
     }
-    if (!isRecord11(value)) {
+    if (!isRecord12(value)) {
       this.handleProcessFailure("CODEX_INVALID_RESPONSE", new Error("Codex App Server emitted an invalid message."));
       return;
     }
@@ -30212,111 +23078,111 @@ var CodexAppServerClient = class {
   }
 };
 function safeUpstreamError(value) {
-  if (!isRecord11(value) || typeof value.message !== "string") return "Codex App Server rejected the request.";
+  if (!isRecord12(value) || typeof value.message !== "string") return "Codex App Server rejected the request.";
   const message = value.message.toLowerCase();
   if (message.includes("active writer")) return "Codex thread already has an active writer.";
   if (message.includes("no rollout found")) return "Codex thread state is not persisted yet.";
   return message.includes("not initialized") ? "Codex App Server is not initialized." : "Codex App Server rejected the request.";
 }
-function isRecord11(value) {
+function isRecord12(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 // src/codex/method-policy.ts
-var id2 = external_exports.string().min(1).max(256);
-var cursor = external_exports.string().min(1).max(4096).nullable().optional();
-var textInput = external_exports.object({
-  type: external_exports.literal("text"),
-  text: external_exports.string().min(1).max(256 * 1024)
+var id2 = z.string().min(1).max(256);
+var cursor = z.string().min(1).max(4096).nullable().optional();
+var textInput = z.object({
+  type: z.literal("text"),
+  text: z.string().min(1).max(256 * 1024)
 }).strict();
-var imageMediaType = external_exports.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]);
-var canonicalBase64 = external_exports.string().min(4).max(288 * 1024 * 1024).refine((value) => value.length % 4 === 0 && /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u.test(value), {
+var imageMediaType = z.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+var canonicalBase64 = z.string().min(4).max(288 * 1024 * 1024).refine((value) => value.length % 4 === 0 && /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u.test(value), {
   message: "Image data must use canonical base64."
 });
-var imageInput = external_exports.object({
-  type: external_exports.literal("image"),
+var imageInput = z.object({
+  type: z.literal("image"),
   mediaType: imageMediaType,
   data: canonicalBase64
 }).strict();
-var input = external_exports.array(external_exports.union([textInput, imageInput])).min(1).max(16);
-var permissionPreset = external_exports.enum(["workspace-write", "danger-full-access"]);
-var projectRoot = external_exports.object({
-  path: external_exports.string().min(1).max(4096)
+var input = z.array(z.union([textInput, imageInput])).min(1).max(16);
+var permissionPreset = z.enum(["workspace-write", "danger-full-access"]);
+var projectRoot = z.object({
+  path: z.string().min(1).max(4096)
 }).strict();
 var schemas = {
-  "account/read": external_exports.object({ refreshToken: external_exports.literal(false).optional() }).strict(),
-  "model/list": external_exports.object({
+  "account/read": z.object({ refreshToken: z.literal(false).optional() }).strict(),
+  "model/list": z.object({
     cursor,
-    limit: external_exports.number().int().min(1).max(100).optional(),
-    includeHidden: external_exports.boolean().optional()
+    limit: z.number().int().min(1).max(100).optional(),
+    includeHidden: z.boolean().optional()
   }).strict(),
-  "project/list": external_exports.object({
+  "project/list": z.object({
     cursor,
-    limit: external_exports.number().int().min(1).max(100).optional()
+    limit: z.number().int().min(1).max(100).optional()
   }).strict(),
-  "project/create": external_exports.object({
-    name: external_exports.string().trim().min(1).max(256),
-    roots: external_exports.array(projectRoot).length(1),
-    idempotencyKey: external_exports.string().min(16).max(256)
+  "project/create": z.object({
+    name: z.string().trim().min(1).max(256),
+    roots: z.array(projectRoot).length(1),
+    idempotencyKey: z.string().min(16).max(256)
   }).strict(),
-  "thread/list": external_exports.object({
+  "thread/list": z.object({
     cursor,
-    limit: external_exports.number().int().min(1).max(100).optional(),
-    sortKey: external_exports.enum(["created_at", "updated_at", "recency_at"]).optional(),
-    sortDirection: external_exports.enum(["asc", "desc"]).optional(),
-    modelProviders: external_exports.array(external_exports.string().min(1).max(128)).max(32).nullable().optional(),
-    sourceKinds: external_exports.array(external_exports.enum(["cli", "vscode", "exec", "appServer", "unknown"])).max(8).optional(),
-    archived: external_exports.boolean().optional(),
-    isPinned: external_exports.boolean().optional(),
-    cwd: external_exports.union([external_exports.string().min(1).max(4096), external_exports.array(external_exports.string().min(1).max(4096)).min(1).max(32)]).optional(),
-    useStateDbOnly: external_exports.boolean().optional(),
-    searchTerm: external_exports.string().max(1024).optional()
+    limit: z.number().int().min(1).max(100).optional(),
+    sortKey: z.enum(["created_at", "updated_at", "recency_at"]).optional(),
+    sortDirection: z.enum(["asc", "desc"]).optional(),
+    modelProviders: z.array(z.string().min(1).max(128)).max(32).nullable().optional(),
+    sourceKinds: z.array(z.enum(["cli", "vscode", "exec", "appServer", "unknown"])).max(8).optional(),
+    archived: z.boolean().optional(),
+    isPinned: z.boolean().optional(),
+    cwd: z.union([z.string().min(1).max(4096), z.array(z.string().min(1).max(4096)).min(1).max(32)]).optional(),
+    useStateDbOnly: z.boolean().optional(),
+    searchTerm: z.string().max(1024).optional()
   }).strict(),
-  "thread/read": external_exports.object({ threadId: id2, includeTurns: external_exports.boolean().optional() }).strict(),
-  "dsh/sessionHistory": external_exports.object({
+  "thread/read": z.object({ threadId: id2, includeTurns: z.boolean().optional() }).strict(),
+  "dsh/sessionHistory": z.object({
     threadId: id2,
-    beforeSeq: external_exports.number().int().nonnegative().optional(),
-    throughSeq: external_exports.number().int().min(-1).optional(),
-    maxMessages: external_exports.number().int().min(1).max(200).optional()
+    beforeSeq: z.number().int().nonnegative().optional(),
+    throughSeq: z.number().int().min(-1).optional(),
+    maxMessages: z.number().int().min(1).max(200).optional()
   }).strict(),
-  "dsh/sessionAttachment": external_exports.object({
+  "dsh/sessionAttachment": z.object({
     threadId: id2,
     attachmentId: id2
   }).strict(),
-  "dsh/directoryList": external_exports.object({
-    path: external_exports.string().min(1).max(4096)
+  "dsh/directoryList": z.object({
+    path: z.string().min(1).max(4096)
   }).strict(),
-  "thread/start": external_exports.object({
-    cwd: external_exports.string().min(1).max(4096),
-    model: external_exports.string().min(1).max(128).optional(),
-    personality: external_exports.string().min(1).max(64).optional(),
+  "thread/start": z.object({
+    cwd: z.string().min(1).max(4096),
+    model: z.string().min(1).max(128).optional(),
+    personality: z.string().min(1).max(64).optional(),
     permissionPreset: permissionPreset.optional()
   }).strict(),
-  "thread/resume": external_exports.object({
+  "thread/resume": z.object({
     threadId: id2,
-    model: external_exports.string().min(1).max(128).optional(),
+    model: z.string().min(1).max(128).optional(),
     permissionPreset: permissionPreset.optional()
   }).strict(),
-  "thread/fork": external_exports.object({
+  "thread/fork": z.object({
     threadId: id2,
     lastTurnId: id2.optional(),
     permissionPreset: permissionPreset.optional()
   }).strict(),
-  "thread/name/set": external_exports.object({ threadId: id2, name: external_exports.string().trim().min(1).max(256) }).strict(),
-  "thread/archive": external_exports.object({ threadId: id2 }).strict(),
-  "thread/unarchive": external_exports.object({ threadId: id2 }).strict(),
-  "thread/unsubscribe": external_exports.object({ threadId: id2 }).strict(),
-  "turn/start": external_exports.object({
+  "thread/name/set": z.object({ threadId: id2, name: z.string().trim().min(1).max(256) }).strict(),
+  "thread/archive": z.object({ threadId: id2 }).strict(),
+  "thread/unarchive": z.object({ threadId: id2 }).strict(),
+  "thread/unsubscribe": z.object({ threadId: id2 }).strict(),
+  "turn/start": z.object({
     threadId: id2,
     input,
-    model: external_exports.string().min(1).max(128).optional(),
-    effort: external_exports.enum(["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"]).optional(),
-    summary: external_exports.enum(["auto", "concise", "detailed", "none"]).optional(),
-    personality: external_exports.string().min(1).max(64).optional(),
+    model: z.string().min(1).max(128).optional(),
+    effort: z.enum(["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"]).optional(),
+    summary: z.enum(["auto", "concise", "detailed", "none"]).optional(),
+    personality: z.string().min(1).max(64).optional(),
     permissionPreset: permissionPreset.optional()
   }).strict(),
-  "turn/steer": external_exports.object({ threadId: id2, input, expectedTurnId: id2 }).strict(),
-  "turn/interrupt": external_exports.object({ threadId: id2, turnId: id2 }).strict()
+  "turn/steer": z.object({ threadId: id2, input, expectedTurnId: id2 }).strict(),
+  "turn/interrupt": z.object({ threadId: id2, turnId: id2 }).strict()
 };
 var CODEX_APP_ALLOWLIST = Object.freeze(Object.keys(schemas));
 function parseCodexCall(method, params) {
@@ -30337,23 +23203,23 @@ function threadIdFromParams(params) {
 
 // src/codex/peer-bridge.ts
 import { Buffer as Buffer3 } from "node:buffer";
-var streamOpenSchema = external_exports.object({
-  streamId: external_exports.string().min(1).max(128),
-  threadId: external_exports.string().min(1).max(256)
+var streamOpenSchema = z.object({
+  streamId: z.string().min(1).max(128),
+  threadId: z.string().min(1).max(256)
 }).strict();
-var streamCloseSchema = external_exports.object({ streamId: external_exports.string().min(1).max(128) }).strict();
-var transferOpenSchema = external_exports.object({
-  transferId: external_exports.string().uuid(),
-  totalBytes: external_exports.number().int().positive().max(MAX_CODEX_APP_TRANSFER_BYTES),
-  totalChunks: external_exports.number().int().positive()
+var streamCloseSchema = z.object({ streamId: z.string().min(1).max(128) }).strict();
+var transferOpenSchema = z.object({
+  transferId: z.string().uuid(),
+  totalBytes: z.number().int().positive().max(MAX_CODEX_APP_TRANSFER_BYTES),
+  totalChunks: z.number().int().positive()
 }).strict();
-var transferChunkSchema = external_exports.object({
-  transferId: external_exports.string().uuid(),
-  index: external_exports.number().int().nonnegative(),
-  data: external_exports.string().min(1).max(Math.ceil(CODEX_APP_TRANSFER_CHUNK_BYTES / 3) * 4)
+var transferChunkSchema = z.object({
+  transferId: z.string().uuid(),
+  index: z.number().int().nonnegative(),
+  data: z.string().min(1).max(Math.ceil(CODEX_APP_TRANSFER_CHUNK_BYTES / 3) * 4)
 }).strict();
-var transferIdSchema = external_exports.object({ transferId: external_exports.string().uuid() }).strict();
-var transferReadSchema = external_exports.object({ transferId: external_exports.string().uuid(), index: external_exports.number().int().nonnegative() }).strict();
+var transferIdSchema = z.object({ transferId: z.string().uuid() }).strict();
+var transferReadSchema = z.object({ transferId: z.string().uuid(), index: z.number().int().nonnegative() }).strict();
 var MAX_ACTIVE_STREAMS = MAX_ALPHA_STREAMS_PER_CONNECTION;
 var MAX_ACTIVE_TRANSFERS = MAX_ACTIVE_TRANSFERS_PER_DIRECTION;
 var INLINE_TRANSFER_RESPONSE_BYTES = 2 * 1024 * 1024;
@@ -30591,15 +23457,15 @@ function decodeCanonicalBase64(value) {
   }
   return decoded;
 }
-function isRecord12(value) {
+function isRecord13(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function safeErrorCode2(error) {
-  if (isRecord12(error) && typeof error.code === "string") return error.code;
+  if (isRecord13(error) && typeof error.code === "string") return error.code;
   return "UNKNOWN";
 }
 function safeMethod(input2) {
-  return isRecord12(input2) && typeof input2.method === "string" ? input2.method : "invalid";
+  return isRecord13(input2) && typeof input2.method === "string" ? input2.method : "invalid";
 }
 function concatChunks(chunks, totalBytes) {
   const output = new Uint8Array(totalBytes);
@@ -31076,14 +23942,14 @@ var CodexRemoteDomain = class {
       await this.assertResultThreadAllowed(result);
       if (codexPermissionPresetFromResponse(result) !== params.permissionPreset) {
         await this.callUpstream("thread/settings/update", { threadId, ...settings });
-        result = { ...isRecord13(result) ? result : {}, ...settings, sandbox: settings.sandboxPolicy };
+        result = { ...isRecord14(result) ? result : {}, ...settings, sandbox: settings.sandboxPolicy };
       }
     }
     await this.publishPermission(threadId, result);
     return result;
   }
   async publishPermission(threadId, value) {
-    const source = isRecord13(value) ? value : {};
+    const source = isRecord14(value) ? value : {};
     const threadSettings = { approvalPolicy: source.approvalPolicy, sandboxPolicy: source.sandboxPolicy ?? source.sandbox };
     await this.handleInbound({ kind: "notification", method: "thread/settings/updated", params: { threadId, threadSettings } });
   }
@@ -31161,7 +24027,7 @@ var CodexRemoteDomain = class {
       if (legacyThread === void 0 || legacyThread.id !== threadId || !Array.isArray(legacyThread.turns)) {
         throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid Thread history.");
       }
-      if (legacyThread.turns.some((turn) => !isRecord13(turn) || typeof turn.id !== "string" || !Array.isArray(turn.items) || turn.items.some((item) => !isRecord13(item)))) {
+      if (legacyThread.turns.some((turn) => !isRecord14(turn) || typeof turn.id !== "string" || !Array.isArray(turn.items) || turn.items.some((item) => !isRecord14(item)))) {
         throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned invalid Thread history content.");
       }
       return legacyThread;
@@ -31182,17 +24048,17 @@ var CodexRemoteDomain = class {
         itemsView,
         ...cursor2 === void 0 ? {} : { cursor: cursor2 }
       });
-      if (!isRecord13(result) || !Array.isArray(result.data)) {
+      if (!isRecord14(result) || !Array.isArray(result.data)) {
         throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid Turn page.");
       }
       const pageResult = result;
       for (const rawTurn of result.data) {
-        if (!isRecord13(rawTurn) || typeof rawTurn.id !== "string" || rawTurn.id.length === 0 || rawTurn.itemsView === "full" && !Array.isArray(rawTurn.items)) {
+        if (!isRecord14(rawTurn) || typeof rawTurn.id !== "string" || rawTurn.id.length === 0 || rawTurn.itemsView === "full" && !Array.isArray(rawTurn.items)) {
           throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid history Turn.");
         }
         const inlineFull = rawTurn.itemsView === "full" || rawTurn.itemsView === void 0 && itemsView === "full" && Array.isArray(rawTurn.items);
         const items = inlineFull ? rawTurn.items : await this.readThreadItems(threadId, rawTurn.id);
-        if (items.some((item) => !isRecord13(item))) {
+        if (items.some((item) => !isRecord14(item))) {
           throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid history Item.");
         }
         turns.push({ ...rawTurn, items });
@@ -31213,11 +24079,11 @@ var CodexRemoteDomain = class {
         sortDirection: "asc",
         ...cursor2 === void 0 ? {} : { cursor: cursor2 }
       });
-      if (!isRecord13(result) || !Array.isArray(result.data)) {
+      if (!isRecord14(result) || !Array.isArray(result.data)) {
         throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid Item page.");
       }
       for (const entry of result.data) {
-        if (!isRecord13(entry) || !isRecord13(entry.item)) {
+        if (!isRecord14(entry) || !isRecord14(entry.item)) {
           throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid history Item.");
         }
         items.push(entry.item);
@@ -31279,7 +24145,7 @@ var CodexRemoteDomain = class {
     return [...this.peers.values()].some((peer) => peer.hasThreadSubscription(threadId));
   }
   resolveUpstreamApproval(params) {
-    if (!isRecord13(params) || typeof params.requestId !== "string" && typeof params.requestId !== "number") return;
+    if (!isRecord14(params) || typeof params.requestId !== "string" && typeof params.requestId !== "number") return;
     for (const [handle, approval] of this.approvals) {
       if (approval.upstreamId === params.requestId) this.approvals.delete(handle);
     }
@@ -31502,8 +24368,8 @@ function findImageBlock(value, attachmentId) {
     }
     return void 0;
   }
-  if (!isRecord13(value)) return void 0;
-  if (value.type === "image" && isRecord13(value.attachment) && value.attachment.attachmentId === attachmentId && typeof value.data === "string") {
+  if (!isRecord14(value)) return void 0;
+  if (value.type === "image" && isRecord14(value.attachment) && value.attachment.attachmentId === attachmentId && typeof value.data === "string") {
     return { attachment: value.attachment, data: value.data };
   }
   for (const child of Object.values(value)) {
@@ -31521,7 +24387,7 @@ function codexBinaryCandidates(configured, hostPlatform = process.platform, user
     const codexCli = join5(chatGptApp, "Contents", "Resources", "codex-cli");
     try {
       const manifest = JSON.parse(readFileSync(join5(codexCli, "codex-package.json"), "utf8"));
-      if (!isRecord13(manifest) || typeof manifest.entrypoint !== "string" || manifest.entrypoint.length === 0) {
+      if (!isRecord14(manifest) || typeof manifest.entrypoint !== "string" || manifest.entrypoint.length === 0) {
         return [];
       }
       const candidate = join5(codexCli, manifest.entrypoint);
@@ -31540,24 +24406,24 @@ function codexBinaryCandidates(configured, hostPlatform = process.platform, user
   ])];
 }
 function parseCallEnvelope(input2) {
-  if (!isRecord13(input2) || typeof input2.method !== "string" || !("params" in input2) || Object.keys(input2).some((key) => key !== "method" && key !== "params")) {
+  if (!isRecord14(input2) || typeof input2.method !== "string" || !("params" in input2) || Object.keys(input2).some((key) => key !== "method" && key !== "params")) {
     throw new RpcError("INVALID_MESSAGE", "The Codex call envelope is invalid.");
   }
   return { method: input2.method, params: input2.params };
 }
 function parseRespond(input2) {
-  if (!isRecord13(input2) || typeof input2.requestHandle !== "string" || !["accept", "decline", "cancel"].includes(String(input2.decision)) || Object.keys(input2).some((key) => key !== "requestHandle" && key !== "decision")) {
+  if (!isRecord14(input2) || typeof input2.requestHandle !== "string" || !["accept", "decline", "cancel"].includes(String(input2.decision)) || Object.keys(input2).some((key) => key !== "requestHandle" && key !== "decision")) {
     throw new RpcError("INVALID_MESSAGE", "The Codex approval response is invalid.");
   }
   return input2;
 }
 function accountCanRun(result) {
-  if (!isRecord13(result) || typeof result.requiresOpenaiAuth !== "boolean") return false;
-  return result.requiresOpenaiAuth === false || isRecord13(result.account);
+  if (!isRecord14(result) || typeof result.requiresOpenaiAuth !== "boolean") return false;
+  return result.requiresOpenaiAuth === false || isRecord14(result.account);
 }
 function sanitizeAccount(result) {
-  if (!isRecord13(result)) throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned invalid account state.");
-  const account = isRecord13(result.account) ? result.account : void 0;
+  if (!isRecord14(result)) throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned invalid account state.");
+  const account = isRecord14(result.account) ? result.account : void 0;
   return {
     authenticated: account !== void 0 || result.requiresOpenaiAuth === false,
     requiresOpenaiAuth: result.requiresOpenaiAuth === true,
@@ -31570,11 +24436,11 @@ function sanitizeAccount(result) {
   };
 }
 function sanitizeThreadList(result) {
-  if (!isRecord13(result) || !Array.isArray(result.data)) {
+  if (!isRecord14(result) || !Array.isArray(result.data)) {
     throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid thread list.");
   }
   const data2 = result.data.flatMap((value) => {
-    if (!isRecord13(value) || typeof value.id !== "string") return [];
+    if (!isRecord14(value) || typeof value.id !== "string") return [];
     return [{
       id: value.id,
       ...typeof value.sessionId === "string" ? { sessionId: value.sessionId } : {},
@@ -31586,7 +24452,7 @@ function sanitizeThreadList(result) {
       ...typeof value.updatedAt === "number" && Number.isFinite(value.updatedAt) ? { updatedAt: value.updatedAt } : {},
       ...typeof value.archived === "boolean" ? { archived: value.archived } : {},
       ...typeof value.isPinned === "boolean" ? { isPinned: value.isPinned } : {},
-      ...isRecord13(value.status) ? { status: value.status } : {}
+      ...isRecord14(value.status) ? { status: value.status } : {}
     }];
   });
   return {
@@ -31596,18 +24462,18 @@ function sanitizeThreadList(result) {
   };
 }
 function filterThreadListByWorkspaceAuthority(result, authority) {
-  if (!isRecord13(result) || !Array.isArray(result.data)) {
+  if (!isRecord14(result) || !Array.isArray(result.data)) {
     throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid thread list.");
   }
   return {
     ...result,
-    data: result.data.map((record8) => isRecord13(record8) ? record8 : void 0).filter((thread) => thread !== void 0 && isThreadAllowedByWorkspaceAuthority(thread, authority))
+    data: result.data.map((record8) => isRecord14(record8) ? record8 : void 0).filter((thread) => thread !== void 0 && isThreadAllowedByWorkspaceAuthority(thread, authority))
   };
 }
 function sanitizeProject(value) {
-  if (!isRecord13(value) || typeof value.id !== "string" || typeof value.name !== "string") return void 0;
+  if (!isRecord14(value) || typeof value.id !== "string" || typeof value.name !== "string") return void 0;
   const roots = Array.isArray(value.roots) ? value.roots.flatMap((root) => {
-    const path = isRecord13(root) && typeof root.path === "string" && root.path.length > 0 ? root.path : void 0;
+    const path = isRecord14(root) && typeof root.path === "string" && root.path.length > 0 ? root.path : void 0;
     return path === void 0 || !isAbsolute2(path) ? [] : [{ path }];
   }) : [];
   if (roots.length === 0) return void 0;
@@ -31621,7 +24487,7 @@ function sanitizeProject(value) {
   };
 }
 function sanitizeProjectList(result) {
-  if (!isRecord13(result) || !Array.isArray(result.data)) {
+  if (!isRecord14(result) || !Array.isArray(result.data)) {
     throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid project list.");
   }
   const data2 = result.data.flatMap((value) => sanitizeProject(value) ?? []);
@@ -31631,7 +24497,7 @@ function sanitizeProjectList(result) {
   };
 }
 function sanitizeProjectCreate(result) {
-  const project = isRecord13(result) ? sanitizeProject(result.project) : void 0;
+  const project = isRecord14(result) ? sanitizeProject(result.project) : void 0;
   if (project === void 0) {
     throw new RpcError("CODEX_INVALID_RESPONSE", "Codex App Server returned an invalid created project.");
   }
@@ -31663,19 +24529,19 @@ function codexDirectoryCrumbs(root, path) {
   return crumbs2;
 }
 function extractThread(result) {
-  return isRecord13(result) && isRecord13(result.thread) ? result.thread : void 0;
+  return isRecord14(result) && isRecord14(result.thread) ? result.thread : void 0;
 }
 function extractTurnId(result) {
-  if (!isRecord13(result)) return void 0;
+  if (!isRecord14(result)) return void 0;
   if (typeof result.turnId === "string" && result.turnId.length > 0) return result.turnId;
-  if (isRecord13(result.turn) && typeof result.turn.id === "string" && result.turn.id.length > 0) return result.turn.id;
+  if (isRecord14(result.turn) && typeof result.turn.id === "string" && result.turn.id.length > 0) return result.turn.id;
   return void 0;
 }
 function extractThreadId(params) {
-  if (!isRecord13(params)) return void 0;
+  if (!isRecord14(params)) return void 0;
   if (typeof params.threadId === "string") return params.threadId;
-  if (isRecord13(params.thread) && typeof params.thread.id === "string") return params.thread.id;
-  if (isRecord13(params.turn) && typeof params.turn.threadId === "string") return params.turn.threadId;
+  if (isRecord14(params.thread) && typeof params.thread.id === "string") return params.thread.id;
+  if (isRecord14(params.turn) && typeof params.turn.threadId === "string") return params.turn.threadId;
   return void 0;
 }
 function optionalInteger3(value) {
@@ -31717,13 +24583,13 @@ function mapCodexImageInputs(params) {
   return {
     ...params,
     input: params.input.map((value) => {
-      if (!isRecord13(value) || value.type !== "image" || typeof value.mediaType !== "string" || typeof value.data !== "string") return value;
+      if (!isRecord14(value) || value.type !== "image" || typeof value.mediaType !== "string" || typeof value.data !== "string") return value;
       return { type: "image", url: `data:${value.mediaType};base64,${value.data}` };
     })
   };
 }
 function sanitizeApprovalParams(params, requestHandle) {
-  if (!isRecord13(params)) return { requestHandle };
+  if (!isRecord14(params)) return { requestHandle };
   const safe = { ...params };
   delete safe.proposedExecpolicyAmendment;
   delete safe.additionalPermissions;
@@ -31764,7 +24630,7 @@ function isProjectListFallbackError(error) {
 function canTryNextBinary(error) {
   return !(error instanceof RpcError) || !["CODEX_AUTH_REQUIRED", "CODEX_CLOSED"].includes(error.code);
 }
-function isRecord13(value) {
+function isRecord14(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function maskId(value) {
@@ -31781,9 +24647,34 @@ function isUnpersistedThreadError(error) {
 import { realpath as realpath2, lstat, readdir as readdir2, readFile as readFile4, stat as stat4, watch } from "node:fs/promises";
 import { isAbsolute as isAbsolute4, join as join7, relative as relative2, resolve as resolve2 } from "node:path";
 
-// src/remote-terminal-controller.ts
-var import_headless = __toESM(require_xterm_headless(), 1);
-var import_addon_serialize = __toESM(require_addon_serialize(), 1);
+// node_modules/@xterm/headless/index.js
+var Terminal = class {
+  constructor() {
+  }
+  loadAddon() {
+  }
+  write() {
+  }
+  dispose() {
+  }
+  get cols() {
+    return 80;
+  }
+  get rows() {
+    return 24;
+  }
+};
+
+// node_modules/@xterm/addon-serialize/index.js
+var SerializeAddon = class {
+  activate() {
+  }
+  serialize() {
+    return "";
+  }
+  dispose() {
+  }
+};
 
 // src/remote-terminal-provider.ts
 import { spawn as spawn3 } from "node:child_process";
@@ -32001,12 +24892,12 @@ var OwnedTerminal = class {
     this.cols = cols;
     this.rows = rows;
     this.removed = removed;
-    this.screen = new import_headless.default.Terminal({ cols, rows, scrollback: SCROLLBACK, allowProposedApi: true });
+    this.screen = new Terminal.Terminal({ cols, rows, scrollback: SCROLLBACK, allowProposedApi: true });
     this.screen.loadAddon(this.serializer);
   }
   allocation = new AbortController();
   screen;
-  serializer = new import_addon_serialize.default.SerializeAddon();
+  serializer = new SerializeAddon.SerializeAddon();
   followers = /* @__PURE__ */ new Set();
   holders = /* @__PURE__ */ new Set();
   pending;
@@ -32557,8 +25448,8 @@ var WorkspaceBridge = class {
   }
 };
 function argsOf(payload) {
-  const value = isRecord14(payload) ? payload : {};
-  return isRecord14(value.args) ? value.args : value;
+  const value = isRecord15(payload) ? payload : {};
+  return isRecord15(value.args) ? value.args : value;
 }
 function toolScope(endpoint, args) {
   const session = args.agentId ?? args.sessionId;
@@ -32568,13 +25459,13 @@ function toolScope(endpoint, args) {
   }
   return session;
 }
-function isRecord14(value) {
+function isRecord15(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function byteOrLineRange(args) {
-  const options = isRecord14(args.options) ? args.options : void 0;
-  if (options !== void 0 && isRecord14(options.range)) return options.range;
-  return isRecord14(args.range) ? args.range : args;
+  const options = isRecord15(args.options) ? args.options : void 0;
+  if (options !== void 0 && isRecord15(options.range)) return options.range;
+  return isRecord15(args.range) ? args.range : args;
 }
 function readOffset(args) {
   const range = byteOrLineRange(args);
@@ -32605,7 +25496,7 @@ var TERMINAL_CALLS = /* @__PURE__ */ new Set([
   "terminal/close"
 ]);
 var TERMINAL_STREAMS = /* @__PURE__ */ new Set(["terminal/follow", "terminal/retain"]);
-var id3 = external_exports.string().regex(/^[A-Za-z0-9_:-]{1,256}$/);
+var id3 = z.string().regex(/^[A-Za-z0-9_:-]{1,256}$/);
 var TerminalPolicy = class _TerminalPolicy {
   constructor(enabled, deviceId, owners) {
     this.enabled = enabled;
@@ -32628,13 +25519,13 @@ var TerminalPolicy = class _TerminalPolicy {
       "Remote terminal is disabled on this Host. Enable Remote terminal in the Host Remote settings; the switch saves and applies immediately. / \u8FDC\u7A0B\u7EC8\u7AEF\u672A\u5F00\u542F\uFF0C\u8BF7\u5728 Host \u7684 Remote \u8BBE\u7F6E\u4E2D\u5F00\u542F\u300C\u8FDC\u7A0B\u7EC8\u7AEF\u300D\uFF0C\u5F00\u5173\u5207\u6362\u540E\u7ACB\u5373\u4FDD\u5B58\u5E76\u751F\u6548\u3002"
     );
     for (const [key2, attachment] of this.attachments) if (this.owners.get(key2) !== this.deviceId || this.claims.get(key2) !== attachment.claim) this.attachments.delete(key2);
-    const args = external_exports.object({ args: external_exports.record(external_exports.unknown()) }).strict().parse(payload).args;
+    const args = z.object({ args: z.record(z.unknown()) }).strict().parse(payload).args;
     const rawSessionId = args.agentId ?? args.sessionId;
     const sessionId = id3.parse(rawSessionId);
     const codexSession = parseCodexSessionId(sessionId);
     void codexSession;
     if (endpoint === "terminal/environment" || endpoint === "terminal/shells" || endpoint === "terminal/list") return {};
-    const request = endpoint === "terminal/create" ? external_exports.object({ id: id3 }).passthrough().parse(args.request) : void 0;
+    const request = endpoint === "terminal/create" ? z.object({ id: id3 }).passthrough().parse(args.request) : void 0;
     const terminalId = id3.parse(request?.id ?? args.id);
     const key = `${sessionId}/${terminalId}`;
     if (endpoint === "terminal/create") {
@@ -32924,7 +25815,7 @@ var CursorAcpClient = class {
       this.handleProcessFailure("CURSOR_INVALID_RESPONSE", new Error("Cursor ACP emitted invalid JSON."));
       return;
     }
-    if (!isRecord15(value)) {
+    if (!isRecord16(value)) {
       this.handleProcessFailure("CURSOR_INVALID_RESPONSE", new Error("Cursor ACP emitted an invalid message."));
       return;
     }
@@ -32969,7 +25860,7 @@ var CursorAcpClient = class {
   }
 };
 function safeUpstreamError2(value) {
-  if (!isRecord15(value) || typeof value.message !== "string") return "Cursor ACP rejected the request.";
+  if (!isRecord16(value) || typeof value.message !== "string") return "Cursor ACP rejected the request.";
   const message = value.message.toLowerCase();
   if (message.includes("auth") || message.includes("login") || message.includes("api key")) {
     return "Cursor ACP authentication failed.";
@@ -32977,7 +25868,7 @@ function safeUpstreamError2(value) {
   if (message.includes("not initialized")) return "Cursor ACP is not initialized.";
   return "Cursor ACP rejected the request.";
 }
-function isRecord15(value) {
+function isRecord16(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -33185,7 +26076,7 @@ var ClaudeAcpClient = class extends CursorAcpClient {
     this.historyStop = stop;
     const updates = [];
     let bytes = 0;
-    let count = 0;
+    let count2 = 0;
     let overflow = false;
     client.onInbound((message) => {
       if (message.kind === "request") {
@@ -33194,8 +26085,8 @@ var ClaudeAcpClient = class extends CursorAcpClient {
       }
       if (message.method !== "session/update" || message.params?.sessionId !== sessionId || overflow) return;
       bytes += Buffer5.byteLength(JSON.stringify(message));
-      count++;
-      if (bytes > 8 * 1024 * 1024 || count > 1e4) {
+      count2++;
+      if (bytes > 8 * 1024 * 1024 || count2 > 1e4) {
         overflow = true;
         void stop().catch(() => void 0);
       } else updates.push(message);
@@ -33436,18 +26327,18 @@ var PiAcpClient = class {
     }
     const updates = [];
     let bytes = 0;
-    let count = 0;
+    let count2 = 0;
     client.onInbound((message) => {
       if (message.kind !== "notification" || message.method !== "session/update" || message.params?.sessionId !== sessionId) return;
-      count++;
+      count2++;
       bytes += Buffer.byteLength(JSON.stringify(message));
-      if (bytes <= 8 * 1024 * 1024 && count <= 1e4) updates.push(message);
+      if (bytes <= 8 * 1024 * 1024 && count2 <= 1e4) updates.push(message);
     });
     try {
       const result = await client.call("session/load", { sessionId, cwd: cwd2, mcpServers: [] });
       const loadedId = result?.sessionId;
       if (loadedId !== void 0 && loadedId !== sessionId) throw new CursorAcpError("ACP_INVALID_SESSION", "PI returned an invalid history session.");
-      if (bytes > 8 * 1024 * 1024 || count > 1e4) throw new CursorAcpError("ACP_HISTORY_TOO_LARGE", "PI history exceeds the transfer limit.");
+      if (bytes > 8 * 1024 * 1024 || count2 > 1e4) throw new CursorAcpError("ACP_HISTORY_TOO_LARGE", "PI history exceeds the transfer limit.");
       return historyEvents(updates, sessionId);
     } finally {
       try {
@@ -34692,7 +27583,7 @@ var OpencodeAcpClient = class {
       this.handleProcessFailure("OPENCODE_INVALID_RESPONSE", new Error("OpenCode ACP emitted invalid JSON."));
       return;
     }
-    if (!isRecord16(value)) {
+    if (!isRecord17(value)) {
       this.handleProcessFailure("OPENCODE_INVALID_RESPONSE", new Error("OpenCode ACP emitted an invalid message."));
       return;
     }
@@ -34737,7 +27628,7 @@ var OpencodeAcpClient = class {
   }
 };
 function safeUpstreamError3(value) {
-  if (!isRecord16(value) || typeof value.message !== "string") return "OpenCode ACP rejected the request.";
+  if (!isRecord17(value) || typeof value.message !== "string") return "OpenCode ACP rejected the request.";
   const message = value.message.toLowerCase();
   if (message.includes("auth") || message.includes("login") || message.includes("api key")) {
     return "OpenCode ACP authentication failed.";
@@ -34745,19 +27636,19 @@ function safeUpstreamError3(value) {
   if (message.includes("not initialized")) return "OpenCode ACP is not initialized.";
   return "OpenCode ACP rejected the request.";
 }
-function isRecord16(value) {
+function isRecord17(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 // src/acp/method-policy.ts
-var id4 = external_exports.string().min(1).max(256);
-var cwd = external_exports.string().min(1).max(4096);
-var mode = external_exports.enum(["agent", "plan", "ask"]);
-var textBlock = external_exports.object({
-  type: external_exports.literal("text"),
-  text: external_exports.string().min(1).max(256 * 1024)
+var id4 = z.string().min(1).max(256);
+var cwd = z.string().min(1).max(4096);
+var mode = z.enum(["agent", "plan", "ask"]);
+var textBlock = z.object({
+  type: z.literal("text"),
+  text: z.string().min(1).max(256 * 1024)
 }).strict();
-var imageBlock = external_exports.object({ type: external_exports.literal("image"), mimeType: external_exports.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]), data: external_exports.string().min(4).max(Math.ceil(8 * 1024 * 1024 / 3) * 4) }).strict().refine((value) => {
+var imageBlock = z.object({ type: z.literal("image"), mimeType: z.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]), data: z.string().min(4).max(Math.ceil(8 * 1024 * 1024 / 3) * 4) }).strict().refine((value) => {
   try {
     parseAcpImage(value);
     return true;
@@ -34765,67 +27656,67 @@ var imageBlock = external_exports.object({ type: external_exports.literal("image
     return false;
   }
 });
-var promptBlock = external_exports.union([textBlock, imageBlock]);
-var acpToolStreamSchema = external_exports.object({
-  backend: external_exports.enum(["cursor", "antigravity", "pi"]),
-  endpoint: external_exports.enum(ACP_TOOL_STREAM_ENDPOINTS),
-  args: external_exports.record(external_exports.unknown())
+var promptBlock = z.union([textBlock, imageBlock]);
+var acpToolStreamSchema = z.object({
+  backend: z.enum(["cursor", "antigravity", "pi"]),
+  endpoint: z.enum(ACP_TOOL_STREAM_ENDPOINTS),
+  args: z.record(z.unknown())
 }).strict();
 var schemas2 = {
-  "dsh/toolCall": external_exports.object({
+  "dsh/toolCall": z.object({
     sessionId: id4,
-    backend: external_exports.enum(["cursor", "antigravity", "pi"]),
-    endpoint: external_exports.enum(ACP_TOOL_CALL_ENDPOINTS),
-    args: external_exports.record(external_exports.unknown())
+    backend: z.enum(["cursor", "antigravity", "pi"]),
+    endpoint: z.enum(ACP_TOOL_CALL_ENDPOINTS),
+    args: z.record(z.unknown())
   }).strict(),
-  "dsh/sessionModels": external_exports.object({ sessionId: id4, backend: external_exports.enum(["antigravity", "pi"]) }).strict(),
-  "dsh/selectModel": external_exports.object({
+  "dsh/sessionModels": z.object({ sessionId: id4, backend: z.enum(["antigravity", "pi"]) }).strict(),
+  "dsh/selectModel": z.object({
     sessionId: id4,
-    backend: external_exports.enum(["antigravity", "pi"]),
+    backend: z.enum(["antigravity", "pi"]),
     model: id4,
     reasoningEffort: id4.optional()
   }).strict(),
-  "initialize": external_exports.object({
-    protocolVersion: external_exports.number().int().positive().optional(),
-    backend: external_exports.string().min(1).max(64).optional(),
-    clientInfo: external_exports.object({
-      name: external_exports.string().min(1).max(128).optional(),
-      version: external_exports.string().min(1).max(128).optional()
+  "initialize": z.object({
+    protocolVersion: z.number().int().positive().optional(),
+    backend: z.string().min(1).max(64).optional(),
+    clientInfo: z.object({
+      name: z.string().min(1).max(128).optional(),
+      version: z.string().min(1).max(128).optional()
     }).strict().optional()
   }).strict(),
-  "session/new": external_exports.object({
+  "session/new": z.object({
     cwd,
-    backend: external_exports.string().min(1).max(64).optional(),
-    mcpServers: external_exports.array(external_exports.unknown()).max(0).optional(),
+    backend: z.string().min(1).max(64).optional(),
+    mcpServers: z.array(z.unknown()).max(0).optional(),
     mode: mode.optional()
   }).strict(),
-  "session/load": external_exports.object({
+  "session/load": z.object({
     sessionId: id4,
-    backend: external_exports.string().min(1).max(64).optional()
+    backend: z.string().min(1).max(64).optional()
   }).strict(),
-  "session/prompt": external_exports.object({
+  "session/prompt": z.object({
     sessionId: id4,
-    backend: external_exports.enum(["cursor", "antigravity", "pi", "claude"]).optional(),
-    prompt: external_exports.array(promptBlock).min(1).max(16).refine((parts) => parts.filter((part) => part.type === "image").length <= 4)
+    backend: z.enum(["cursor", "antigravity", "pi", "claude"]).optional(),
+    prompt: z.array(promptBlock).min(1).max(16).refine((parts) => parts.filter((part) => part.type === "image").length <= 4)
   }).strict(),
-  "session/cancel": external_exports.object({
+  "session/cancel": z.object({
     sessionId: id4
   }).strict(),
-  "dsh/directoryList": external_exports.object({
-    path: external_exports.string().min(1).max(4096)
+  "dsh/directoryList": z.object({
+    path: z.string().min(1).max(4096)
   }).strict(),
-  "dsh/workspaceList": external_exports.object({
-    backend: external_exports.string().min(1).max(64).optional()
+  "dsh/workspaceList": z.object({
+    backend: z.string().min(1).max(64).optional()
   }).strict().optional(),
-  "dsh/sessionList": external_exports.object({
-    path: external_exports.string().min(1).max(4096).or(external_exports.literal("")),
-    backend: external_exports.string().min(1).max(64).optional(),
-    limit: external_exports.number().int().positive().max(100).optional(),
-    prewarm: external_exports.boolean().optional()
+  "dsh/sessionList": z.object({
+    path: z.string().min(1).max(4096).or(z.literal("")),
+    backend: z.string().min(1).max(64).optional(),
+    limit: z.number().int().positive().max(100).optional(),
+    prewarm: z.boolean().optional()
   }).strict(),
-  "dsh/sessionHistory": external_exports.object({
+  "dsh/sessionHistory": z.object({
     sessionId: id4,
-    backend: external_exports.string().min(1).max(64).optional()
+    backend: z.string().min(1).max(64).optional()
   }).strict()
 };
 var ACP_METHOD_ALLOWLIST = Object.freeze(Object.keys(schemas2));
@@ -35159,24 +28050,24 @@ async function transcriptPath(baseDir, conversationId) {
 
 // src/acp/peer-bridge.ts
 import { Buffer as Buffer8 } from "node:buffer";
-var streamOpenSchema2 = external_exports.object({
-  streamId: external_exports.string().min(1).max(128),
-  sessionId: external_exports.string().min(1).max(256),
+var streamOpenSchema2 = z.object({
+  streamId: z.string().min(1).max(128),
+  sessionId: z.string().min(1).max(256),
   tool: acpToolStreamSchema.optional()
 }).strict();
-var streamCloseSchema2 = external_exports.object({ streamId: external_exports.string().min(1).max(128) }).strict();
-var transferOpenSchema2 = external_exports.object({
-  transferId: external_exports.string().uuid(),
-  totalBytes: external_exports.number().int().positive().max(MAX_AGENT_ACP_TRANSFER_BYTES),
-  totalChunks: external_exports.number().int().positive()
+var streamCloseSchema2 = z.object({ streamId: z.string().min(1).max(128) }).strict();
+var transferOpenSchema2 = z.object({
+  transferId: z.string().uuid(),
+  totalBytes: z.number().int().positive().max(MAX_AGENT_ACP_TRANSFER_BYTES),
+  totalChunks: z.number().int().positive()
 }).strict();
-var transferChunkSchema2 = external_exports.object({
-  transferId: external_exports.string().uuid(),
-  index: external_exports.number().int().nonnegative(),
-  data: external_exports.string().min(1).max(Math.ceil(AGENT_ACP_TRANSFER_CHUNK_BYTES / 3) * 4)
+var transferChunkSchema2 = z.object({
+  transferId: z.string().uuid(),
+  index: z.number().int().nonnegative(),
+  data: z.string().min(1).max(Math.ceil(AGENT_ACP_TRANSFER_CHUNK_BYTES / 3) * 4)
 }).strict();
-var transferIdSchema2 = external_exports.object({ transferId: external_exports.string().uuid() }).strict();
-var transferReadSchema2 = external_exports.object({ transferId: external_exports.string().uuid(), index: external_exports.number().int().nonnegative() }).strict();
+var transferIdSchema2 = z.object({ transferId: z.string().uuid() }).strict();
+var transferReadSchema2 = z.object({ transferId: z.string().uuid(), index: z.number().int().nonnegative() }).strict();
 var MAX_ACTIVE_STREAMS2 = 16;
 var MAX_ACTIVE_TRANSFERS2 = 2;
 var TRANSFER_IDLE_MS2 = 2 * 6e4;
@@ -35475,15 +28366,15 @@ function decodeCanonicalBase642(value) {
   }
   return decoded;
 }
-function isRecord17(value) {
+function isRecord18(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function safeErrorCode3(error) {
-  if (isRecord17(error) && typeof error.code === "string") return error.code;
+  if (isRecord18(error) && typeof error.code === "string") return error.code;
   return "UNKNOWN";
 }
 function safeMethod2(input2) {
-  return isRecord17(input2) && typeof input2.method === "string" ? input2.method : "invalid";
+  return isRecord18(input2) && typeof input2.method === "string" ? input2.method : "invalid";
 }
 function concatChunks2(chunks, totalBytes) {
   const output = new Uint8Array(totalBytes);
@@ -35782,7 +28673,7 @@ var AcpRemoteGateway = class {
       const requested = typeof call.params.backend === "string" ? call.params.backend : selected ?? this.defaultBackend();
       if (selected !== void 0 && selected !== requested) throw new RpcError("INVALID_MESSAGE", "The ACP session backend does not match.");
       this.requireAcp(requested);
-      if (Array.isArray(call.params.prompt) && call.params.prompt.some((part) => isRecord18(part) && part.type === "image") && requested !== "antigravity") throw new RpcError("METHOD_NOT_ALLOWED", "This ACP backend does not accept image prompts.");
+      if (Array.isArray(call.params.prompt) && call.params.prompt.some((part) => isRecord19(part) && part.type === "image") && requested !== "antigravity") throw new RpcError("METHOD_NOT_ALLOWED", "This ACP backend does not accept image prompts.");
       this.sessionBackends.set(sessionId, requested);
     }
     if (call.method === "session/load") {
@@ -35883,7 +28774,7 @@ var AcpRemoteGateway = class {
       const acp = this.requireAcp(sessionBackend);
       const result = await acp.call("session/prompt", params);
       await this.inboundChain;
-      const stopReason = isRecord18(result) && typeof result.stopReason === "string" ? result.stopReason : "end_turn";
+      const stopReason = isRecord19(result) && typeof result.stopReason === "string" ? result.stopReason : "end_turn";
       const catchUp = takeTurnCatchUp(this.turnCatchUp, sessionId);
       this.logger.info("ACP prompt finished", {
         sessionId: shortSessionId(sessionId),
@@ -36194,7 +29085,7 @@ var AcpRemoteGateway = class {
       await peer.publishInbound(sessionId, {
         method: message.method,
         params: {
-          ...isRecord18(message.params) ? message.params : {},
+          ...isRecord19(message.params) ? message.params : {},
           requestHandle,
           sessionId,
           upstreamMethod: message.method
@@ -36229,8 +29120,8 @@ var AcpRemoteGateway = class {
   recordTurnCatchUp(sessionId, frame) {
     const list = this.turnCatchUp.get(sessionId);
     if (list === void 0 || frame.method !== "session/update") return;
-    const params = isRecord18(frame.params) ? frame.params : void 0;
-    const update = params !== void 0 && isRecord18(params.update) ? params.update : params;
+    const params = isRecord19(frame.params) ? frame.params : void 0;
+    const update = params !== void 0 && isRecord19(params.update) ? params.update : params;
     const kind = update !== void 0 && typeof update.sessionUpdate === "string" ? update.sessionUpdate : void 0;
     if (kind === void 0 || !CATCH_UP_SESSION_UPDATES.has(kind)) return;
     list.push({ method: frame.method, params: frame.params });
@@ -36366,11 +29257,11 @@ var AcpRemoteGateway = class {
     for (let page = 0; page < 100; page++) {
       const result = await client.call("session/list", { ...cwd2 ? { cwd: cwd2 } : {}, ...cursor2 ? { cursor: cursor2 } : {} });
       assertCurrent();
-      if (!isRecord18(result) || !Array.isArray(result.sessions) || result.nextCursor != null && (typeof result.nextCursor !== "string" || result.nextCursor.length === 0)) {
+      if (!isRecord19(result) || !Array.isArray(result.sessions) || result.nextCursor != null && (typeof result.nextCursor !== "string" || result.nextCursor.length === 0)) {
         throw new RpcError("INVALID_MESSAGE", "The ACP session catalog response is invalid.");
       }
       for (const item of result.sessions) {
-        if (!isRecord18(item) || typeof item.sessionId !== "string" || typeof item.cwd !== "string") continue;
+        if (!isRecord19(item) || typeof item.sessionId !== "string" || typeof item.cwd !== "string") continue;
         const canonical = await this.requireExistingDirectory(item.cwd).catch(() => void 0);
         assertCurrent();
         if (!canonical || cwd2 && canonical !== cwd2) continue;
@@ -36469,24 +29360,24 @@ var AcpRemoteGateway = class {
   }
 };
 function parseCallEnvelope2(input2) {
-  if (!isRecord18(input2) || typeof input2.method !== "string") {
+  if (!isRecord19(input2) || typeof input2.method !== "string") {
     throw new RpcError("INVALID_MESSAGE", "The Cursor call envelope is invalid.");
   }
   return { method: input2.method, params: input2.params ?? {} };
 }
 function parseRespondEnvelope(input2) {
-  if (!isRecord18(input2) || typeof input2.requestHandle !== "string" || input2.requestHandle.length === 0 || Object.keys(input2).some((key) => !["requestHandle", "decision", "result"].includes(key)) || typeof input2.decision !== "string" || !["allow-once", "reject-once", "cancel"].includes(input2.decision)) {
+  if (!isRecord19(input2) || typeof input2.requestHandle !== "string" || input2.requestHandle.length === 0 || Object.keys(input2).some((key) => !["requestHandle", "decision", "result"].includes(key)) || typeof input2.decision !== "string" || !["allow-once", "reject-once", "cancel"].includes(input2.decision)) {
     throw new RpcError("INVALID_MESSAGE", "The ACP respond envelope is invalid.");
   }
   return input2;
 }
 function permissionOptions(params) {
-  if (!isRecord18(params) || !Array.isArray(params.options) || params.options.length === 0) {
+  if (!isRecord19(params) || !Array.isArray(params.options) || params.options.length === 0) {
     throw new Error("Missing permission options");
   }
   const ids = /* @__PURE__ */ new Set();
   const options = params.options.map((option) => {
-    if (!isRecord18(option) || typeof option.optionId !== "string" || !option.optionId || typeof option.kind !== "string" || !["allow_once", "allow_always", "reject_once", "reject_always"].includes(option.kind) || ids.has(option.optionId)) throw new Error("Invalid permission option");
+    if (!isRecord19(option) || typeof option.optionId !== "string" || !option.optionId || typeof option.kind !== "string" || !["allow_once", "allow_always", "reject_once", "reject_always"].includes(option.kind) || ids.has(option.optionId)) throw new Error("Invalid permission option");
     ids.add(option.optionId);
     return { kind: option.kind, optionId: option.optionId };
   });
@@ -36507,21 +29398,21 @@ function mapPermissionDecision(params, pending) {
   }
   const outcome = pending.method === "cursor/create_plan" ? params.decision === "allow-once" ? "accepted" : params.decision === "cancel" ? "cancelled" : "rejected" : "cancelled";
   if (params.result !== void 0) {
-    if (!isRecord18(params.result) || Object.keys(params.result).length !== 1 || !isRecord18(params.result.outcome) || Object.keys(params.result.outcome).length !== 1 || params.result.outcome.outcome !== outcome) throw invalid();
+    if (!isRecord19(params.result) || Object.keys(params.result).length !== 1 || !isRecord19(params.result.outcome) || Object.keys(params.result.outcome).length !== 1 || params.result.outcome.outcome !== outcome) throw invalid();
   }
   return { outcome: { outcome } };
 }
 function readSessionId(value) {
-  if (!isRecord18(value)) return void 0;
+  if (!isRecord19(value)) return void 0;
   return typeof value.sessionId === "string" ? value.sessionId : void 0;
 }
 function readNestedSessionId(value) {
-  if (!isRecord18(value)) return void 0;
-  if (isRecord18(value.update) && typeof value.update.sessionId === "string") return value.update.sessionId;
+  if (!isRecord19(value)) return void 0;
+  if (isRecord19(value.update) && typeof value.update.sessionId === "string") return value.update.sessionId;
   return void 0;
 }
 function sanitizeSessionResult(value) {
-  if (!isRecord18(value)) return value;
+  if (!isRecord19(value)) return value;
   const next = {};
   for (const [key, entry] of Object.entries(value)) {
     if (key === "sessionId" || key === "stopReason" || key === "mode") next[key] = entry;
@@ -36579,7 +29470,7 @@ function takeTurnCatchUp(turnCatchUp, sessionId) {
   turnCatchUp.delete(sessionId);
   return list;
 }
-function isRecord18(value) {
+function isRecord19(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -36940,11 +29831,11 @@ function editableConfig(config) {
     ...config.acp === void 0 ? {} : { acp: { enabled: config.acp.enabled, backends: config.acp.backends } }
   };
 }
-function isRecord19(value) {
+function isRecord20(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function record6(value) {
-  if (!isRecord19(value)) throw new ClientModeError("INVALID_MESSAGE", "The control request payload is invalid.");
+  if (!isRecord20(value)) throw new ClientModeError("INVALID_MESSAGE", "The control request payload is invalid.");
   return value;
 }
 function ok3(value) {
@@ -37187,8 +30078,8 @@ function shortId2(value) {
 }
 
 // src/rpc-router.ts
-var wireRequestSchema = external_exports.object({ method: external_exports.string().min(1), params: external_exports.unknown() }).strict();
-var emptyParamsSchema = external_exports.object({}).strict();
+var wireRequestSchema = z.object({ method: z.string().min(1), params: z.unknown() }).strict();
+var emptyParamsSchema = z.object({}).strict();
 var apiMethods = /* @__PURE__ */ new Set([
   "harness.transport.describe",
   "harness.api.call",
@@ -37455,51 +30346,51 @@ var MAX_REMOTE_FILE_LOCATOR_CHARS = 4096;
 var MAX_REMOTE_DIRECTORY_ENTRIES = 1e3;
 
 // src/file-viewer-bridge.ts
-var locatorSchema = external_exports.string().min(1).max(MAX_REMOTE_FILE_LOCATOR_CHARS);
-var callSchema2 = external_exports.discriminatedUnion("endpoint", [
-  external_exports.object({
-    endpoint: external_exports.literal("stat"),
-    payload: external_exports.object({ path: locatorSchema }).strict()
+var locatorSchema = z.string().min(1).max(MAX_REMOTE_FILE_LOCATOR_CHARS);
+var callSchema2 = z.discriminatedUnion("endpoint", [
+  z.object({
+    endpoint: z.literal("stat"),
+    payload: z.object({ path: locatorSchema }).strict()
   }).strict(),
-  external_exports.object({
-    endpoint: external_exports.literal("readRange"),
-    payload: external_exports.object({
+  z.object({
+    endpoint: z.literal("readRange"),
+    payload: z.object({
       path: locatorSchema,
-      offset: external_exports.number().int().nonnegative().safe(),
-      length: external_exports.number().int().positive().max(REMOTE_FILE_CHUNK_BYTES)
+      offset: z.number().int().nonnegative().safe(),
+      length: z.number().int().positive().max(REMOTE_FILE_CHUNK_BYTES)
     }).strict()
   }).strict(),
-  external_exports.object({
-    endpoint: external_exports.literal("list"),
-    payload: external_exports.object({ path: locatorSchema }).strict()
+  z.object({
+    endpoint: z.literal("list"),
+    payload: z.object({ path: locatorSchema }).strict()
   }).strict()
 ]);
-var statResultSchema = external_exports.object({
+var statResultSchema = z.object({
   path: locatorSchema,
-  name: external_exports.string().min(1).max(1024),
-  ext: external_exports.string().max(128),
-  mime: external_exports.string().min(1).max(256),
-  size: external_exports.number().int().nonnegative().safe(),
-  mtimeMs: external_exports.number().nonnegative().optional(),
-  isDirectory: external_exports.boolean(),
-  exists: external_exports.boolean()
+  name: z.string().min(1).max(1024),
+  ext: z.string().max(128),
+  mime: z.string().min(1).max(256),
+  size: z.number().int().nonnegative().safe(),
+  mtimeMs: z.number().nonnegative().optional(),
+  isDirectory: z.boolean(),
+  exists: z.boolean()
 }).strict();
-var rangeResultSchema = external_exports.object({
-  data: external_exports.string().max(Math.ceil(REMOTE_FILE_CHUNK_BYTES / 3) * 4 + 4),
-  offset: external_exports.number().int().nonnegative().safe(),
-  size: external_exports.number().int().nonnegative().safe(),
-  eof: external_exports.boolean()
+var rangeResultSchema = z.object({
+  data: z.string().max(Math.ceil(REMOTE_FILE_CHUNK_BYTES / 3) * 4 + 4),
+  offset: z.number().int().nonnegative().safe(),
+  size: z.number().int().nonnegative().safe(),
+  eof: z.boolean()
 }).strict();
-var directoryEntrySchema = external_exports.object({
-  name: external_exports.string().min(1).max(1024),
+var directoryEntrySchema = z.object({
+  name: z.string().min(1).max(1024),
   path: locatorSchema,
-  isDirectory: external_exports.boolean(),
-  size: external_exports.number().int().nonnegative().safe().optional(),
-  mtimeMs: external_exports.number().nonnegative().optional()
+  isDirectory: z.boolean(),
+  size: z.number().int().nonnegative().safe().optional(),
+  mtimeMs: z.number().nonnegative().optional()
 }).strict();
-var listResultSchema = external_exports.object({
+var listResultSchema = z.object({
   path: locatorSchema,
-  entries: external_exports.array(directoryEntrySchema).max(MAX_REMOTE_DIRECTORY_ENTRIES)
+  entries: z.array(directoryEntrySchema).max(MAX_REMOTE_DIRECTORY_ENTRIES)
 }).strict();
 var RemoteFileViewerBridge = class {
   constructor(service, logger) {
@@ -37531,7 +30422,7 @@ var RemoteFileViewerBridge = class {
       });
       return value;
     } catch (error) {
-      if (error instanceof external_exports.ZodError && params.endpoint === "list" && isOversizedListing(result.value)) {
+      if (error instanceof z.ZodError && params.endpoint === "list" && isOversizedListing(result.value)) {
         throw new RpcError(
           "RESPONSE_TOO_LARGE",
           `The remote directory contains more than ${MAX_REMOTE_DIRECTORY_ENTRIES} entries.`,
@@ -38584,71 +31475,71 @@ function historyRequestPayload(payload, maxMessages) {
 }
 
 // src/harness-api-bridge.ts
-var callSchema3 = external_exports.object({
-  method: external_exports.string().min(1).max(80),
-  rpcId: external_exports.string().min(1).max(128),
-  payload: external_exports.unknown()
+var callSchema3 = z.object({
+  method: z.string().min(1).max(80),
+  rpcId: z.string().min(1).max(128),
+  payload: z.unknown()
 }).strict();
-var respondSchema = external_exports.object({
-  message: external_exports.object({
-    type: external_exports.literal("client-response"),
-    rpcId: external_exports.string().min(1).max(128),
-    result: external_exports.unknown()
+var respondSchema = z.object({
+  message: z.object({
+    type: z.literal("client-response"),
+    rpcId: z.string().min(1).max(128),
+    result: z.unknown()
   }).strict()
 }).strict();
-var streamOpenSchema3 = external_exports.object({
-  streamId: external_exports.string().min(1).max(128),
-  stream: external_exports.enum(["mux", "host"]),
-  rpcId: external_exports.string().min(1).max(128),
-  payload: external_exports.object({
+var streamOpenSchema3 = z.object({
+  streamId: z.string().min(1).max(128),
+  stream: z.enum(["mux", "host"]),
+  rpcId: z.string().min(1).max(128),
+  payload: z.object({
     // Optional focus for a mux stream: only frames belonging to this session
     // are forwarded. The Remote Web selects one session at a time, so without
     // this every active session's events (potentially megabytes) would be
     // pushed over the tunnel and stall the WebRTC data channel.
-    sessionId: external_exports.string().min(1).max(128).optional()
+    sessionId: z.string().min(1).max(128).optional()
   }).strict()
 }).strict();
-var streamCloseSchema3 = external_exports.object({ streamId: external_exports.string().min(1).max(128) }).strict();
-var transferIdSchema3 = external_exports.string().min(1).max(128);
-var transferOpenSchema3 = external_exports.object({
+var streamCloseSchema3 = z.object({ streamId: z.string().min(1).max(128) }).strict();
+var transferIdSchema3 = z.string().min(1).max(128);
+var transferOpenSchema3 = z.object({
   transferId: transferIdSchema3,
-  totalBytes: external_exports.number().int().positive().max(MAX_HARNESS_API_TRANSFER_BYTES),
-  totalChunks: external_exports.number().int().positive().max(Math.ceil(MAX_HARNESS_API_TRANSFER_BYTES / HARNESS_API_TRANSFER_CHUNK_BYTES))
+  totalBytes: z.number().int().positive().max(MAX_HARNESS_API_TRANSFER_BYTES),
+  totalChunks: z.number().int().positive().max(Math.ceil(MAX_HARNESS_API_TRANSFER_BYTES / HARNESS_API_TRANSFER_CHUNK_BYTES))
 }).strict();
-var transferChunkSchema3 = external_exports.object({
+var transferChunkSchema3 = z.object({
   transferId: transferIdSchema3,
-  index: external_exports.number().int().nonnegative(),
-  data: external_exports.string().max(Math.ceil(HARNESS_API_TRANSFER_CHUNK_BYTES / 3) * 4)
+  index: z.number().int().nonnegative(),
+  data: z.string().max(Math.ceil(HARNESS_API_TRANSFER_CHUNK_BYTES / 3) * 4)
 }).strict();
-var transferCommitSchema = external_exports.object({ transferId: transferIdSchema3 }).strict();
-var transferReadSchema3 = external_exports.object({ transferId: transferIdSchema3, index: external_exports.number().int().nonnegative() }).strict();
-var transferCloseSchema = external_exports.object({ transferId: transferIdSchema3 }).strict();
-var commandExecuteSchema = external_exports.object({
-  agentId: external_exports.string().min(1).max(128),
-  line: external_exports.string().min(1).max(2048),
+var transferCommitSchema = z.object({ transferId: transferIdSchema3 }).strict();
+var transferReadSchema3 = z.object({ transferId: transferIdSchema3, index: z.number().int().nonnegative() }).strict();
+var transferCloseSchema = z.object({ transferId: transferIdSchema3 }).strict();
+var commandExecuteSchema = z.object({
+  agentId: z.string().min(1).max(128),
+  line: z.string().min(1).max(2048),
   // dsh-commands <= 0.1.2 calls this field `images`; dsh-commands 0.1.5
   // renamed it to `submittedAttachments` and expanded its element type to
   // include staged file receipts. Remote command execution keeps attachments
   // out of scope, so either compatibility field is restricted to an empty
   // list. The dispatcher below chooses the matching Host descriptor.
-  images: external_exports.array(external_exports.never()).length(0).optional(),
-  submittedAttachments: external_exports.array(external_exports.never()).length(0).optional()
+  images: z.array(z.never()).length(0).optional(),
+  submittedAttachments: z.array(z.never()).length(0).optional()
 }).strict().superRefine((value, context) => {
   if (value.images !== void 0 && value.submittedAttachments !== void 0) {
     context.addIssue({
-      code: external_exports.ZodIssueCode.custom,
+      code: z.ZodIssueCode.custom,
       message: "Use either images or submittedAttachments, not both.",
       path: ["submittedAttachments"]
     });
   }
 });
-var commandListSchema = external_exports.object({
-  agentId: external_exports.string().min(1).max(128)
+var commandListSchema = z.object({
+  agentId: z.string().min(1).max(128)
 }).strict();
-var directoryListSchema = external_exports.object({
-  path: external_exports.string().min(1).max(4096).optional()
+var directoryListSchema = z.object({
+  path: z.string().min(1).max(4096).optional()
 }).strict();
-var credentialRefSchema = external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/, "Invalid credential reference name").max(128);
+var credentialRefSchema = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/, "Invalid credential reference name").max(128);
 var CONFIG_PLANE_SETTINGS_BYTES = 64 * 1024;
 var CONFIG_PLANE_MAX_OPS = 64;
 var CONFIG_PLANE_MAX_PATH_SEGMENTS = 8;
@@ -38656,50 +31547,50 @@ var CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES = 64;
 var CONFIG_PLANE_MAX_CREDENTIAL_VALUE_BYTES = 8 * 1024;
 var CONFIG_PLANE_MAX_BASE_URL_BYTES = 2048;
 var CONFIG_PLANE_MAX_NS_BYTES = 128;
-var settingsDescribeSchema = external_exports.object({}).strict();
+var settingsDescribeSchema = z.object({}).strict();
 var settingsWriteBase = {
-  ns: external_exports.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES),
-  expectedRevision: external_exports.number().int().nonnegative().optional()
+  ns: z.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES),
+  expectedRevision: z.number().int().nonnegative().optional()
 };
-var settingsUpdateSchema = external_exports.object({
+var settingsUpdateSchema = z.object({
   ...settingsWriteBase,
-  patch: external_exports.record(external_exports.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES), external_exports.unknown())
+  patch: z.record(z.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES), z.unknown())
 }).strict();
-var settingsReplaceSchema = external_exports.object({
+var settingsReplaceSchema = z.object({
   ...settingsWriteBase,
-  section: external_exports.record(external_exports.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES), external_exports.unknown())
+  section: z.record(z.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES), z.unknown())
 }).strict();
-var settingsOpSchema = external_exports.union([
-  external_exports.object({
-    op: external_exports.literal("set"),
-    path: external_exports.array(external_exports.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES)).max(CONFIG_PLANE_MAX_PATH_SEGMENTS),
-    value: external_exports.unknown()
+var settingsOpSchema = z.union([
+  z.object({
+    op: z.literal("set"),
+    path: z.array(z.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES)).max(CONFIG_PLANE_MAX_PATH_SEGMENTS),
+    value: z.unknown()
   }).strict(),
-  external_exports.object({
-    op: external_exports.literal("unset"),
-    path: external_exports.array(external_exports.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES)).max(CONFIG_PLANE_MAX_PATH_SEGMENTS)
+  z.object({
+    op: z.literal("unset"),
+    path: z.array(z.string().min(1).max(CONFIG_PLANE_MAX_PATH_SEGMENT_BYTES)).max(CONFIG_PLANE_MAX_PATH_SEGMENTS)
   }).strict()
 ]);
-var settingsMutateSchema = external_exports.object({
+var settingsMutateSchema = z.object({
   ...settingsWriteBase,
-  ops: external_exports.array(settingsOpSchema).min(1).max(CONFIG_PLANE_MAX_OPS)
+  ops: z.array(settingsOpSchema).min(1).max(CONFIG_PLANE_MAX_OPS)
 }).strict();
-var credentialsDescribeSchema = external_exports.object({
-  refs: external_exports.array(credentialRefSchema).max(CONFIG_PLANE_MAX_OPS)
+var credentialsDescribeSchema = z.object({
+  refs: z.array(credentialRefSchema).max(CONFIG_PLANE_MAX_OPS)
 }).strict();
-var credentialsSetSchema = external_exports.object({
+var credentialsSetSchema = z.object({
   ref: credentialRefSchema,
-  value: external_exports.string().min(1).max(CONFIG_PLANE_MAX_CREDENTIAL_VALUE_BYTES)
+  value: z.string().min(1).max(CONFIG_PLANE_MAX_CREDENTIAL_VALUE_BYTES)
 }).strict();
-var credentialsUnsetSchema = external_exports.object({
+var credentialsUnsetSchema = z.object({
   ref: credentialRefSchema
 }).strict();
-var discoverModelsSchema = external_exports.object({
-  settingsNs: external_exports.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES),
-  provider: external_exports.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES).optional(),
-  baseURL: external_exports.string().max(CONFIG_PLANE_MAX_BASE_URL_BYTES).optional(),
-  api: external_exports.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES).optional(),
-  apiKey: external_exports.string().min(1).max(CONFIG_PLANE_MAX_CREDENTIAL_VALUE_BYTES).optional()
+var discoverModelsSchema = z.object({
+  settingsNs: z.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES),
+  provider: z.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES).optional(),
+  baseURL: z.string().max(CONFIG_PLANE_MAX_BASE_URL_BYTES).optional(),
+  api: z.string().min(1).max(CONFIG_PLANE_MAX_NS_BYTES).optional(),
+  apiKey: z.string().min(1).max(CONFIG_PLANE_MAX_CREDENTIAL_VALUE_BYTES).optional()
 }).strict();
 var HARNESS_API_ALLOWLIST = [
   "session.list",
@@ -39215,7 +32106,7 @@ function parseConfigPlane(schema, payload, label) {
   try {
     return schema.parse(payload);
   } catch (error) {
-    if (error instanceof external_exports.ZodError) {
+    if (error instanceof z.ZodError) {
       throw new RpcError("INVALID_MESSAGE", `The ${label} payload is invalid for the remote channel.`);
     }
     throw error;
@@ -39354,49 +32245,49 @@ function concatChunks3(chunks, totalBytes) {
 }
 
 // src/harness-remote-bridge.ts
-var endpointSchema = external_exports.string().min(1).max(128).regex(/^(?:\$events(?:\/result)?|[A-Za-z0-9_$.-]+\/[A-Za-z0-9_$.-]+)$/);
-var callSchema4 = external_exports.object({ endpoint: endpointSchema, payload: external_exports.unknown() }).strict();
-var streamOpenSchema4 = external_exports.object({
-  streamId: external_exports.string().min(1).max(128),
+var endpointSchema = z.string().min(1).max(128).regex(/^(?:\$events(?:\/result)?|[A-Za-z0-9_$.-]+\/[A-Za-z0-9_$.-]+)$/);
+var callSchema4 = z.object({ endpoint: endpointSchema, payload: z.unknown() }).strict();
+var streamOpenSchema4 = z.object({
+  streamId: z.string().min(1).max(128),
   endpoint: endpointSchema,
-  payload: external_exports.unknown()
+  payload: z.unknown()
 }).strict();
-var streamCloseSchema4 = external_exports.object({ streamId: external_exports.string().min(1).max(128) }).strict();
-var commandExecuteArgsSchema = external_exports.object({
-  agentId: external_exports.string().min(1).max(128),
-  line: external_exports.string().min(1).max(2048),
+var streamCloseSchema4 = z.object({ streamId: z.string().min(1).max(128) }).strict();
+var commandExecuteArgsSchema = z.object({
+  agentId: z.string().min(1).max(128),
+  line: z.string().min(1).max(2048),
   // dsh-commands <= 0.1.2 calls this field `images`; dsh-commands 0.1.5
   // renamed it to `submittedAttachments`. Only empty arrays are exposed by
   // the Remote bridge; command attachments are deliberately out of scope.
-  images: external_exports.array(external_exports.never()).length(0).optional(),
-  submittedAttachments: external_exports.array(external_exports.never()).length(0).optional()
+  images: z.array(z.never()).length(0).optional(),
+  submittedAttachments: z.array(z.never()).length(0).optional()
 }).strict().superRefine((value, context) => {
   if (value.images !== void 0 && value.submittedAttachments !== void 0) {
     context.addIssue({
-      code: external_exports.ZodIssueCode.custom,
+      code: z.ZodIssueCode.custom,
       message: "Use either images or submittedAttachments, not both.",
       path: ["submittedAttachments"]
     });
   }
 });
-var commandExecutePayloadSchema = external_exports.object({ args: commandExecuteArgsSchema }).strict();
-var transferOpenSchema4 = external_exports.object({
-  transferId: external_exports.string().uuid(),
-  totalBytes: external_exports.number().int().positive().max(MAX_HARNESS_API_TRANSFER_BYTES),
-  totalChunks: external_exports.number().int().positive()
+var commandExecutePayloadSchema = z.object({ args: commandExecuteArgsSchema }).strict();
+var transferOpenSchema4 = z.object({
+  transferId: z.string().uuid(),
+  totalBytes: z.number().int().positive().max(MAX_HARNESS_API_TRANSFER_BYTES),
+  totalChunks: z.number().int().positive()
 }).strict();
-var transferChunkSchema4 = external_exports.object({
-  transferId: external_exports.string().uuid(),
-  index: external_exports.number().int().nonnegative(),
-  data: external_exports.string().min(1)
+var transferChunkSchema4 = z.object({
+  transferId: z.string().uuid(),
+  index: z.number().int().nonnegative(),
+  data: z.string().min(1)
 }).strict();
-var transferIdSchema4 = external_exports.object({ transferId: external_exports.string().uuid() }).strict();
-var transferReadSchema4 = external_exports.object({
-  transferId: external_exports.string().uuid(),
-  index: external_exports.number().int().nonnegative()
+var transferIdSchema4 = z.object({ transferId: z.string().uuid() }).strict();
+var transferReadSchema4 = z.object({
+  transferId: z.string().uuid(),
+  index: z.number().int().nonnegative()
 }).strict();
-var directoryListSchema2 = external_exports.object({
-  path: external_exports.string().min(1).max(4096).optional()
+var directoryListSchema2 = z.object({
+  path: z.string().min(1).max(4096).optional()
 }).strict();
 var MAX_ACTIVE_STREAMS3 = MAX_ALPHA_STREAMS_PER_CONNECTION;
 var MAX_ACTIVE_TRANSFERS3 = MAX_ACTIVE_TRANSFERS_PER_DIRECTION;
@@ -39442,6 +32333,7 @@ var HARNESS_REMOTE_ALLOWLIST = [
   "session/list",
   "session/modelCatalog",
   "session/page",
+  "session/usage",
   "session/prompt",
   "session/projections",
   "session/initializeDefaultModel",
@@ -39520,6 +32412,13 @@ var HarnessRemoteBridge = class {
       }
     }
     if (codexResult !== void 0) return reservation === void 0 ? codexResult : this.terminal.result(params.endpoint, params.payload, codexResult, reservation);
+    if (params.endpoint === "session/usage") {
+      return readSessionTokenUsage(
+        (endpoint, nativePayload, signal2) => this.gateway.dispatch(endpoint, nativePayload, signal2),
+        params.payload,
+        AbortSignal.timeout(6e4)
+      );
+    }
     if (params.endpoint === "session/canOpenWorkspacePath") {
       return { ok: true, value: true };
     }
@@ -39746,11 +32645,11 @@ var HarnessRemoteBridge = class {
 };
 function normalizeWorkspaceChangesPayload(endpoint, payload, harnessVersion) {
   if (endpoint !== "workspaceFiles/changes" || !requiresWorkspaceChangePath(harnessVersion)) return payload;
-  if (!isRecord20(payload) || !isRecord20(payload.args) || Object.hasOwn(payload.args, "path")) return payload;
+  if (!isRecord21(payload) || !isRecord21(payload.args) || Object.hasOwn(payload.args, "path")) return payload;
   return { ...payload, args: { ...payload.args, path: "." } };
 }
 function normalizeWorkspaceRequestPayload(endpoint, payload, harnessVersion) {
-  if (!isRecord20(payload) || !isRecord20(payload.args)) return payload;
+  if (!isRecord21(payload) || !isRecord21(payload.args)) return payload;
   const args = payload.args;
   if (endpoint === "workspaceFiles/readBytes" && requiresWorkspaceChangePath(harnessVersion)) {
     if (!Object.hasOwn(args, "range") || Object.hasOwn(args, "options")) return payload;
@@ -39848,13 +32747,13 @@ function needsDirectoryFallback(result) {
 }
 function requestArgs(payload) {
   const root = record7(payload);
-  const args = isRecord20(root.args) ? root.args : root;
+  const args = isRecord21(root.args) ? root.args : root;
   return record7(args.request ?? args._request ?? args);
 }
 function record7(value) {
-  return isRecord20(value) ? value : {};
+  return isRecord21(value) ? value : {};
 }
-function isRecord20(value) {
+function isRecord21(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -41502,17 +34401,33 @@ export {
 @noble/hashes/esm/utils.js:
   (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
-@noble/curves/esm/utils.js:
+@noble/curves/esm/abstract/utils.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/esm/abstract/modular.js:
-@noble/curves/esm/abstract/curve.js:
-@noble/curves/esm/abstract/edwards.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/esm/abstract/montgomery.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/esm/ed25519.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/utils.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/abstract/modular.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/abstract/curve.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/abstract/edwards.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/abstract/montgomery.js:
+  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
 @noble/curves/ed25519.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 

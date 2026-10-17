@@ -2,6 +2,7 @@ import type { ApiProxy } from '@deepseek-ai/dsh-host-apiproxy/api'
 import { AgentAcpClient } from '@dsh-remote/client-core'
 import type { AcpSessionModels } from '@dsh-remote/protocol'
 import { ACP_TOOL_CALL_ENDPOINTS, ACP_TOOL_STREAM_ENDPOINTS } from '@dsh-remote/protocol'
+import { collectSessionTokenUsage } from '../session-token-usage.js'
 import type { RemoteTypertGatewayTarget, TypertGatewayRequest, TypertRpcResult } from '../typert-gateway-contract.js'
 import type { AcpImage } from './image-content.js'
 import { acpImageContent, acpImageLimits, parseAcpImage } from './image-content.js'
@@ -229,6 +230,7 @@ export class AcpVirtualHarness implements RemoteTypertGatewayTarget {
         case 'session/fork': return business(failure('bad-request', `${this.backendLabel()} Remote does not support session fork yet.`))
         case 'session/history': return business(await this.sessionHistory(requestArg(args)))
         case 'session/page': return business(await this.sessionPage(requestArg(args)))
+        case 'session/usage': return business(await this.sessionUsage(requestArg(args)))
         case 'session/prompt': return business(await this.prompt(requestArg(args), signal))
         case 'session/cancel': return business(await this.cancel(requestArg(args), signal))
         case 'session/rename': return business(await this.renameSession(requestArg(args)))
@@ -566,6 +568,18 @@ export class AcpVirtualHarness implements RemoteTypertGatewayTarget {
       limit: optionalPositiveInteger(request.limit) ?? optionalPositiveInteger(request.maxMessages) ?? 50,
     })
     return success({ records: page.records, hasMore: page.hasMore })
+  }
+
+  private async sessionUsage(request: JsonRecord): Promise<unknown> {
+    const sessionId = extractSessionId(request)
+    const session = this.ensureSessionRegistered(sessionId) ?? this.sessions.get(sessionId)
+    if (session === undefined) return failure('session-not-found', 'The Session was not found.')
+    await this.hydrateSession(session)
+    const usage = await collectSessionTokenUsage(sessionId, async () => ({
+      records: session.events,
+      hasMore: false,
+    }), AbortSignal.timeout(60_000))
+    return success(usage)
   }
 
   private historyPage(

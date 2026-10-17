@@ -1055,6 +1055,44 @@ picker 时，可以退回 Plugin Host 本地只读目录枚举；`session/canOpe
 `dynamicCordisRunner/*` 固定调用本地 Gateway，不得因选中远端 Host 而把本机 UI/runtime
 装载请求转发到 Host。
 
+`session/usage` 是 Host 本地只读合计，不是官方 Typert 方法，也不会被转发给 Gateway。
+请求使用与 `session/page` 相同的 `address`（`session` 或 `subagent`），也可以只提供
+`request.sessionId`。Host 按已允许的 `session/page` 向旧历史翻页，只累计已提交
+`assistant/message` 的官方 `usage`：`inputTokens` 仅为未缓存输入，缓存读写分开计数，
+`reasoningTokens` 包含在 `outputTokens` 中。同一次结果给出两个范围：顶层字段是这个会话
+全部已提交调用的总量；`turn` 只累计编号最大的那一轮（同一轮里的多次模型调用相加）。
+没有编号轮次时 `turn` 为 `null`。两边的 `totalTokens` 都是该范围内各次调用的合计。
+`complete: false` 表示该范围内有助手消息没有可用用量、某次用量缺少可核对总量，或历史没有读完。
+历史未读完时，会话和当前轮的 `complete` 都为 `false`。进行中的流式回复在提交为
+`assistant/message` 之前不计入。Host 不估算 token。结果为：
+
+```json
+{
+  "sessionId": "session-id",
+  "inputTokens": 0,
+  "outputTokens": 0,
+  "cacheReadTokens": 0,
+  "cacheWriteTokens": 0,
+  "reasoningTokens": 0,
+  "totalTokens": 0,
+  "reportedCalls": 0,
+  "unreportedCalls": 0,
+  "complete": true,
+  "turn": {
+    "turn": 1,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "cacheReadTokens": 0,
+    "cacheWriteTokens": 0,
+    "reasoningTokens": 0,
+    "totalTokens": 0,
+    "reportedCalls": 0,
+    "unreportedCalls": 0,
+    "complete": true
+  }
+}
+```
+
 原生日程 UI 的只读 `schedule/list` 与 `schedule/catalog` 使用相同官方 carrier；不开放
 `schedule/create`、`schedule/delete` 或按 namespace 放开其他方法。Client 的本机 HTTP
 dispatcher 将远程 RPC 拒绝与传输错误封装为官方 `{ ok: false, error }`，保留 request 的

@@ -792,6 +792,87 @@ class ScriptedCore {
 }
 
 describe('HarnessAlphaClient', () => {
+  it('reads committed session token usage and rejects a malformed total', async () => {
+    await runScenarios([
+      {
+        name: 'requests usage for the addressed session',
+        run: async () => {
+          const rpc = vi.fn(async () => ({
+            ok: true,
+            value: {
+              sessionId: 's1',
+              inputTokens: 3,
+              outputTokens: 4,
+              cacheReadTokens: 1,
+              cacheWriteTokens: 2,
+              reasoningTokens: 1,
+              totalTokens: 10,
+              reportedCalls: 1,
+              unreportedCalls: 0,
+              complete: true,
+              turn: {
+                turn: 4,
+                inputTokens: 1,
+                outputTokens: 2,
+                cacheReadTokens: 0,
+                cacheWriteTokens: 0,
+                reasoningTokens: 0,
+                totalTokens: 3,
+                reportedCalls: 1,
+                unreportedCalls: 0,
+                complete: true,
+              },
+            },
+          }))
+          const client = new HarnessAlphaClient({ rpc } as unknown as RemoteClientCore)
+          await expect(client.sessionUsage('s1', 'parent')).resolves.toEqual({
+            sessionId: 's1',
+            inputTokens: 3,
+            outputTokens: 4,
+            cacheReadTokens: 1,
+            cacheWriteTokens: 2,
+            reasoningTokens: 1,
+            totalTokens: 10,
+            reportedCalls: 1,
+            unreportedCalls: 0,
+            complete: true,
+            turn: {
+              turn: 4,
+              inputTokens: 1,
+              outputTokens: 2,
+              cacheReadTokens: 0,
+              cacheWriteTokens: 0,
+              reasoningTokens: 0,
+              totalTokens: 3,
+              reportedCalls: 1,
+              unreportedCalls: 0,
+              complete: true,
+            },
+          })
+          expect(rpc).toHaveBeenCalledWith('harness.remote.call', {
+            endpoint: 'session/usage',
+            payload: {
+              args: {
+                request: {
+                  address: { kind: 'subagent', parentSessionId: 'parent', childSessionId: 's1', mode: 'unknown' },
+                },
+              },
+            },
+          }, expect.any(AbortSignal), undefined)
+        },
+      },
+      {
+        name: 'rejects a non-integer token count',
+        run: async () => {
+          const client = new HarnessAlphaClient({
+            rpc: async () => ({ ok: true, value: { sessionId: 's1', inputTokens: 1.5, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, reasoningTokens: 0, totalTokens: 0, reportedCalls: 0, unreportedCalls: 0, complete: false } }),
+          } as unknown as RemoteClientCore)
+          await expect(client.sessionUsage('s1')).rejects.toMatchObject({ code: 'INVALID_MESSAGE' })
+        },
+      },
+    ])
+  })
+
   it('ignores a superseded follow snapshot and restores only the latest subscription', async () => {
     const core = new ScriptedCore()
     const frames: Array<{ rpcId: string; payload: Record<string, unknown> }> = []

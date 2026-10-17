@@ -25,6 +25,7 @@ import { harnessSessionGeneration } from './harness-version.js'
 import type { SafeLogger } from './logging.js'
 import { listRemoteDirectory } from './remote-directory-browser.js'
 import { RpcError } from './rpc-router.js'
+import { readSessionTokenUsage } from './session-token-usage.js'
 import type { LocalTypertGateway, TypertRpcResult } from './typert-gateway-contract.js'
 import { CodexWorkspaceBridge } from './codex-workspace-bridge.js'
 
@@ -101,7 +102,7 @@ const MAX_ACTIVE_STREAMS = MAX_ALPHA_STREAMS_PER_CONNECTION
 const MAX_ACTIVE_TRANSFERS = MAX_ACTIVE_TRANSFERS_PER_DIRECTION
 const INLINE_TRANSFER_RESPONSE_BYTES = 2 * 1024 * 1024
 
-/** Fixed v0.1.2 Typert Remote subset exposed to authenticated peers. */
+/** Fixed Remote endpoints exposed to authenticated peers. `session/usage` is computed locally from `session/page`. */
 export const HARNESS_REMOTE_ALLOWLIST = [
   '$events',
   '$events/result',
@@ -143,6 +144,7 @@ export const HARNESS_REMOTE_ALLOWLIST = [
   'session/list',
   'session/modelCatalog',
   'session/page',
+  'session/usage',
   'session/prompt',
   'session/projections',
   'session/initializeDefaultModel',
@@ -227,6 +229,13 @@ export class HarnessRemoteBridge {
       }
     }
     if (codexResult !== undefined) return reservation === undefined ? codexResult : this.terminal.result(params.endpoint, params.payload, codexResult, reservation)
+    if (params.endpoint === 'session/usage') {
+      return readSessionTokenUsage(
+        (endpoint, nativePayload, signal) => this.gateway.dispatch(endpoint, nativePayload, signal),
+        params.payload,
+        AbortSignal.timeout(60_000),
+      )
+    }
     if (params.endpoint === 'session/canOpenWorkspacePath') {
       return { ok: true, value: true }
     }

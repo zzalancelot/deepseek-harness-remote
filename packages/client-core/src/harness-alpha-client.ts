@@ -141,6 +141,33 @@ export interface HarnessSessionHistoryPage {
   throughSeq?: number
 }
 
+/** Committed token counts for one scope. `complete` is false when the total may omit calls. */
+export interface TokenUsageCounts {
+  inputTokens: number
+  outputTokens: number
+  cacheReadTokens: number
+  cacheWriteTokens: number
+  reasoningTokens: number
+  totalTokens: number
+  reportedCalls: number
+  unreportedCalls: number
+  complete: boolean
+}
+
+/** Committed usage of the latest numbered turn. */
+export interface SessionTurnUsage extends TokenUsageCounts {
+  turn: number
+}
+
+/**
+ * One session's committed token accounting.
+ * Top-level counts are the whole session. `turn` is only the latest turn.
+ */
+export interface SessionTokenUsage extends TokenUsageCounts {
+  sessionId: string
+  turn: SessionTurnUsage | null
+}
+
 type RemoteEventKind = 'approval/request' | 'user-questions/request'
 
 interface PendingRemoteEvent {
@@ -362,6 +389,17 @@ export class HarnessAlphaClient {
     return parentSessionId === undefined
       ? { kind: 'session' as const, sessionId }
       : { kind: 'subagent' as const, parentSessionId, childSessionId: sessionId, mode: 'unknown' as const }
+  }
+
+  /**
+   * Session total and latest-turn usage for committed model calls.
+   * An in-progress reply is included only after its assistant message is committed.
+   */
+  async sessionUsage(sessionId: string, parentSessionId?: string): Promise<SessionTokenUsage> {
+    const result = await this.callValue<unknown>('session/usage', {
+      request: { address: this.sessionAddress(sessionId, parentSessionId) },
+    })
+    return parseSessionTokenUsage(result, sessionId)
   }
 
   async sessionHistory(sessionId: string, beforeSeq?: number, maxMessages = 60, parentSessionId?: string): Promise<HarnessSessionHistoryPage> {
@@ -1022,6 +1060,47 @@ function clientTimeZone(): string | undefined {
     return /^[A-Za-z_]+\/[A-Za-z0-9_+-]+(?:\/[A-Za-z0-9_+-]+)?$/.test(zone) ? zone : undefined
   } catch {
     return undefined
+  }
+}
+
+function parseSessionTokenUsage(value: unknown, sessionId: string): SessionTokenUsage {
+  if (!isRecord(value) || value.sessionId !== sessionId) {
+    throw new RemoteGatewayError('INVALID_MESSAGE', 'The Host returned an invalid session usage result.')
+  }
+  return { sessionId, ...parseUsageCounts(value), turn: parseTurnUsage(value.turn) }
+}
+
+function parseTurnUsage(value: unknown): SessionTurnUsage | null {
+  if (value === null) return null
+  if (!isRecord(value)) throw new RemoteGatewayError('INVALID_MESSAGE', 'The Host returned an invalid session usage result.')
+  const turn = value.turn
+  if (typeof turn !== 'number' || !Number.isSafeInteger(turn) || turn < 0) {
+    throw new RemoteGatewayError('INVALID_MESSAGE', 'The Host returned an invalid session usage result.')
+  }
+  return { turn, ...parseUsageCounts(value) }
+}
+
+function parseUsageCounts(value: Record<string, unknown>): TokenUsageCounts {
+  const count = (key: keyof TokenUsageCounts): number => {
+    const item = value[key]
+    if (typeof item !== 'number' || !Number.isSafeInteger(item) || item < 0) {
+      throw new RemoteGatewayError('INVALID_MESSAGE', 'The Host returned an invalid session usage result.')
+    }
+    return item
+  }
+  if (typeof value.complete !== 'boolean') {
+    throw new RemoteGatewayError('INVALID_MESSAGE', 'The Host returned an invalid session usage result.')
+  }
+  return {
+    inputTokens: count('inputTokens'),
+    outputTokens: count('outputTokens'),
+    cacheReadTokens: count('cacheReadTokens'),
+    cacheWriteTokens: count('cacheWriteTokens'),
+    reasoningTokens: count('reasoningTokens'),
+    totalTokens: count('totalTokens'),
+    reportedCalls: count('reportedCalls'),
+    unreportedCalls: count('unreportedCalls'),
+    complete: value.complete,
   }
 }
 

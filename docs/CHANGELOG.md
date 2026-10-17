@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Adds a read-only `session/usage` call that returns both the committed token total of one session and the latest turn. The Host pages official `assistant/message` usage and does not estimate missing counts; in-progress streams are excluded until the assistant message is committed.
+- 新增只读 `session/usage`，同一次返回当前会话总量和最近一轮用量。Host 只累计官方 `assistant/message` 用量，不估算缺失计数；进行中的流式回复在助手消息提交前不计入。
+
 - Splits the four handwritten source files over 2,000 lines into Plugin client views, CodeX catalog/history projections, Android account/workspace actions and chat components. Existing public entries and protocol behavior are preserved; Harness lifecycle tests no longer start installed Agent CLIs.
 - 四个超过 2000 行的手写源码按领域完成首轮拆分，保留既有入口与协议行为；Harness 生命周期测试隔离本机 Agent CLI。
 - 修复 Android 账号刷新与工作区操作的迟到结果竞态：账号切换立即失效旧刷新，凭据及信任清理按序执行；工作区结果校验连接代次、后端实例和操作归属，旧成功或错误不能覆盖当前目录、错误与忙碌状态。新增 7 个核心契约测试（命名场景矩阵）；全仓 check、647 tests 和 Android Hermes 生产导出通过，未进行原生真机或跨设备验收。

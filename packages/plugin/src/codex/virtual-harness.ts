@@ -3,6 +3,7 @@ import type { DisplaySession } from '@dsh-remote/client-core'
 import { CodexRemoteClient, projectCodexThread } from '@dsh-remote/client-core'
 import type { CodexPermissionPreset } from '@dsh-remote/protocol'
 import type { HarnessSessionGeneration } from '../harness-version.js'
+import { collectSessionTokenUsage } from '../session-token-usage.js'
 import type { RemoteTypertGatewayTarget, TypertGatewayRequest, TypertRpcResult } from '../typert-gateway-contract.js'
 import { codexPermissionPresetFromResponse } from './permissions.js'
 import type {
@@ -265,6 +266,7 @@ export class CodexVirtualHarness implements RemoteTypertGatewayTarget {
         case 'session/fork': return business(await this.forkSession(requestArg(args), signal))
         case 'session/history': return business(await this.sessionHistory(requestArg(args), signal))
         case 'session/page': return business(await this.sessionPage(requestArg(args), signal))
+        case 'session/usage': return business(await this.sessionUsage(requestArg(args), signal))
         case 'session/prompt': return business(await this.prompt(requestArg(args), signal))
         case 'session/cancel': return business(await this.cancel(requestArg(args), signal))
         case 'session/rename': return business(await this.renameSession(requestArg(args), signal))
@@ -762,6 +764,21 @@ export class CodexVirtualHarness implements RemoteTypertGatewayTarget {
       maxMessages: optionalPositiveInteger(request.maxMessages),
     }, signal)
     return success({ records: page.records, hasMore: page.hasMore })
+  }
+
+  private async sessionUsage(request: JsonRecord, signal: AbortSignal): Promise<unknown> {
+    const sessionId = typeof request.sessionId === 'string' && request.sessionId.length > 0
+      ? request.sessionId
+      : sessionIdFromAddress(record(request.address))
+    const threadId = nativeThreadId(sessionId)
+    const usage = await collectSessionTokenUsage(sessionId, async beforeSeq => {
+      const page = await this.readHistoryPage(threadId, {
+        beforeSeq,
+        maxMessages: 60,
+      }, signal)
+      return { records: page.records, hasMore: page.hasMore }
+    }, signal)
+    return success(usage)
   }
 
   private activeTurnId(threadId: string): string | undefined {

@@ -45,6 +45,31 @@ describe('HarnessRemoteBridge', () => {
     }
   })
 
+  it('answers session usage locally from session history pages', async () => {
+    const dispatch = vi.fn(async (endpoint: string) => {
+      expect(endpoint).toBe('session/page')
+      return {
+        ok: true as const,
+        value: {
+          records: [{
+            type: 'event',
+            event: { type: 'assistant/message', seq: 1, time: 1, data: { usage: { inputTokens: 2, outputTokens: 3, cacheReadTokens: 0, cacheWriteTokens: 0, totalTokens: 5 } } },
+          }],
+          hasMore: false,
+        },
+      }
+    })
+    const bridge = new HarnessRemoteBridge(gateway({ dispatch }), vi.fn(async () => undefined))
+    await expect(bridge.call({
+      endpoint: 'session/usage',
+      payload: { args: { request: { sessionId: 's1' } } },
+    })).resolves.toMatchObject({
+      ok: true,
+      value: { sessionId: 's1', inputTokens: 2, outputTokens: 3, totalTokens: 5, reportedCalls: 1, complete: true },
+    })
+    expect(dispatch).toHaveBeenCalledTimes(1)
+  })
+
   it('forwards the background-job roster and observation streams', async () => {
     await runScenarios(['job/list', 'job/follow'].map(endpoint => ({
       name: endpoint,
