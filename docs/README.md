@@ -32,6 +32,7 @@
 - [dsh-TUI Remote 使用指南](dsh-tui.md)：介绍 dsh-TUI profile 安装、`/remote` 命令、扫码登录、状态查询、ApiProxy/Typert carrier 兼容与排障。
 - [Codex Remote 技术说明](codex-remote.md)：说明 Codex 工作区展示、数据边界、配置、安全限制和当前验证状态。
 - [会话 Token 用量接口](session-usage.md)：只读 `session/usage`，一次返回会话总量与最近一轮用量，供 Client / Agent 调用。
+- [Agent 交接：`session/usage`](session-usage-agent-handoff.md)：给其他 Agent 的最短调用说明与验收要点。
 - [Agent 工作区接入指南](acp-integration.md)：启用 Cursor / AGY / Codex，以及新增 ACP adapter 的接入点。
 - [ACP Remote / Agent adapters](acp-remote.md)：说明 #65 Agent ACP gateway、Cursor adapter、allowlist 与配置。
 - [端到端加密](end-to-end-encryption.md)：解释 Noise IK、设备身份固定、密钥生命周期、Server 可见元数据、重放保护与安全边界。
