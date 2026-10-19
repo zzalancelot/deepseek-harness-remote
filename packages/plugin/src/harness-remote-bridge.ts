@@ -20,11 +20,13 @@ import {
   MAX_SECURE_MESSAGE_BYTES,
   TRANSFER_IDLE_MS,
 } from '@dsh-remote/protocol'
+import { lstat, realpath } from 'node:fs/promises'
+import { isAbsolute, parse } from 'node:path'
 import { z } from 'zod'
 import { TerminalPolicy, TERMINAL_CALLS, TERMINAL_STREAMS } from './terminal-policy.js'
 import { harnessSessionGeneration } from './harness-version.js'
 import type { SafeLogger } from './logging.js'
-import { ensureHostWorkspaceDirectory, listRemoteDirectory } from './remote-directory-browser.js'
+import { listRemoteDirectory } from './remote-directory-browser.js'
 import { RpcError } from './rpc-router.js'
 import type { LocalTypertGateway, TypertRpcResult } from './typert-gateway-contract.js'
 import { CodexWorkspaceBridge } from './codex-workspace-bridge.js'
@@ -239,7 +241,7 @@ export class HarnessRemoteBridge {
     if (params.endpoint === 'workspace/create') {
       const request = requestArgs(params.payload)
       const folder = typeof request.path === 'string' ? request.path : ''
-      await ensureHostWorkspaceDirectory(folder)
+      await assertExistingHostWorkspaceDirectory(folder)
     }
     const startedAt = performance.now()
     const signal = AbortSignal.timeout(60_000)
@@ -642,4 +644,28 @@ function record(value: unknown): Record<string, unknown> {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Remote workspace creation only registers a directory that already exists on
+ * the Host. Validate the raw path before resolve() so relative inputs cannot
+ * pass, and keep trailing whitespace so the check and the forwarded request
+ * name the same directory. Never mkdir.
+ */
+async function assertExistingHostWorkspaceDirectory(path: string): Promise<void> {
+  if (path.length === 0 || path.includes('\0') || !isAbsolute(path)) {
+    throw new RpcError('WORKSPACE_PATH_INVALID', 'The workspace directory must be an existing absolute directory.')
+  }
+  if (path === parse(path).root) {
+    throw new RpcError('WORKSPACE_PATH_INVALID', 'The workspace directory must be an existing absolute directory.')
+  }
+  try {
+    const info = await lstat(path)
+    if (!info.isDirectory() && !info.isSymbolicLink()) throw new Error('not a directory')
+    const canonical = await realpath(path)
+    if (!(await lstat(canonical)).isDirectory()) throw new Error('not a directory')
+  } catch (error) {
+    if (error instanceof RpcError) throw error
+    throw new RpcError('WORKSPACE_PATH_NOT_FOUND', 'The workspace directory must already exist on the Host.')
+  }
 }

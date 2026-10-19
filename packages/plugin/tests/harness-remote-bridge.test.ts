@@ -1,6 +1,6 @@
 import { runScenarios, scenarioName } from '../../../scripts/test-scenarios.mjs'
 import { describe, expect, it, vi } from 'vitest'
-import { mkdir, mkdtemp, realpath, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, realpath, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { HarnessRemoteBridge } from '../src/harness-remote-bridge.js'
@@ -77,39 +77,38 @@ describe('HarnessRemoteBridge', () => {
     })))
   })
 
-  it('creates missing Host folders before forwarding workspace/create', async () => {
+  it('registers only an existing absolute Host directory for workspace/create', async () => {
     const root = await mkdtemp(join(tmpdir(), 'dsh-remote-workspace-create-'))
-    const folder = join(root, 'MarcoAgent', 'admin')
+    const folder = join(root, 'existing')
+    const missing = join(root, 'missing')
+    const spaced = `${folder} `
+    await mkdir(folder)
+    const before = await readdir(root)
     const dispatch = vi.fn(async (endpoint: string, payload: { args: Record<string, unknown> }) => {
       expect(endpoint).toBe('workspace/create')
       expect(payload.args).toEqual({ request: { path: folder } })
-      const resolved = await realpath(folder)
-      expect(resolved).toBe(await realpath(folder))
-      return {
-        ok: true as const,
-        value: {
-          workspace: {
-            workspaceId: 'ws-admin',
-            path: folder,
-            title: 'admin',
-            sessionIds: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          created: true,
-        },
-      }
+      return { ok: true as const, value: { workspace: { workspaceId: 'ws-existing', path: folder }, created: true } }
     })
     const bridge = new HarnessRemoteBridge(gateway({ dispatch }), vi.fn(async () => undefined))
     try {
       await expect(bridge.call({
         endpoint: 'workspace/create',
         payload: { args: { request: { path: folder } } },
-      })).resolves.toMatchObject({
-        ok: true,
-        value: { workspace: { workspaceId: 'ws-admin' }, created: true },
-      })
+      })).resolves.toMatchObject({ ok: true, value: { workspace: { workspaceId: 'ws-existing' } } })
+      await expect(bridge.call({
+        endpoint: 'workspace/create',
+        payload: { args: { request: { path: missing } } },
+      })).rejects.toMatchObject({ code: 'WORKSPACE_PATH_NOT_FOUND' })
+      await expect(bridge.call({
+        endpoint: 'workspace/create',
+        payload: { args: { request: { path: 'relative/project' } } },
+      })).rejects.toMatchObject({ code: 'WORKSPACE_PATH_INVALID' })
+      await expect(bridge.call({
+        endpoint: 'workspace/create',
+        payload: { args: { request: { path: spaced } } },
+      })).rejects.toMatchObject({ code: 'WORKSPACE_PATH_NOT_FOUND' })
       expect(dispatch).toHaveBeenCalledTimes(1)
+      expect(await readdir(root)).toEqual(before)
     } finally {
       await rm(root, { recursive: true, force: true })
     }

@@ -34486,17 +34486,10 @@ function closeCode(code) {
 }
 
 // src/remote-directory-browser.ts
-import { mkdir as mkdir3, readdir as readdir4, stat as stat7 } from "node:fs/promises";
+import { readdir as readdir4, stat as stat7 } from "node:fs/promises";
 import { homedir as homedir6, platform as platform2 } from "node:os";
 import { basename as basename5, dirname as dirname5, isAbsolute as isAbsolute8, parse, resolve as resolve5 } from "node:path";
 var MAX_ENTRIES = 500;
-async function ensureHostWorkspaceDirectory(path) {
-  const raw = String(path || "").trim();
-  if (!raw || raw.includes("\0")) return;
-  const target2 = resolve5(raw);
-  if (!isAbsolute8(target2) || target2 === parse(target2).root) return;
-  await mkdir3(target2, { recursive: true });
-}
 async function listRemoteDirectory(path, signal) {
   signal?.throwIfAborted();
   const home = resolve5(homedir6());
@@ -35360,6 +35353,8 @@ function concatChunks3(chunks, totalBytes) {
 }
 
 // src/harness-remote-bridge.ts
+import { lstat as lstat3, realpath as realpath7 } from "node:fs/promises";
+import { isAbsolute as isAbsolute9, parse as parse2 } from "node:path";
 var endpointSchema = external_exports.string().min(1).max(128).regex(/^(?:\$events(?:\/result)?|[A-Za-z0-9_$.-]+\/[A-Za-z0-9_$.-]+)$/);
 var callSchema4 = external_exports.object({ endpoint: endpointSchema, payload: external_exports.unknown() }).strict();
 var streamOpenSchema4 = external_exports.object({
@@ -35535,7 +35530,7 @@ var HarnessRemoteBridge = class {
     if (params.endpoint === "workspace/create") {
       const request = requestArgs(params.payload);
       const folder = typeof request.path === "string" ? request.path : "";
-      await ensureHostWorkspaceDirectory(folder);
+      await assertExistingHostWorkspaceDirectory(folder);
     }
     const startedAt = performance.now();
     const signal = AbortSignal.timeout(6e4);
@@ -35870,6 +35865,23 @@ function record8(value) {
 }
 function isRecord21(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+async function assertExistingHostWorkspaceDirectory(path) {
+  if (path.length === 0 || path.includes("\0") || !isAbsolute9(path)) {
+    throw new RpcError("WORKSPACE_PATH_INVALID", "The workspace directory must be an existing absolute directory.");
+  }
+  if (path === parse2(path).root) {
+    throw new RpcError("WORKSPACE_PATH_INVALID", "The workspace directory must be an existing absolute directory.");
+  }
+  try {
+    const info = await lstat3(path);
+    if (!info.isDirectory() && !info.isSymbolicLink()) throw new Error("not a directory");
+    const canonical = await realpath7(path);
+    if (!(await lstat3(canonical)).isDirectory()) throw new Error("not a directory");
+  } catch (error) {
+    if (error instanceof RpcError) throw error;
+    throw new RpcError("WORKSPACE_PATH_NOT_FOUND", "The workspace directory must already exist on the Host.");
+  }
 }
 
 // src/service.ts

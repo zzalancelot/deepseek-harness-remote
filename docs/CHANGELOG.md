@@ -4,8 +4,8 @@
 
 - Unifies all first-party package/client versions at `0.5.14`, matching tag `v0.5.14`; Android `versionCode` and Expo iOS `buildNumber` are `58`.
 - 本仓库各自有包与客户端版本统一为 `0.5.14`，与 Tag `v0.5.14` 一致；Android `versionCode` 与 Expo iOS `buildNumber` 均为 `58`。
-- Before forwarding remote `workspace/create`, recursively create the target directory on the Host so native Harness `realpath` no longer fails with ENOENT when parents such as `…/MarcoAgent/<account>` are missing.
-- 远程 `workspace/create` 转发前在 Host 上递归创建目标目录，避免原生 Harness 对尚不存在的 `…/MarcoAgent/<账号>` 路径 `realpath` 时出现 ENOENT。
+- Remote `workspace/create` only registers an existing absolute Host directory. Relative, root, and missing paths fail before dispatch and do not create directories; trailing whitespace stays part of the requested path.
+- 远程 `workspace/create` 只注册 Host 上已存在的绝对目录。相对路径、根目录和不存在的路径在转发前失败，不创建目录；路径末尾空白仍属于请求路径本身。
 - Includes Android background connection keep-alive repairs from the unreleased branch tip (notification permission, service-owned Headless JS timers, partial wake lock, resume capability probe).
 - 含未发布分支上的 Android 后台连接保活修复（通知权限、服务归属 Headless JS 定时器、部分唤醒锁、恢复时 capability 探测）。
 
