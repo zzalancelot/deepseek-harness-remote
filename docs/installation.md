@@ -71,7 +71,7 @@ Desktop defaults to `desktop`; standalone CLI defaults to `web`. Override with `
 Alternatively, open Desktop **Extensions / Plugin management** and install from npm:
 
 ```text
-ds-harness-remote@0.5.13
+ds-harness-remote@0.5.14
 ```
 
 An ordinary standalone CLI cannot manage the reserved `desktop` profile; use Desktop's official launcher.

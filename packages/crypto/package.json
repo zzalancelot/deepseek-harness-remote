@@ -1,6 +1,6 @@
 {
   "name": "@dsh-remote/crypto",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

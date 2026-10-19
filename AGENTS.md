@@ -126,7 +126,7 @@ macOS 仍使用普通用户，优先复用 Desktop 官方 launcher，否则已�
 Desktop 默认保留的 `desktop` profile，只能由其官方 launcher 管理。一次性 Token 复用官方身份/凭据与既有注册码接口，
 不得记录或作为持久设备凭据使用。Windows 用户使用官方插件管理或已有 Harness 的官方命令。
 卸载先按安装指南停用 Linux 系统服务，再通过官方插件管理或 `dsh plugin remove` 移除 Remote；不自动删除 runtime、
-凭据或迁移旧 service。Desktop npm 包当前版本为 `ds-harness-remote@0.5.13`。
+凭据或迁移旧 service。Desktop npm 包当前版本为 `ds-harness-remote@0.5.14`。
 
 ## Validation Baseline
 
